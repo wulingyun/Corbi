@@ -49,8 +49,9 @@ pro.align <- function(D1, D2, gap.penalty = 0.1, allow.mid.gap = T, afp.length =
 	}
 
 	core <- decode.chain(crf)
-	core[core == 1 | core == 2] <- 0
-	core[core != 0] <- core[core != 0] - 2
-	core <- core %% n.afp + core %/% n.afp
+	core.gap <- core == 1 | core == 2
+	core <- core - 3
+	core <- core %% n.afp + core %/% n.afp + 1
+	core[core.gap] <- 0
 	core
 }
