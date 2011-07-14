@@ -1,19 +1,7 @@
-afp.score <- function(D1, D2, i1, i2, afp.length = 5)
-{
-	c1 <- i1:(i1+afp.length-1)
-	c2 <- i2:(i2+afp.length-1)
-	d <- D1[c1, c1] - D2[c2, c2]
-	sqrt(mean((d[upper.tri(d)])^2))
-}
 
-afp.match <- function(D1, D2, afp.length = 5)
+afp.score <- function(D1, D2, afp.length = 5)
 {
-	n1 <- dim(D1)[1] - afp.length + 1
-	n2 <- dim(D2)[1] - afp.length + 1
-	m.afp <- matrix(0, nrow=n1, ncol=n2)
-	for (i in 1:n1)
-		m.afp[i, 1:n2] <- sapply(1:n2, function(x) afp.score(D1, D2, i, x, afp.length))
-	m.afp
+	.Call("AFP_Score", D1, D2, dim(D1)[1], dim(D2)[1], afp.length)
 }
 
 afp.dist <- function(D1, D2, n.nodes, n.afp, afp.length = 5)
@@ -27,7 +15,7 @@ pro.align <- function(D1, D2)
 	afp.length <- 5
 	gap.penalty <- 0.5
 
-	m.afp <- afp.match(D1, D2, afp.length)
+	m.afp <- afp.score(D1, D2, afp.length)
 	m.afp[m.afp >= afp.cutoff] <- 1
 	m.afp <- 1 - m.afp
 
@@ -65,9 +53,9 @@ pro.align <- function(D1, D2)
 				crf$edge.pot[(n.afp*(i-1)+3):(n.afp*i+2), 3:(n.afp+2), e] <- m.dist[, , i, e]
 	}
 
-	dec <- decode.chain(crf)
-	dec[dec == 1 | dec == 2] <- 0
-	dec[dec != 0] <- dec[dec != 0] - 2
-	dec <- dec %% n.afp + dec %/% n.afp
-	dec
+	core <- decode.chain(crf)
+	core[core == 1 | core == 2] <- 0
+	core[core != 0] <- core[core != 0] - 2
+	core <- core %% n.afp + core %/% n.afp
+	core
 }
