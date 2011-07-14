@@ -1,12 +1,12 @@
 #include "Corbi.h"
 #include <Rmath.h>
 
-double calc_dist(double *D1, double *D2, int i1, int i2, int j1, int j2, int n1, int n2, int afpLength)
+inline double _afp_dist(double *D1, double *D2, int nD1, int nD2, int afpLength, int i1, int i2, int j1, int j2)
 {
 	double d = 0;
 	for (int i = 0; i < afpLength; i++)
 	{
-		d += R_pow_di(D1[i1+i-1 + n1 * (i2+i-1)] - D2[j1+i-1 + n2 * (j2+i-1)], 2);
+		d += R_pow_di(D1[i1+i-1 + nD1 * (i2+i-1)] - D2[j1+i-1 + nD2 * (j2+i-1)], 2);
 	}
 	d = sqrt(d/afpLength);
 	return (d);
@@ -29,6 +29,8 @@ SEXP AFP_Distance(SEXP _D1, SEXP _D2, SEXP _nNodes, SEXP _nAFP, SEXP _afpLength)
 	double *mDist = NUMERIC_POINTER(_mDist);
 	setValues(_mDist, mDist, 1e100);
 
+	int nD1 = nNodes, nD2 = nAFP+afpLength-1;
+
 	int i1Max, iMax, j1Max;
 	i1Max = nNodes - afpLength;
 	for (int i1 = 1; i1 <= i1Max; i1++)
@@ -41,7 +43,7 @@ SEXP AFP_Distance(SEXP _D1, SEXP _D2, SEXP _nNodes, SEXP _nAFP, SEXP _afpLength)
 			{
 				for (int j2 = j1+i; j2 <= nAFP; j2++)
 				{
-					mDist[j1-1 + nAFP * (j2-1 + nAFP * (i-1 + afpLength * (i1-1)))] = calc_dist(D1, D2, i1-i+1, i1+1, j1, j2, nNodes, nAFP+afpLength-1, afpLength);
+					mDist[j1-1 + nAFP * (j2-1 + nAFP * (i-1 + afpLength * (i1-1)))] = _afp_dist(D1, D2, nD1, nD2, afpLength, i1-i+1, i1+1, j1, j2);
 				}
 			}
 		}
