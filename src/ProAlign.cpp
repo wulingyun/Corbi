@@ -9,7 +9,7 @@ inline double _afp_score(double *D1, double *D2, int nD1, int nD2, int afpLength
 		{
 			d += R_pow_di(D1[i+k1-1 + nD1 * (i+k2-1)] - D2[j+k1-1 + nD2 * (j+k2-1)], 2);
 		}
-	d = sqrt(d/(afpLength * (afpLength - 1) / 2));
+	d /= afpLength * (afpLength - 1) / 2;
 	return (d);
 }
 
@@ -49,7 +49,7 @@ inline double _afp_dist(double *D1, double *D2, int nD1, int nD2, int afpLength,
 	{
 		d += R_pow_di(D1[i1+k-1 + nD1 * (i2+k-1)] - D2[j1+k-1 + nD2 * (j2+k-1)], 2);
 	}
-	d = sqrt(d/afpLength);
+	d /= afpLength;
 	return (d);
 }
 

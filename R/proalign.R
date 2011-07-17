@@ -35,11 +35,6 @@ get.seed <- function(core)
 	seed
 }
 
-get.match.score <- function(d1, d2)
-{
-	(1 - abs((d1 - d2) / (d1 + d2)))
-}
-
 tri2mat <- function(v, n)
 {
 	m <- array(0, dim=c(n,n))
@@ -59,7 +54,7 @@ get.alignment <- function(D1, D2, seed, core, gap.penalty = 0.1)
 	n.d2 <- dim(D2)[1]
 	n.seed <- dim(seed)[1]
 
-	match.score <- sapply(mat2tri(D1), function(x) get.match.score(x, mat2tri(D2)))
+	match.score <- sapply(mat2tri(D1), function(x) (x - mat2tri(D2))^2)
 	map.d1 <- tri2mat(1:dim(match.score)[2], n.d1)
 	map.d2 <- tri2mat(1:dim(match.score)[1], n.d2)
 
@@ -136,7 +131,7 @@ get.alignment <- function(D1, D2, seed, core, gap.penalty = 0.1)
 	alignment
 }
 
-pro.align <- function(D1, D2, gap.penalty = 0.1, allow.mid.gap = T, afp.length = 5, afp.cutoff = 1)
+pro.align <- function(D1, D2, gap.penalty = exp(-afp.cutoff), allow.mid.gap = T, afp.length = 5, afp.cutoff = 1)
 {
 	n.d1 <- dim(D1)[1]
 	n.d2 <- dim(D2)[1]
@@ -148,9 +143,8 @@ pro.align <- function(D1, D2, gap.penalty = 0.1, allow.mid.gap = T, afp.length =
 	adj[cbind(1:(n.nodes-1), 2:n.nodes)] <- 1
 	crf <- make.crf(adj, n.states)
 
-	m.afp <- afp.score(D1, D2, afp.length)
-	m.afp[m.afp >= afp.cutoff] <- 1
-	m.afp <- 1 - m.afp
+	m.afp <- exp(-afp.score(D1, D2, afp.length))
+	m.afp[m.afp <= exp(-afp.cutoff)] <- 0
 
 	crf$node.pot[,] <- 0
 	crf$node.pot[,1:2] <- gap.penalty
@@ -163,9 +157,8 @@ pro.align <- function(D1, D2, gap.penalty = 0.1, allow.mid.gap = T, afp.length =
 	if (allow.mid.gap) ep[2,2:(n.afp+2)] <- 1
 	ep[cbind(3:(n.afp*(afp.length-1)+2), (n.afp+3):(n.afp*afp.length+2))] <- 1
 
-	m.dist <- afp.dist(D1, D2, n.nodes, n.afp, afp.length)
-	m.dist[m.dist >= afp.cutoff] <- 1
-	m.dist <- 1 - m.dist
+	m.dist <- exp(-afp.dist(D1, D2, n.nodes, n.afp, afp.length))
+	m.dist[m.dist <= exp(-afp.cutoff)] <- 0
 
 	for (e in 1:crf$n.edges)
 	{
