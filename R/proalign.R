@@ -53,6 +53,89 @@ mat2tri <- function(m)
 	m[upper.tri(m, diag=T)]
 }
 
+get.alignment <- function(D1, D2, seed, core, gap.penalty = 0.1)
+{
+	n.d1 <- dim(D1)[1]
+	n.d2 <- dim(D2)[1]
+	n.seed <- dim(seed)[1]
+
+	match.score <- sapply(mat2tri(D1), function(x) get.match.score(x, mat2tri(D2)))
+	map.d1 <- tri2mat(1:dim(match.score)[2], n.d1)
+	map.d2 <- tri2mat(1:dim(match.score)[1], n.d2)
+
+	n.states <- n.d2 * 2
+	gap.states <- 1:n.d2
+	normal.states <- (n.d2+1):n.states
+	ep <- matrix(0, nrow=n.states, ncol=n.states)
+	diag(ep[gap.states, gap.states]) <- 1
+	diag(ep[normal.states, gap.states]) <- 1
+	temp <- matrix(0, nrow=n.d2, ncol=n.d2)
+	temp[upper.tri(temp)] <- 1
+	ep[gap.states, normal.states] <- temp
+
+	alignment <- matrix(0, nrow=n.seed, ncol=n.d1)
+	for (i in 1:n.seed)
+	{
+		fixed <- rep(F, n.d1)
+		fixed[seed[i,1]:seed[i,2]] <- T
+		n.fixed <- sum(fixed)
+		n.nodes <- n.d1 - n.fixed
+		if (n.fixed >= n.d1)
+		{
+			alignment[i,] <- core
+			break
+		}
+		fixed.id <- (1:n.d1)[fixed]
+		node.id <- (1:n.d1)[!fixed]
+
+		adj <- matrix(0, nrow=n.nodes, ncol=n.nodes)
+		for (j in 2:n.nodes) adj[j-1, j] <- 1
+
+		crf <- make.crf(adj, n.states)
+
+		crf$node.pot[,] <- 0
+		crf$node.pot[,gap.states] <- gap.penalty
+
+		u1 <- core[seed[i,1]] - 1
+		u2 <- core[seed[i,2]] + 1
+		for (j in 1:n.nodes)
+		{
+			if (node.id[j] < seed[i,1] && u1 >= 1)
+			{
+				crf$node.pot[j,n.d2+(1:u1)] <- 1
+				for (k in 1:n.fixed)
+				{
+					temp <- match.score[map.d2[1:u1, core[fixed.id[k]]], map.d1[node.id[j], fixed.id[k]]]
+					crf$node.pot[j,n.d2+(1:u1)] <- crf$node.pot[j,n.d2+(1:u1)] * temp
+				}
+			}
+			if (node.id[j] > seed[i,2] && u2 <= n.d2)
+			{
+				crf$node.pot[j,n.d2+(u2:n.d2)] <- 1
+				for (k in 1:n.fixed)
+				{
+					temp <- match.score[map.d2[core[fixed.id[k]], u2:n.d2], map.d1[fixed.id[k], node.id[j]]]
+					crf$node.pot[j,n.d2+(u2:n.d2)] <- crf$node.pot[j,n.d2+(u2:n.d2)] * temp
+				}
+			}
+		}
+
+		crf$edge.pot[,,] <- ep
+		for (j in 1:crf$n.edges)
+		{
+			temp <- matrix(match.score[map.d2[1:n.d2, 1:n.d2], map.d1[node.id[crf$edges[j,1]], node.id[crf$edges[j,2]]]], nrow=n.d2, ncol=n.d2)
+			temp[lower.tri(temp, diag=T)] <- 0
+			crf$edge.pot[normal.states, normal.states, j] <- temp
+		}
+
+		dec <- decode.chain(crf) - n.d2
+		dec[dec < 0] <- 0
+		alignment[i, node.id] <- dec
+		alignment[i, fixed.id] <- core[fixed]
+	}
+	alignment
+}
+
 pro.align <- function(D1, D2, gap.penalty = 0.1, allow.mid.gap = T, afp.length = 5, afp.cutoff = 1)
 {
 	n.d1 <- dim(D1)[1]
@@ -98,56 +181,9 @@ pro.align <- function(D1, D2, gap.penalty = 0.1, allow.mid.gap = T, afp.length =
 	core <- core %% n.afp + core %/% n.afp + 1
 	core[core.gap] <- 0
 
-	seed <- get.seed(core)
-	n.seed <- dim(seed)[1]
-
-	match.score <- sapply(mat2tri(D1), function(x) get.match.score(x, mat2tri(D2)))
-	map.d1 <- tri2mat(1:dim(match.score)[2], n.d1)
-	map.d2 <- tri2mat(1:dim(match.score)[1], n.d2)
-
-	alignment <- matrix(0, nrow=n.seed, ncol=n.d1)
-	for (i in 1:n.seed)
-	{
-		fixed <- rep(F, n.nodes)
-		fixed[seed[i,1]:seed[i,2]] <- T
-		if (sum(fixed) >= n.d1)
-		{
-			alignment[i,] <- core
-			break
-		}
-
-		normal.nodes <- (1:n.nodes)[!fixed]
-		adj <- matrix(0, nrow=n.nodes, ncol=n.nodes)
-		for (j in 2:length(normal.nodes)) adj[normal.nodes[j-1], normal.nodes[j]] <- 1
-		adj[fixed,] <- 1
-		diag(adj) <- 0
-
-		n.states <- n.d2 + 1
-
-		crf <- make.crf(adj, n.states)
-
-		crf$node.pot[,] <- 1
-		crf$node.pot[,1] <- gap.penalty
-
-		crf$edge.pot[1, , ] <- 1
-		crf$edge.pot[, 1, ] <- 1
-
-		for (j in 1:crf$n.edges)
-		{
-			m <- matrix(match.score[map.d2[1:n.d2, 1:n.d2], map.d1[crf$edges[j,1], crf$edges[j,2]]], nrow=n.d2, ncol=n.d2)
-			m[lower.tri(m, diag=T)] <- 0
-			crf$edge.pot[2:(n.d2+1), 2:(n.d2+1), j] <- m
-		}
-
-		clamp = rep(0, n.nodes)
-		clamp[fixed] <- core[fixed] + 1
-		print(clamp)
-		alignment[i,] <- decode.conditional(crf, clamp, decode.chain) - 1
-	}
-
 	result <- list()
-	result$alignment <- alignment
 	result$core <- core
-	result$seed <- seed
+	result$seed <- get.seed(core)
+	result$alignment <- get.alignment(D1, D2, result$seed, core, gap.penalty)
 	result
 }
