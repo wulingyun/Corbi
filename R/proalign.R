@@ -48,14 +48,14 @@ mat2tri <- function(m)
 	m[upper.tri(m, diag=T)]
 }
 
-get.alignment <- function(D1, D2, seed, core, gap.penalty = 0.1)
+get.alignment <- function(D1, D2, seed, core, gap.penalty = 0.5)
 {
 	n.d1 <- dim(D1)[1]
 	n.d2 <- dim(D2)[1]
 	n.seed <- dim(seed)[1]
 	if (n.seed <= 0) return()
 
-	match.score <- sapply(mat2tri(D1), function(x) (x - mat2tri(D2))^2)
+	match.score <- sapply(mat2tri(D1), function(x) exp(-(x - mat2tri(D2))^2))
 	map.d1 <- tri2mat(1:dim(match.score)[2], n.d1)
 	map.d2 <- tri2mat(1:dim(match.score)[1], n.d2)
 
@@ -132,7 +132,7 @@ get.alignment <- function(D1, D2, seed, core, gap.penalty = 0.1)
 	alignment
 }
 
-pro.align <- function(D1, D2, gap.penalty = exp(-afp.cutoff), allow.mid.gap = T, afp.length = 5, afp.cutoff = 1)
+pro.align <- function(D1, D2, gap.penalty = 0.5, allow.mid.gap = T, afp.length = 5, afp.cutoff = 1)
 {
 	n.d1 <- dim(D1)[1]
 	n.d2 <- dim(D2)[1]
