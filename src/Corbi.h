@@ -5,8 +5,7 @@
 
 extern "C" {
 	/* Utils */
-	SEXP AFP_Score(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
-	SEXP AFP_Distance(SEXP _D1, SEXP _D2, SEXP _nNodes, SEXP _nAFP, SEXP _afpLength);
+	SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
 }
 
 
