@@ -52,7 +52,5 @@ pro.align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length
 
 	label <- decode.chain(crf)
 	label[label > n.d2] <- 0
-
-	result <- list(crf=crf, label=label, es=scores$edge.score, ns=scores$node.score)
-	result
+	label
 }
