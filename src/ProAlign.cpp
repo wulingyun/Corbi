@@ -18,11 +18,14 @@ inline double _afp_score(double *D1, double *D2, int nD1, int nD2, int afpLength
 inline double _afp_dist(double *D1, double *D2, int nD1, int nD2, int afpLength, int i1, int i2, int j1, int j2)
 {
 	double d = 0;
-	for (int k = 0; k < afpLength; k++)
+	for (int k1 = 0; k1 < afpLength; k1++)
 	{
-		d += R_pow_di(D1[i1+k + nD1 * (i2+k)] - D2[j1+k + nD2 * (j2+k)], 2);
+		for (int k2 = 0; k2 < afpLength; k2++)
+		{
+			d += R_pow_di(D1[i1+k1 + nD1 * (i2+k2)] - D2[j1+k1 + nD2 * (j2+k2)], 2);
+		}
 	}
-	d /= afpLength;
+	d /= afpLength * afpLength;
 	return (d);
 }
 
