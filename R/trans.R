@@ -58,7 +58,7 @@ trans<-function(query,target,feature){
 
 #=============================================================
 
-  fea=matrix(0,dim(dquery)[1],dim(dtarget)[1]);
+  fea=matrix(-Inf,dim(dquery)[1],dim(dtarget)[1]);
   #I<-c();J<-c();K<-c();S<-1;
   con <- file(feature, "r")
   line=readLines(con,n=1);
@@ -78,7 +78,7 @@ trans<-function(query,target,feature){
   
   
   close(con)
-
+  fea[fea==-Inf]<-min(fea[fea>-Inf]);
 #=============================================================
 
 
