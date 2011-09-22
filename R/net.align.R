@@ -22,7 +22,7 @@ if(isnormalize>0){a=min(netalign$E);b=max(netalign$E);netalign$E=(netalign$E-a)/
 if(max(netalign$E)<=0){a=min(netalign$E);b=max(netalign$E);netalign$E=(netalign$E-a)/(b-a);}
 
 # compute the distance matrix for the target network
-D_G<-dis(netalign$G,dim(netalign$G)[1]);
+D_G <- .Call("NA_ShortestDistance", netalign$G)
 
 ded=delta.d; # the similar value to the deletion node Vd
 # simplification the target network
