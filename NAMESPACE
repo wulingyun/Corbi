@@ -1,4 +1,5 @@
 useDynLib(Corbi)
 import(CRF)
 export(pro.align)
-export(net.align)
+export(net.query)
+exportPattern("*")
