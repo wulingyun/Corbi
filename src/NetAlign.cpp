@@ -1,6 +1,6 @@
 #include "Corbi.h"
 
-SEXP NA_ShortestDistance(SEXP _W)
+SEXP NA_ShortestDistances(SEXP _W)
 {
 	PROTECT(_W = AS_INTEGER(_W));
 	int *W = INTEGER_POINTER(_W);

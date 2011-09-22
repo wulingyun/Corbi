@@ -6,7 +6,7 @@
 extern "C" {
 	/* Utils */
 	SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
-	SEXP NA_ShortestDistance(SEXP _W);
+	SEXP NA_ShortestDistances(SEXP _W);
 }
 
 
