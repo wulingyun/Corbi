@@ -1,9 +1,11 @@
 #include "Corbi.h"
 
-SEXP NA_ShortestDistances(SEXP _W)
+SEXP NQ_ShortestDistances(SEXP _W, SEXP _S)
 {
 	PROTECT(_W = AS_INTEGER(_W));
 	int *W = INTEGER_POINTER(_W);
+	PROTECT(_S = AS_LOGICAL(_S));
+	int *S = LOGICAL_POINTER(_S);
 
 	SEXP _dim;
 	PROTECT(_dim = GET_DIM(_W));
@@ -36,6 +38,8 @@ SEXP NA_ShortestDistances(SEXP _W)
 
 	for (int s = 0; s < dim; s++)
 	{
+		if (!S[s]) continue;
+
 		for (int i = 0; i < dim; i++)
 		{
 			label_free[i] = true;
@@ -64,6 +68,6 @@ SEXP NA_ShortestDistances(SEXP _W)
 		}
 	}
 
-	UNPROTECT(3);
+	UNPROTECT(4);
 	return (_D);
 }
