@@ -13,7 +13,7 @@ SEXP NA_ShortestDistance(SEXP _W)
 	PROTECT(_D = NEW_INTEGER(dim * dim));
 	setDim2(_D, dim, dim);
 	int *D = INTEGER_POINTER(_D);
-	setValues(_D, D, INT_MAX);
+	setValues(_D, D, -1);
 
 	int *out_links = (int *) R_alloc(dim * dim, sizeof(int));
 	int *out_degree = (int *) R_alloc(dim, sizeof(int));
