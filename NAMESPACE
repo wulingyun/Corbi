@@ -1,0 +1,4 @@
+useDynLib(Corbi)
+import(CRF)
+export(pro.align)
+export(net.align)
