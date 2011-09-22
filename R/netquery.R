@@ -53,7 +53,8 @@ net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-
 
 read.net <- function(net)
 {
-	net.text <- as.matrix(read.table(net, fill=T, as.is=T))
+	n.col <- max(sapply(strsplit(as.matrix(read.table(net, as.is=T, sep="\n")), " "), length))
+	net.text <- as.matrix(read.table(net, fill=T, as.is=T, col.names=1:n.col))
 	net.node <- unique(as.vector(net.text))
 	net.node <- net.node[net.node != ""]
 	net.size <- length(net.node)
