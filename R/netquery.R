@@ -28,10 +28,22 @@ net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-
 	}
 
 	# compute the shortest distance matrix for the target network
-	data$target$dist <- .Call("NA_ShortestDistances", data$target$matrix)
+	sel.node <- colSums(data$node.sim > delta.d) > 0
+	dist <- .Call("NQ_ShortestDistances", data$target$matrix, sel.node)[sel.node, sel.node]
 
 	# simplify the target network
-	data <- simplify.net(data, delta.d);
+	data$target$size <- sum(sel.node)
+	if (data$target$size <= 0)
+	{
+		stop("The simplified target network is empty, you should give a smaller cut values!")
+	}
+	data$target$node <- data$target$node[sel.node]
+	data$target$matrix <- data$target$matrix[sel.node, sel.node]
+	data$node.sim <- data$node.sim[, sel.node]
+	data$node.sim[data$node.sim <= delta.d] <- 0
+	dist[dist == -1] <- Inf
+	dist[cbind(1:data$target$size, 1:data$target$size)] <- 1
+	data$target$dist <- dist
 
 	emp <- GEM(delta.d, data$node.sim);
 
@@ -84,26 +96,4 @@ read.data <- function(query.net, target.net, node.sim)
 	target <- read.net(target.net)
 	similarity <- read.node.sim(query, target, node.sim)
 	list(query=query, target=target, node.sim=similarity)
-}
-
-simplify.net <- function(data, delta.d)
-{
-	s <- colSums(data$node.sim > delta.d) > 0
-	data$target$size <- sum(s)
-	if (data$target$size > 0)
-	{
-		data$target$node <- data$target$node[s]
-		data$target$matrix <- data$target$matrix[s, s]
-		data$node.sim <- data$node.sim[,s]
-		data$node.sim[data$node.sim <= delta.d] <- 0
-		d <- data$target$dist[s, s]
-		d[d == -1] <- Inf
-		for (i in 1:dim(d)[1]) d[i, i] <- 1
-		data$target$dist <- d
-	}
-	else
-	{
-		stop("The simplified target network is empty, you should give a smaller cut values!")
-	}
-	data
 }
