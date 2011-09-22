@@ -94,6 +94,7 @@ simplify.net <- function(data, delta.d)
 		data$target$node <- data$target$node[s]
 		data$target$matrix <- data$target$matrix[s, s]
 		data$node.sim <- data$node.sim[,s]
+		data$node.sim[data$node.sim <= delta.d] <- 0
 		d <- data$target$dist[s, s]
 		d[d == -1] <- Inf
 		for (i in 1:dim(d)[1]) d[i, i] <- 1
@@ -101,7 +102,7 @@ simplify.net <- function(data, delta.d)
 	}
 	else
 	{
-		eroor("The simplified target network is empty, you should give a smaller cut values!")
+		stop("The simplified target network is empty, you should give a smaller cut values!")
 	}
 	data
 }
