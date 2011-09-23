@@ -1,66 +1,39 @@
-net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, normalize=F, multitest=1)
+net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
-	# options
-	#   query.net: input file name of query network
-	#   target.net: input file name of target network
-	#   node.sim: input file name of node similarity
-	#   query.type: the type of query network, 0 - chain, 1 - tree, 2 - loopy
-	#   delta: the parameters \Delta_d, \Delta_c, \Delta_e, \Delta_s
-	#   isnormalize: whether carry out the normalized operation to the node feature values or not? default not
-	#   multitest: the result files' number; only using in many experiments
+# options
+#   query.net: input file name of query network
+#   target.net: input file name of target network
+#   node.sim: input file name of node similarity
+#   query.type: the type of query network, 0 - chain, 1 - tree, 2 - general
+#   delta: the parameters \Delta_d, \Delta_c, \Delta_e, \Delta_s
+#   output: the output filename
 
-	# read the input files
+# read the input files
+
 	data <- read.data(query.net, target.net, node.sim)
 
-	# data:
-	#   query$node: the node names of query network
-	#   query$matrix: the adjacency matrix of query network
-	#   target$node: the node names of target network
-	#   target$matrix: the adjacency matrix of target network
-	#   node.sim: the node similarity matrix
+# data:
+#   query$node: the node names of query network
+#   query$matrix: the adjacency matrix of query network
+#   target$node: the node names of target network
+#   target$matrix: the adjacency matrix of target network
+#   node.sim: the node similarity matrix
 
-	# normalize the node similarity matrix
-	if (normalize || max(data$node.sim) <= 0)
-	{
-		a <- min(data$node.sim)
-		b <- max(data$node.sim)
-		data$node.sim <- (data$node.sim - a) / (b - a)
-	}
+	data$delta <- list(d=delta.d, c=delta.c, e=delta.e, s=delta.s)
 
-	# compute the shortest distance matrix for the target network
-	sel.node <- colSums(data$node.sim > delta.d) > 0
-	dist <- .Call("NQ_ShortestDistances", data$target$matrix, sel.node)[sel.node, sel.node]
+# compute the shortest distance matrix for the target network
+# and simplify the target network
 
-	# simplify the target network
-	data$target$size <- sum(sel.node)
-	if (data$target$size <= 0)
-	{
-		stop("The simplified target network is empty, you should give a smaller cut values!")
-	}
-	data$target$node <- data$target$node[sel.node]
-	data$target$matrix <- data$target$matrix[sel.node, sel.node]
-	data$node.sim <- data$node.sim[, sel.node]
-	data$node.sim[data$node.sim <= delta.d] <- 0
-	dist[dist == -1] <- Inf
-	dist[cbind(1:data$target$size, 1:data$target$size)] <- 1
-	data$target$dist <- dist
+	data$labels <- simplify.net(data)
 
-	emp <- GEM(delta.d, data$node.sim);
+# build and solve CRF model
 
-	# compute the transition probability
-	D_X = data$query$matrix;
-	s<-D_X-t(D_X);
-	s1<-sum(s[s>0]);
-	s2<-sum(s[s<0]);
-	if(s1==0 & s2==0){F1<-tranf1(data$target$dist,emp,D_X,delta.s,delta.e,delta.c);}
-	else{F1<-tranf2(data$target$dist,emp,D_X,delta.s,delta.e,delta.c);}
+	data$model <- build.model(data)
+	data$result <- solve.crf(data, query.type)
 
-	D_X<-D_X+t(D_X);
-	D_X[D_X>1]<-1;
+# write result to output file
 
-	Y<-dyf(data$query$node,emp,F1$F1,data$target$node,data$target$dist,D_X,query.type);
-
-	resultxt(data$query$node,Y,D_X,data$target$node,data$target$dist,multitest)
+	write.result(data, output)
 }
 
 read.net <- function(net)
@@ -96,4 +69,118 @@ read.data <- function(query.net, target.net, node.sim)
 	target <- read.net(target.net)
 	similarity <- read.node.sim(query, target, node.sim)
 	list(query=query, target=target, node.sim=similarity)
+}
+
+simplify.net <- function(data)
+{
+	delta.d <- data$delta$d
+	select <- colSums(data$node.sim > delta.d) > 0
+	net.size <- sum(select)
+	if (net.size <= 0)
+	{
+		stop("The simplified target network is empty, you should give a smaller cut values!")
+	}
+	net.node <- data$target$node[select]
+	net.matrix <- data$target$matrix[select, select]
+	node.sim <- data$node.sim[, select]
+	node.sim[node.sim <= delta.d] <- 0
+	net.dist <- .Call("NQ_ShortestDistances", data$target$matrix, select)[select, select]
+	net.dist[net.dist == -1] <- Inf
+	net.dist[cbind(1:net.size, 1:net.size)] <- 1
+	list(size=net.size, node=net.node, matrix=net.matrix, dist=net.dist, node.sim=node.sim)
+}
+
+build.model <- function(data)
+{
+	S <- cbind(data$labels$node.sim, data$delta$d)
+	node.pot <- S
+	
+	query.size <- data$query$size
+	query.net = data$query$matrix
+	query.net[query.net != 0] <- 1
+	label.size <- data$labels$size
+	label.gap <- label.size + 1
+	label.weight <- 1 / data$labels$dist ^ data$delta$s
+
+	W <- matrix(nrow=label.gap, ncol=label.gap)
+	W[1:label.size, 1:label.size] <- label.weight
+	W[label.gap,] <- data$delta$e
+	W[,label.gap] <- data$delta$e
+	W[label.gap, label.gap] <- data$delta$c
+
+	crf.net <- query.net + t(query.net)
+	crf.net[crf.net != 0] <- 1
+	edge.size <- sum(crf.net[upper.tri(crf.net)])
+	edge.pot <- array(0, dim=c(label.gap, label.gap, edge.size))
+
+	k <- 1
+	for (i in 1:(query.size-1))
+	{
+		for (j in (i+1):query.size)
+		{
+			if (crf.net[i,j])
+			{
+				S1 <- matrix(S[i,], label.gap, label.gap)
+				S2 <- matrix(S[j,], label.gap, label.gap, byrow=T)
+				edge.pot[,,k] <- (S1 + S2) * pmax(W * query.net[i,j], t(W) * query.net[j,i]) / 2
+				k <- k + 1
+			}
+	       }
+	}
+	crf <- make.crf(crf.net, label.gap)
+	crf$node.pot <- node.pot
+	crf$edge.pot <- edge.pot
+	crf
+}
+
+solve.crf <- function(data, query.type)
+{
+	if (query.type == 0)
+	{
+		result <- decode.chain(data$model)
+	}
+	if (query.type == 1)
+	{
+		result <- decode.tree(data$model)
+	}
+	if (query.type == 2)
+	{
+		result <- decode.lbp(data$model)
+	}
+	result
+}
+
+write.result <- function(data, filename="result.txt")
+{
+	query.name <- data$query$node
+	target.name <- c(data$labels$node, "gap")
+	label.size <- data$labels$size
+	label.dist <- data$labels$dist
+
+	con <- file(as.character(filename), "w")
+	writeLines("node match:", con, sep="\n")
+	for (i in 1:data$query$size)
+	{
+		writeLines(paste(query.name[i], "  ", target.name[data$result[i]]), con, sep="\n");
+	}
+	writeLines("", con, sep="\n")
+
+	writeLines("edge match:", con, sep="\n")
+	for (i in 1:data$model$n.edges)
+	{
+		x1 <- data$model$edges[i,1]
+		x2 <- data$model$edges[i,2]
+		y1 <- data$result[x1]
+		y2 <- data$result[x2]
+		if (y1 > label.size || y2 > label.size)
+		{
+			writeLines(paste(query.name[x1], "--", query.name[x2], "\t", target.name[y1], "--", target.name[y2], "\tgap"), con, sep="\n")
+		}
+		else
+		{
+			writeLines(paste(query.name[x1], "--", query.name[x2], "\t", target.name[y1], "--", target.name[y2], "\t", label.dist[y1, y2]), con, sep="\n")
+		}
+	}
+
+	close(con)
 }
