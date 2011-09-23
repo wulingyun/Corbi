@@ -38,15 +38,13 @@ net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-
 
 read.net <- function(net)
 {
-	n.col <- max(sapply(strsplit(as.matrix(read.table(net, as.is=T, sep="\n")), " ", fixed=T), length))
-	net.text <- as.matrix(read.table(net, fill=T, as.is=T, col.names=1:n.col))
+	net.text <- as.matrix(read.table(net, fill=T, as.is=T, col.names=1:max(count.fields(net))))
 	net.node <- unique(as.vector(net.text))
 	net.node <- net.node[net.node != ""]
 	net.size <- length(net.node)
 	net.edge <- cbind(net.text[,1], as.vector(net.text[,-1]))
 	net.edge <- net.edge[net.edge[,2] != "", ]
-	net.matrix <- matrix(0, net.size, net.size)
-	rownames(net.matrix) <- colnames(net.matrix) <- net.node
+	net.matrix <- matrix(0, net.size, net.size, dimnames=list(net.node, net.node))
 	net.matrix[net.edge] <- 1
 	list(size=net.size, node=net.node, matrix=net.matrix)
 }
@@ -56,9 +54,7 @@ read.node.sim <- function(query, target, node.sim)
 	sim.text <- read.table(node.sim, as.is=T)
 	sim.text <- sim.text[sim.text[,1] %in% query$node, ]
 	sim.text <- sim.text[sim.text[,2] %in% target$node, ]
-	sim.matrix <- matrix(0, nrow=query$size, ncol=target$size)
-	rownames(sim.matrix) <- query$node
-	colnames(sim.matrix) <- target$node
+	sim.matrix <- matrix(0, query$size, target$size, dimnames=list(query$node, target$node))
 	sim.matrix[as.matrix(sim.text[,1:2])] <- sim.text[,3]
 	sim.matrix
 }
