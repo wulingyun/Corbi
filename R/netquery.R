@@ -9,17 +9,17 @@ net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-
 #   output: the output filename
 
 # read the input files
-#   query$node: the node names of query network
-#   query$matrix: the adjacency matrix of query network
 #   target$node: the node names of target network
 #   target$matrix: the adjacency matrix of target network
 #   target$sim: the node similarity matrix
+#   query$node: the node names of query network
+#   query$matrix: the adjacency matrix of query network
 
-	query <- read.net(query.net)
+	delta <- list(d=delta.d, c=delta.c, e=delta.e, s=delta.s)
 	target <- read.net(target.net)
 	target$sim <- read.sim(node.sim)
 
-	delta <- list(d=delta.d, c=delta.c, e=delta.e, s=delta.s)
+	query <- read.net(query.net)
 
 # compute the shortest distance matrix for the target network
 # and simplify the target network
@@ -33,7 +33,24 @@ net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-
 
 # write result to output file
 
-	write.result(query, label, model, result, output)
+	write.result(query, label, model, result, paste(query.net, output, sep="_"))
+}
+
+net.query.batch <- function(query.nets, target.net, node.sim, query.type=2, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+{
+	delta <- list(d=delta.d, c=delta.c, e=delta.e, s=delta.s)
+	target <- read.net(target.net)
+	target$sim <- read.sim(node.sim)
+	target$dist <- .Call("NQ_ShortestDistances", target$matrix, rep(T, target$size))
+
+	for (query.net in query.nets)
+	{
+		query <- read.net(query.net)
+		label <- simplify.target(query, target, delta)
+		model <- build.model(query, label, delta)
+		result <- solve.crf(model, query.type)
+		write.result(query, label, model, result, paste(query.net, output, sep="_"))
+	}
 }
 
 read.net <- function(net)
@@ -77,7 +94,14 @@ simplify.target <- function(query, target, delta)
 	net.matrix <- target$matrix[select, select]
 	net.sim <- net.sim[, select]
 	net.sim[net.sim <= delta$d] <- 0
-	net.dist <- .Call("NQ_ShortestDistances", target$matrix, select)[select, select]
+	if (is.null(target$dist))
+	{
+		net.dist <- .Call("NQ_ShortestDistances", target$matrix, select)[select, select]
+	}
+	else
+	{
+		net.dist <- target$dist[select, select]
+	}
 	net.dist[net.dist == -1] <- Inf
 	net.dist[cbind(1:net.size, 1:net.size)] <- 1
 	list(size=net.size, node=net.node, matrix=net.matrix, sim=net.sim, dist=net.dist)
