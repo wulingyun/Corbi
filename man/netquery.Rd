@@ -1,5 +1,6 @@
 \name{net.query}
 \alias{net.query}
+\alias{net.query.batch}
 
 \title{Network querying method based on conditional random fields}
 
@@ -11,10 +12,15 @@ based on the conditional random fields (CRF) model.}
 net.query(query.net, target.net, node.sim, query.type=2,
 	delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1,
 	output="result.txt")
+net.query.batch(query.nets, target.net, node.sim, query.type=2,
+	delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1,
+	output="result.txt")
 }
 
 \arguments{
 \item{query.net}{The input file name of the query network.}
+
+\item{query.nets}{The vector of input file names of the query networks.}
 
 \item{target.net}{The input file name of the target network.}
 
@@ -30,13 +36,15 @@ net.query(query.net, target.net, node.sim, query.type=2,
 
 \item{delta.s}{The parameter delta.s is a parameter for insertions.}
 
-\item{output}{The output file name.}
+\item{output}{The suffix of output file name.}
 }
 
 \details{
 This is an approach for network querying problem based on conditional random field (CRF)
 model which can handle both undirected and directed networks, acyclic and cyclic networks,
 and any number of insertions/deletions.
+
+When querying several networks in the same target network, net.query.batch will save much time.
 
 \itemize{
 \item query.net: The query network file is written as follows:\cr
@@ -78,7 +86,12 @@ Bioinformatics, 2011, doi:10.1093/bioinformatics/BTR524.}
 
 \examples{
 library(Corbi)
+
 ## An example: "quenet.txt", "tarnet.txt", "queblast.txt" are 
 ## three input files in the working directory
-net.query("quenet.txt", "tarnet.txt", "queblast.txt", query.type=1) 
+net.query("quenet.txt", "tarnet.txt", "queblast.txt", query.type=1)
+
+## Batch example
+net.query.batch(c("quenet.txt", "quenet2.txt", "quenet3.txt"),
+	"tarnet.txt", "queblast.txt", query.type=1)
 }
