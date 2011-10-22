@@ -9,10 +9,10 @@ Find the best matching subnetworks from a large target network for small query n
 based on the conditional random fields (CRF) model.}
 
 \usage{
-net.query(query.net, target.net, node.sim, query.type=2,
+net.query(query.net, target.net, node.sim, query.type=1,
 	delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1,
 	output="result.txt")
-net.query.batch(query.nets, target.net, node.sim, query.type=2,
+net.query.batch(query.nets, target.net, node.sim, query.type=1,
 	delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1,
 	output="result.txt")
 }
@@ -26,7 +26,7 @@ net.query.batch(query.nets, target.net, node.sim, query.type=2,
 
 \item{node.sim}{The input file name of the node similarity scores between the query network and the target network.}
 
-\item{query.type}{The querying network type: 0 - chain, 1 - tree, 2 - general.}
+\item{query.type}{The querying network type: 1 - general, 2 - chain, 3 - tree.}
 
 \item{delta.d}{The parameter delta.d is a parameter for deletions.}
 
@@ -44,7 +44,7 @@ This is an approach for network querying problem based on conditional random fie
 model which can handle both undirected and directed networks, acyclic and cyclic networks,
 and any number of insertions/deletions.
 
-When querying several networks in the same target network, net.query.batch will save much time.
+When querying several networks in the same target network, \code{\link{net.query.batch}} will save much time.
 
 \itemize{
 \item query.net: The query network file is written as follows:\cr
@@ -64,9 +64,9 @@ v1 V2 s2 \cr
 v1 is the node from the query network, V1 is the node from the target network,
 s1 is the similarity score between the node v1 and V1, and so on.
 
-\item query.type: If the query is a chain, we set query.type = 0. If the query is a tree,
-we set query.type = 1. If the query is a general graph with loops, we set query.type = 2.
-The default value is 2.
+\item query.type: If the query is a general graph with loops, we set query.type = 1.
+If the query is a chain, we set query.type = 2. If the query is a tree,
+we set query.type = 3. The default value is 1.
 
 \item delta.d:  The smaller delta.d is, the heavier penalty for deletions. 
 
@@ -89,9 +89,9 @@ library(Corbi)
 
 ## An example: "quenet.txt", "tarnet.txt", "queblast.txt" are 
 ## three input files in the working directory
-net.query("quenet.txt", "tarnet.txt", "queblast.txt", query.type=1)
+net.query("quenet.txt", "tarnet.txt", "queblast.txt", query.type=3)
 
 ## Batch example
 net.query.batch(c("quenet.txt", "quenet2.txt", "quenet3.txt"),
-	"tarnet.txt", "queblast.txt", query.type=1)
+	"tarnet.txt", "queblast.txt", query.type=3)
 }
