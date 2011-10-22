@@ -1,10 +1,10 @@
-net.query <- function(query.net, target.net, node.sim, query.type=2, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+net.query <- function(query.net, target.net, node.sim, query.type=1, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 # options
 #   query.net: input file name of query network
 #   target.net: input file name of target network
 #   node.sim: input file name of node similarity
-#   query.type: the type of query network, 0 - chain, 1 - tree, 2 - general
+#   query.type: the type of query network, 1 - general, 2 - chain, 3 - tree
 #   delta: the parameters \Delta_d, \Delta_c, \Delta_e, \Delta_s
 #   output: the output filename
 
@@ -151,19 +151,9 @@ build.model <- function(query, label, delta)
 
 solve.crf <- function(model, query.type)
 {
-	if (query.type == 0)
-	{
-		result <- decode.chain(model)
-	}
-	if (query.type == 1)
-	{
-		result <- decode.tree(model)
-	}
-	if (query.type == 2)
-	{
-		result <- decode.lbp(model)
-	}
-	result
+	decode <- list(decode.lbp, decode.chain, decode.tree)
+	if (!is.numeric(query.type) || query.type > 3 || query.type < 1) query.type = 1
+	decode[[query.type]](model)
 }
 
 write.result <- function(query, label, model, result, filename="result.txt")
