@@ -15,7 +15,8 @@ net.query <- function(query.net, target.net, node.sim, query.type=1, delta.d=1e-
 #   query$node: the node names of query network
 #   query$matrix: the adjacency matrix of query network
 
-	delta <- list(d=delta.d, c=delta.c, e=delta.e, s=delta.s)
+	query.type <- as.numeric(query.type)
+	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
 	target <- read.net(target.net)
 	target$sim <- read.sim(node.sim)
 
@@ -38,7 +39,8 @@ net.query <- function(query.net, target.net, node.sim, query.type=1, delta.d=1e-
 
 net.query.batch <- function(query.nets, target.net, node.sim, query.type=2, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
-	delta <- list(d=delta.d, c=delta.c, e=delta.e, s=delta.s)
+	query.type <- as.numeric(query.type)
+	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
 	target <- read.net(target.net)
 	target$sim <- read.sim(node.sim)
 	target$dist <- .Call("NQ_ShortestDistances", target$matrix, rep(T, target$size))
