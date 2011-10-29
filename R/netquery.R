@@ -111,7 +111,7 @@ simplify.target <- function(query, target, delta)
 
 build.model <- function(query, label, delta)
 {
-	node.pot <- S <- cbind(label$sim, delta$d)
+	S <- cbind(label$sim, delta$d)
 	
 	query.size <- query$size
 	query.net <- query$matrix
@@ -128,8 +128,9 @@ build.model <- function(query, label, delta)
 
 	crf.net <- query.net + t(query.net)
 	crf.net[crf.net != 0] <- 1
-	edge.size <- sum(crf.net[upper.tri(crf.net)])
-	edge.pot <- array(0, dim=c(label.gap, label.gap, edge.size))
+	crf <- make.crf(crf.net, label.gap)
+
+	crf$node.pot <- S
 
 	k <- 1
 	for (i in 1:(query.size-1))
@@ -140,14 +141,11 @@ build.model <- function(query, label, delta)
 			{
 				S1 <- matrix(S[i,], label.gap, label.gap)
 				S2 <- matrix(S[j,], label.gap, label.gap, byrow=T)
-				edge.pot[,,k] <- (S1 + S2) * pmax(W * query.net[i,j], t(W) * query.net[j,i]) / 2
+				crf$edge.pot[[k]] <- (S1 + S2) * pmax(W * query.net[i,j], t(W) * query.net[j,i]) / 2
 				k <- k + 1
 			}
 	       }
 	}
-	crf <- make.crf(crf.net, label.gap)
-	crf$node.pot <- node.pot
-	crf$edge.pot <- edge.pot
 	crf
 }
 
