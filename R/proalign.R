@@ -46,8 +46,8 @@ pro.align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length
 
 	for (e in 1:crf$n.edges)
 	{
-		crf$edge.pot[,,e] <- ep
-		crf$edge.pot[1:n.d2, 1:n.d2, e] <- scores$edge.score[,, crf$edges[e,1]]
+		crf$edge.pot[[e]] <- ep
+		crf$edge.pot[[e]][1:n.d2, 1:n.d2] <- scores$edge.score[,, crf$edges[e,1]]
 	}
 
 	label <- decode.chain(crf)
