@@ -111,16 +111,17 @@ simplify.target <- function(query, target, delta)
 
 build.model <- function(query, label, delta)
 {
-	S <- cbind(label$sim, delta$d)
-	
 	query.size <- query$size
 	query.net <- query$matrix
 	query.net[query.net != 0] <- 1
 	label.size <- label$size
 	label.gap <- label.size + 1
+	n.labels <- label.gap
 	label.weight <- 1 / label$dist ^ delta$s
 
-	W <- matrix(nrow=label.gap, ncol=label.gap)
+	S <- cbind(label$sim, delta$d)
+
+	W <- matrix(nrow=n.labels, ncol=n.labels)
 	W[1:label.size, 1:label.size] <- label.weight
 	W[label.gap,] <- delta$e
 	W[,label.gap] <- delta$e
@@ -128,23 +129,26 @@ build.model <- function(query, label, delta)
 
 	crf.net <- query.net + t(query.net)
 	crf.net[crf.net != 0] <- 1
-	crf <- make.crf(crf.net, label.gap)
+	crf <- make.crf(crf.net, rowSums(S > 0))
 
-	crf$node.pot <- S
-
-	k <- 1
-	for (i in 1:(query.size-1))
+	crf$state.map <- matrix(label.gap, nrow=crf$n.nodes, ncol=crf$max.state)
+	for (i in 1:crf$n.nodes)
 	{
-		for (j in (i+1):query.size)
-		{
-			if (crf.net[i,j])
-			{
-				S1 <- matrix(S[i,], label.gap, label.gap)
-				S2 <- matrix(S[j,], label.gap, label.gap, byrow=T)
-				crf$edge.pot[[k]] <- (S1 + S2) * pmax(W * query.net[i,j], t(W) * query.net[j,i]) / 2
-				k <- k + 1
-			}
-	       }
+		crf$state.map[i, 1:crf$n.states[i]] <- which(S[i,] > 0)
+		crf$node.pot[i,] <- S[i, crf$state.map[i,]]
+	}
+
+	for (e in 1:crf$n.edges)
+	{
+		n1 <- crf$edges[e, 1]
+		n2 <- crf$edges[e, 2]
+		m1 <- 1:crf$n.states[n1]
+		m2 <- 1:crf$n.states[n2]
+		S1 <- matrix(crf$node.pot[n1, m1], crf$n.states[n1], crf$n.states[n2])
+		S2 <- matrix(crf$node.pot[n2, m2], crf$n.states[n1], crf$n.states[n2], byrow=T)
+		W1 <- W[crf$state.map[n1, m1], crf$state.map[n2, m2]]
+		W2 <- W[crf$state.map[n2, m2], crf$state.map[n1, m1]]
+		crf$edge.pot[[e]] <- (S1 + S2) * pmax(W1 * query.net[n1, n2], t(W2) * query.net[n2, n1]) / 2
 	}
 	crf
 }
@@ -153,7 +157,8 @@ solve.crf <- function(model, query.type)
 {
 	decode.method <- list(decode.lbp, decode.chain, decode.tree)
 	if (!is.numeric(query.type) || query.type > 3 || query.type < 1) query.type = 1
-	decode.method[[query.type]](model)
+	result <- decode.method[[query.type]](model)
+	result <- model$state.map[cbind(1:model$n.nodes, result)]
 }
 
 write.result <- function(query, label, model, result, filename="result.txt")
