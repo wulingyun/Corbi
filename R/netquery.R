@@ -37,7 +37,7 @@ net.query <- function(query.net, target.net, node.sim, query.type=1, delta.d=1e-
 	write.result(query, label, model, result, paste(query.net, output, sep="_"))
 }
 
-net.query.batch <- function(query.nets, target.net, node.sim, query.type=2, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+net.query.batch <- function(query.nets, target.net, node.sim, query.type=1, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 	query.type <- as.numeric(query.type)
 	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
