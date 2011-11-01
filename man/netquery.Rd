@@ -85,13 +85,14 @@ Bioinformatics, 2011, doi:10.1093/bioinformatics/BTR524.}
 
 
 \examples{
+\dontrun{
 library(Corbi)
 
-## An example: "quenet.txt", "tarnet.txt", "queblast.txt" are 
+## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are 
 ## three input files in the working directory
-net.query("quenet.txt", "tarnet.txt", "queblast.txt", query.type=3)
+net.query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
 
 ## Batch example
-net.query.batch(c("quenet.txt", "quenet2.txt", "quenet3.txt"),
-	"tarnet.txt", "queblast.txt", query.type=3)
-}
+net.query.batch(c("querynet.txt", "querynet2.txt"),
+	"targetnet.txt", "nodesim.txt", query.type=3)
+}}
