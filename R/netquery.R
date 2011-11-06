@@ -71,12 +71,12 @@ read.net <- function(net)
 read.sim <- function(sim)
 {
 	sim.text <- read.table(sim, as.is=T)
-	sim.node1 <- unique(as.vector(sim.text[,1]))
-	sim.node2 <- unique(as.vector(sim.text[,2]))
+	sim.node1 <- unique(as.character(sim.text[,1]))
+	sim.node2 <- unique(as.character(sim.text[,2]))
 	sim.size1 <- length(sim.node1)
 	sim.size2 <- length(sim.node2)
 	sim.matrix <- matrix(0, sim.size1, sim.size2, dimnames=list(sim.node1, sim.node2))
-	sim.matrix[as.matrix(sim.text[,1:2])] <- sim.text[,3]
+	sim.matrix[cbind(as.character(sim.text[,1]),as.character(sim.text[,2]))] <- sim.text[,3]
 	sim.matrix
 }
 
