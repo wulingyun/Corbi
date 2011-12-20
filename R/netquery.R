@@ -1,10 +1,10 @@
-net.query <- function(query.net, target.net, node.sim, query.type=1, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+net.query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 # options
 #   query.net: input file name of query network
 #   target.net: input file name of target network
 #   node.sim: input file name of node similarity
-#   query.type: the type of query network, 1 - general, 2 - chain, 3 - tree
+#   query.type: the type of query network, 1 - general, 2 - chain, 3 - tree, 4 - heuristic
 #   delta: the parameters \Delta_d, \Delta_c, \Delta_e, \Delta_s
 #   output: the output filename
 
@@ -37,7 +37,7 @@ net.query <- function(query.net, target.net, node.sim, query.type=1, delta.d=1e-
 	write.result(query, label, model, result, paste(query.net, output, sep="_"))
 }
 
-net.query.batch <- function(query.nets, target.net, node.sim, query.type=1, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+net.query.batch <- function(query.nets, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 	query.type <- as.numeric(query.type)
 	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
@@ -153,10 +153,20 @@ build.model <- function(query, label, delta)
 	crf
 }
 
+decode.heuristic <- function(crf)
+{
+	result <- try(decode.junction(crf), T)
+	if (class(result) == "try-error")
+	{
+		result <- decode.lbp(crf)
+	}
+	result
+}
+
 solve.crf <- function(model, query.type)
 {
-	decode.method <- list(decode.lbp, decode.chain, decode.tree)
-	if (!is.numeric(query.type) || query.type > 3 || query.type < 1) query.type = 1
+	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode.heuristic)
+	if (!is.numeric(query.type) || query.type > 4 || query.type < 1) query.type = 4
 	result <- decode.method[[query.type]](model)
 	result <- model$state.map[cbind(1:model$n.nodes, result)]
 }
