@@ -9,10 +9,10 @@ Find the best matching subnetworks from a large target network for small query n
 based on the conditional random fields (CRF) model.}
 
 \usage{
-net.query(query.net, target.net, node.sim, query.type=1,
+net.query(query.net, target.net, node.sim, query.type=4,
 	delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1,
 	output="result.txt")
-net.query.batch(query.nets, target.net, node.sim, query.type=1,
+net.query.batch(query.nets, target.net, node.sim, query.type=4,
 	delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1,
 	output="result.txt")
 }
@@ -26,7 +26,7 @@ net.query.batch(query.nets, target.net, node.sim, query.type=1,
 
 \item{node.sim}{The input file name of the node similarity scores between the query network and the target network.}
 
-\item{query.type}{The querying network type: 1 - general, 2 - chain, 3 - tree.}
+\item{query.type}{The querying network type: 1 - general, 2 - chain, 3 - tree, 4 - heuristic.}
 
 \item{delta.d}{The parameter delta.d is a parameter for deletions.}
 
@@ -64,9 +64,13 @@ v1 V2 s2 \cr
 v1 is the node from the query network, V1 is the node from the target network,
 s1 is the similarity score between the node v1 and V1, and so on.
 
-\item query.type: If the query is a general graph with loops, we set query.type = 1.
-If the query is a chain, we set query.type = 2. If the query is a tree,
-we set query.type = 3. The default value is 1.
+\item query.type: If query.type = 1, the loopy belief propagation (LBP) algorithm will
+be applied, which is an approximate algorithm for a general graph with loops.
+If the query is a chain or tree, there are exact algorithms. Set query.type = 2 when
+the query is a chain, and query.type = 3 when the query is a tree.
+The heuristic algorithm will be used when query.type = 4, which will try the exact
+algorithm (junction tree algorithm) first and resort to LBP algorithm when the exact
+algorithm failed. The default value is 4.
 
 \item delta.d:  The smaller delta.d is, the heavier penalty for deletions. 
 
