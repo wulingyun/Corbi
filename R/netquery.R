@@ -57,7 +57,7 @@ net.query.batch <- function(query.nets, target.net, node.sim, query.type=4, delt
 
 read.net <- function(file)
 {
-	net.text <- as.matrix(read.table(file, fill=T, as.is=T, col.names=1:max(count.fields(net))))
+	net.text <- as.matrix(read.table(file, fill=T, as.is=T, col.names=1:max(count.fields(file))))
 	net.node <- unique(as.character(net.text))
 	net.node <- net.node[net.node != ""]
 	net.size <- length(net.node)
