@@ -4,7 +4,7 @@ net.query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 #   query.net: input file name of query network
 #   target.net: input file name of target network
 #   node.sim: input file name of node similarity
-#   query.type: the type of query network, 1 - general, 2 - chain, 3 - tree, 4 - heuristic
+#   query.type: the type of query network, 1 - general, 2 - chain, 3 - tree, 4 - heuristic, 5 - ilp
 #   delta: the parameters \Delta_d, \Delta_c, \Delta_e, \Delta_s
 #   output: the output filename
 
@@ -55,9 +55,9 @@ net.query.batch <- function(query.nets, target.net, node.sim, query.type=4, delt
 	}
 }
 
-read.net <- function(net)
+read.net <- function(file)
 {
-	net.text <- as.matrix(read.table(net, fill=T, as.is=T, col.names=1:max(count.fields(net))))
+	net.text <- as.matrix(read.table(file, fill=T, as.is=T, col.names=1:max(count.fields(net))))
 	net.node <- unique(as.character(net.text))
 	net.node <- net.node[net.node != ""]
 	net.size <- length(net.node)
@@ -68,9 +68,16 @@ read.net <- function(net)
 	list(size=net.size, node=net.node, matrix=net.matrix)
 }
 
-read.sim <- function(sim)
+write.net <- function(net, file)
 {
-	sim.text <- read.table(sim, as.is=T)
+	net.edge <- which(net$matrix == 1, arr.ind=1)
+	net.edge <- matrix(net$node[net.edge], ncol=2)
+	write.table(net.edge, file, quote=F, row.names=F, col.names=F)
+}
+
+read.sim <- function(file)
+{
+	sim.text <- read.table(file, as.is=T)
 	sim.node1 <- unique(as.character(sim.text[,1]))
 	sim.node2 <- unique(as.character(sim.text[,2]))
 	sim.size1 <- length(sim.node1)
@@ -165,8 +172,8 @@ decode.heuristic <- function(crf)
 
 solve.crf <- function(model, query.type)
 {
-	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode.heuristic)
-	if (!is.numeric(query.type) || query.type > 4 || query.type < 1) query.type = 4
+	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode.heuristic, decode.ilp)
+	if (!is.numeric(query.type) || query.type > length(decode.method) || query.type < 1) query.type = 4
 	result <- decode.method[[query.type]](model)
 	result <- model$state.map[cbind(1:model$n.nodes, result)]
 }
