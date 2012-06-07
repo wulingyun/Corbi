@@ -111,7 +111,7 @@ simplify.target <- function(query, target, delta)
 	{
 		net.dist <- target$dist[select, select]
 	}
-	net.dist[net.dist == -1] <- Inf
+	net.dist[net.dist == -1] <- 10000
 	net.dist[cbind(1:net.size, 1:net.size)] <- 1
 	list(size=net.size, node=net.node, matrix=net.matrix, sim=net.sim, dist=net.dist)
 }

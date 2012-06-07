@@ -1,0 +1,202 @@
+net.align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+{
+# options
+#   query.net: input file name of query network
+#   target.net: input file name of target network
+#   node.sim: input file name of node similarity
+#   query.type: the type of query network, 1 - general, 2 - chain, 3 - tree, 4 - heuristic
+#   delta: the parameters \Delta_d, \Delta_c, \Delta_e, \Delta_s
+#   output: the output filename
+
+# read the input files
+#   target$node: the node names of target network
+#   target$matrix: the adjacency matrix of target network
+#   target$sim: the node similarity matrix
+#   query$node: the node names of query network
+#   query$matrix: the adjacency matrix of query network
+
+	query.type <- as.numeric(query.type)
+	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
+	target <- read.net(target.net)
+	target$sim <- read.sim(node.sim)
+	target0 <- target
+ 
+	query <- read.net(query.net)
+
+	# iter times
+	k=0;
+
+	while (TRUE){
+
+	## query --> target
+
+		# compute the shortest distance matrix for the target network
+		# and simplify the target network
+		# build and solve CRF model
+
+		label <- simplify.target(query, target, delta)
+		model <- build.model(query, label, delta)
+		result <- solve.crf(model, query.type)
+	
+		# change the target subnet as query network 
+
+		modelchange <- target.part(label,result,target,query)
+		targetpart <- modelchange$target
+		query$sim <- modelchange$sim
+		 
+
+	## target part --> query
+
+		label1 <- simplify.target( targetpart, query, delta)
+		model1 <- build.model(targetpart, label1, delta)
+		result1 <- solve.crf(model1, query.type)
+
+		# update the common match pairs
+		hitcom <- match.com(label,result,label1,result1)
+		
+
+	## given the stop rule
+
+		if(k==0){ 
+			hitcom0 <- hitcom 
+		}else{
+			if(all(dim(hitcom0)==dim(hitcom))){
+				if(all(hitcom0==hitcom)){
+					break;
+				}else{
+					hitcom0 <- hitcom
+				}
+			}else{
+				hitcom0 <- hitcom 
+			}
+		}
+
+	## update
+		# the node similarity matrix
+		newtarget <- update.sim(hitcom,target,query)
+		target$sim <- newtarget$sim
+
+		k=k+1;
+
+	}
+	
+	# write unique corresponding list
+	write.result1(query, target0, label, model, result, paste(query.net, output, sep="_"))  
+
+}
+
+target.part <- function(label,result,target0,query){
+
+	sub <- result<=label$size
+	node <- label$node[unique(result[sub])]
+	sim <- t(label$sim[,node])
+	# dimnames(sim) <- list(node,rownames(label$sim))
+
+	target <- target0
+	target$size <- length(node)
+	target$node <- node
+
+	# strategy 1, use the target sub network
+	target$matrix <- target0$matrix[node,node]
+
+	list(target=target,sim=sim)
+}
+
+match.com <- function(label,result,label1,result1){
+
+	
+	nodetarget <- label$node[result[result<=label$size]]
+	nodequery <- rownames(label$sim)[result<=label$size]
+	label1.name <- c(label1$node,"gap")
+	N <- length(nodequery)
+	sub <- matrix(FALSE,N,1)
+	for (i in 1:N){
+		if(nodequery[i]==label1.name[result1[nodetarget[i]==rownames(label1$sim)]]){
+			sub[i] <- TRUE
+		}	
+	}
+
+	hitcom <- cbind(nodequery[sub],nodetarget[sub])
+	hitcom
+}
+
+update.sim <- function (hitcom,target,query){
+
+	# update sim
+	sim <- target$sim
+	sim[hitcom[,1],] <- 0
+	sim[,hitcom[,2]] <- 0
+ 	sim[hitcom] <-1 
+
+	list(sim=sim)
+
+}
+
+uni <- function(pairs){
+
+	# first, remove the gap
+	pairs <- pairs[pairs[,2]!="gap",]
+	# the duplicated elements sub
+	subdup <- duplicated(pairs[,2])
+	# the duplicated elements
+	dup <- unique(pairs[subdup,2])
+	# the unique matching sub
+	subdup <- (1 - as.character(pairs[,2]) %in% dup)>0
+	# the unique mathcing pairs
+	unipair <- pairs[subdup,]
+
+	unipair
+}
+
+write.result1 <- function(query, target, label, model, result, filename="result.txt")
+{
+	query.name <- query$node
+	label.name <- c(label$node, "gap")
+
+	#
+	select <- matrix(TRUE,target$size,1)
+	net.dist <- matrix(,target$size,target$size,dimnames=dimnames(target$matrix))
+	net.dist[select,select] <- .Call("NQ_ShortestDistances", target$matrix, select)
+	net.dist[net.dist == -1] <- Inf
+	net.dist[cbind(1:target$size, 1:target$size)] <- 1
+
+	label.dist <- matrix("gap", nrow=label$size+1, ncol=label$size+1)
+	label.dist[1:label$size, 1:label$size] <- net.dist[label$node,label$node]
+
+
+	con <- file(as.character(filename), "w")
+	writeLines("node match:", con, sep="\n")
+	for (i in 1:query$size)
+	{
+		writeLines(paste(query.name[i], "\t", label.name[result[i]]), con, sep="\n");
+	}
+	writeLines("", con, sep="\n")
+
+	direction <- c("--->", "<---", "----")
+	writeLines("edge match:", con, sep="\n")
+	for (i in 1:model$n.edges)
+	{
+		x1 <- model$edges[i,1]
+		x2 <- model$edges[i,2]
+		y1 <- result[x1]
+		y2 <- result[x2]
+		distance <- c(label.dist[y1,y2], label.dist[y2,y1], min(label.dist[y1,y2], label.dist[y2,y1]))
+		d <- (query$matrix[x1,x2] > 0) + 2 * (query$matrix[x2,x1] > 0)
+		writeLines(paste(query.name[x1], direction[d], query.name[x2], "\t", label.name[y1], direction[d], label.name[y2], "\t", distance[d]), con, sep="\n")
+	}
+	close(con)
+
+	#==============================================================
+	# write unique corresponding list
+	# query --> target; target --> query
+	
+	pairs1 <- cbind(query.name,label.name[result])
+	x1table <- uni(pairs1)
+	x1 <- c("query-->target",dim(x1table)[1])
+	ftable <- rbind(x1,x1table)
+	write.table(ftable,paste("list",filename),row.names=FALSE,col.names=FALSE,quote=FALSE)
+}
+
+
+
+
