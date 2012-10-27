@@ -1,6 +1,6 @@
 Package: Corbi
-Version: 0.2-3
-Date: 2012-01-08
+Version: 0.2-4
+Date: 2012-10-27
 Title: Corbi - A collection of bioinformatics tools
 Author: Ling-Yun Wu <wulingyun@gmail.com>
 Author@R: c(person("Ling-Yun", "Wu", email = "wulingyun@gmail.com"), person("Qiang", "Huang", email = "hq04405114@gmail.com"))
