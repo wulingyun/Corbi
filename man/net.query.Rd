@@ -107,9 +107,8 @@ net.query.batch(c("querynet.txt", "querynet2.txt"),
 }
 }
 \references{
-Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang.  An
-Efficient Network Querying Method Based on Conditional
-Random Fields.  Bioinformatics, 2011,
-doi:10.1093/bioinformatics/BTR524.
+Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
+Network Querying Method Based on Conditional Random Fields.
+Bioinformatics, 27(22):3173–3178, 2011.
 }
 

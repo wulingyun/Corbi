@@ -25,18 +25,23 @@
 #' @param output The suffix of output file name. The output contains two files
 #' in the working directory. One is the matching nodes and edges between query
 #' network and target network, the other is the unique matching node pairs.
-#' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang.  CNetA: A new
-#' method for network alignment combined biological and structural features.
-#' ISB2012, submitted.
+#' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. CNetA: Network
+#' alignment by combining biological and topological features. In Proceedings
+#' of 2012 IEEE International Conference on Systems Biology (ISB), 220–225,
+#' IEEE, 2012.
+#' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
+#' R package for biological network alignment and querying. BMC Systems Biology,
+#' 7(Suppl 2):S6, 2013.
 #' @examples
 #' 
 #' \dontrun{
 #' library(Corbi)
 #' 
-#' ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are 
+#' ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 #' ## three input files in the working directory
 #' net.align("querynet.txt", "targetnet.txt", "nodesim.txt")
 #' }
+#' 
 #' @export net.align
 net.align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {

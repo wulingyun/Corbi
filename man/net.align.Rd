@@ -62,8 +62,13 @@ net.align("querynet.txt", "targetnet.txt", "nodesim.txt")
 }
 }
 \references{
-Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang.  CNetA: A
-new method for network alignment combined biological and
-structural features. ISB2012, submitted.
+Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. CNetA:
+Network alignment by combining biological and topological
+features. In Proceedings of 2012 IEEE International
+Conference on Systems Biology (ISB), 220–225, IEEE, 2012.
+
+Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
+R package for biological network alignment and querying.
+BMC Systems Biology, 7(Suppl 2):S6, 2013.
 }
 
