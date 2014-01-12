@@ -1,9 +1,13 @@
 #include <R.h>
 #include <Rdefines.h>
+#include <R_ext/Rdynload.h>
 
 /* Interfaces to R */
 
 extern "C" {
+  /* DLL Init */
+  void R_init_Corbi(DllInfo *info);
+
 	/* Utils */
 	SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
 	SEXP NQ_ShortestDistances(SEXP _W, SEXP _S);

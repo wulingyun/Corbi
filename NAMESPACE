@@ -1,2 +1,4 @@
+useDynLib(Corbi, .registration = TRUE)
+import(CRF)
 export(net.align)
 export(net.query)

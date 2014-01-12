@@ -122,7 +122,7 @@ net.query.batch <- function(query.nets, target.net, node.sim, query.type=4, delt
 	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
 	target <- read.net(target.net)
 	target$sim <- read.sim(node.sim)
-	target$dist <- .Call("NQ_ShortestDistances", target$matrix, rep(T, target$size))
+	target$dist <- .Call(NQ_ShortestDistances, target$matrix, rep(T, target$size))
 
 	for (query.net in query.nets)
 	{
@@ -184,7 +184,7 @@ simplify.target <- function(query, target, delta)
 	net.sim[net.sim <= delta$d] <- 0
 	if (is.null(target$dist))
 	{
-		net.dist <- .Call("NQ_ShortestDistances", target$matrix, select)[select, select]
+		net.dist <- .Call(NQ_ShortestDistances, target$matrix, select)[select, select]
 	}
 	else
 	{

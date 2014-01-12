@@ -1,7 +1,7 @@
 
 PA.scores <- function(D1, D2, afp.length = 5)
 {
-	.Call("PA_Scores", D1, D2, dim(D1)[1], dim(D2)[1], afp.length)
+	.Call(PA_Scores, D1, D2, dim(D1)[1], dim(D2)[1], afp.length)
 }
 
 tri2mat <- function(v, n)
