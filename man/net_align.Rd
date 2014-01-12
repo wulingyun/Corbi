@@ -1,8 +1,8 @@
-\name{net.align}
-\alias{net.align}
+\name{net_align}
+\alias{net_align}
 \title{Network alignment method based on conditional random fields}
 \usage{
-net.align(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
+net_align(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
   delta.c = 0.5, delta.e = 1, delta.s = 1, output = "result.txt")
 }
 \arguments{
@@ -46,11 +46,11 @@ This is an approach for network alignment problem based on
 conditional random field (CRF) model which uses the node
 similarity and structure information equally. This method
 is based on our network querying method
-\code{\link{net.query}}. This method uses an iterative
+\code{\link{net_query}}. This method uses an iterative
 strategy to get the one-to-one map between the query
 network and target netowrk.
 
-More details can be seen in \code{\link{net.query}}.
+More details can be seen in \code{\link{net_query}}.
 }
 \examples{
 \dontrun{
@@ -58,14 +58,14 @@ library(Corbi)
 
 ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 ## three input files in the working directory
-net.align("querynet.txt", "targetnet.txt", "nodesim.txt")
+net_align("querynet.txt", "targetnet.txt", "nodesim.txt")
 }
 }
 \references{
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. CNetA:
 Network alignment by combining biological and topological
 features. In Proceedings of 2012 IEEE International
-Conference on Systems Biology (ISB), 220–225, IEEE, 2012.
+Conference on Systems Biology (ISB), 220-225, IEEE, 2012.
 
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
 R package for biological network alignment and querying.
