@@ -3,8 +3,9 @@ Version: 0.3-0
 Date: 2014-01-12
 Title: Corbi - Collection of reliable biomedical informatics tools
 Author: Ling-Yun Wu <wulingyun@gmail.com>
-Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email = "wulingyun@gmail.com"),
-    person("Qiang", "Huang", role = c("aut"), email = "hq04405114@gmail.com"))
+Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
+    "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
+    "hq04405114@gmail.com"))
 Maintainer: Ling-Yun Wu <wulingyun@gmail.com>
 Imports:
     CRF (>= 0.3-3)

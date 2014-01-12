@@ -1,5 +1,5 @@
 
-PA.scores <- function(D1, D2, afp.length = 5)
+PA_scores <- function(D1, D2, afp.length = 5)
 {
 	.Call(PA_Scores, D1, D2, dim(D1)[1], dim(D2)[1], afp.length)
 }
@@ -17,7 +17,7 @@ mat2tri <- function(m)
 	m[upper.tri(m)]
 }
 
-pro.align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length = 5, cutoff = 0.1)
+pro_align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length = 5, cutoff = 0.1)
 {
 	n.d1 <- dim(D1)[1]
 	n.d2 <- dim(D2)[1]
@@ -28,7 +28,7 @@ pro.align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length
 	for (i in 2:n.nodes) adj[i-1, i] <- 1
 	crf <- make.crf(adj, n.states)
 
-	scores <- PA.scores(D1, D2, afp.length)
+	scores <- PA_scores(D1, D2, afp.length)
 	scores$node.score <- exp(-scores$node.score)
 	scores$node.score[scores$node.score <= exp(-cutoff)] <- 0
 	scores$edge.score <- exp(-scores$edge.score)

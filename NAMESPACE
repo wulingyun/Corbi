@@ -1,4 +1,5 @@
-useDynLib(Corbi, .registration = TRUE)
+export(net_align)
+export(net_query)
+export(net_query_batch)
 import(CRF)
-export(net.align)
-export(net.query)
+useDynLib(Corbi, .registration = TRUE)

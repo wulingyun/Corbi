@@ -6,10 +6,10 @@
 #' This is an approach for network alignment problem based on conditional
 #' random field (CRF) model which uses the node similarity and structure
 #' information equally. This method is based on our network querying method
-#' \code{\link{net.query}}. This method uses an iterative strategy to get the
+#' \code{\link{net_query}}. This method uses an iterative strategy to get the
 #' one-to-one map between the query network and target netowrk.
 #' 
-#' More details can be seen in \code{\link{net.query}}.
+#' More details can be seen in \code{\link{net_query}}.
 #' 
 #' @param query.net The input file name of the query network.
 #' @param target.net The input file name of the target network.
@@ -27,7 +27,7 @@
 #' network and target network, the other is the unique matching node pairs.
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. CNetA: Network
 #' alignment by combining biological and topological features. In Proceedings
-#' of 2012 IEEE International Conference on Systems Biology (ISB), 220–225,
+#' of 2012 IEEE International Conference on Systems Biology (ISB), 220-225,
 #' IEEE, 2012.
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
 #' R package for biological network alignment and querying. BMC Systems Biology,
@@ -39,11 +39,14 @@
 #' 
 #' ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 #' ## three input files in the working directory
-#' net.align("querynet.txt", "targetnet.txt", "nodesim.txt")
+#' net_align("querynet.txt", "targetnet.txt", "nodesim.txt")
 #' }
 #' 
-#' @export net.align
-net.align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+#' @export
+#' @import CRF
+#' @useDynLib Corbi, .registration = TRUE
+#' 
+net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 # options
 #   query.net: input file name of query network

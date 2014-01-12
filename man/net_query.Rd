@@ -1,17 +1,21 @@
-\name{net.query}
-\alias{net.query}
-\alias{net.query.batch}
+\name{net_query}
+\alias{net_query}
+\alias{net_query_batch}
 \title{Network querying method based on conditional random fields}
 \usage{
-net.query(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
+net_query_batch(query.nets, target.net, node.sim, query.type = 4,
+  delta.d = 1e-10, delta.c = 0.5, delta.e = 1, delta.s = 1,
+  output = "result.txt")
+
+net_query(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
   delta.c = 0.5, delta.e = 1, delta.s = 1, output = "result.txt")
 }
 \arguments{
-  \item{query.net}{The input file name of the query
-  network.}
-
   \item{query.nets}{The vector of input file names of the
   query networks.}
+
+  \item{query.net}{The input file name of the query
+  network.}
 
   \item{target.net}{The input file name of the target
   network.}
@@ -49,7 +53,7 @@ undirected and directed networks, acyclic and cyclic
 networks, and any number of insertions/deletions.
 
 When querying several networks in the same target network,
-\code{\link{net.query.batch}} will save much time.
+\code{\link{net_query_batch}} will save much time.
 
 \itemize{ \item query.net: The query network file is
 written as follows:\cr v1 v2 v3 v4 v5\cr v3 v4 \cr ...  \cr
@@ -99,16 +103,16 @@ library(Corbi)
 
 ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 ## three input files in the working directory
-net.query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
+net_query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
 
 ## Batch example
-net.query.batch(c("querynet.txt", "querynet2.txt"),
+net_query_batch(c("querynet.txt", "querynet2.txt"),
 	"targetnet.txt", "nodesim.txt", query.type=3)
 }
 }
 \references{
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
 Network Querying Method Based on Conditional Random Fields.
-Bioinformatics, 27(22):3173–3178, 2011.
+Bioinformatics, 27(22):3173-3178, 2011.
 }
 

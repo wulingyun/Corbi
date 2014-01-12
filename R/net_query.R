@@ -8,7 +8,7 @@
 #' acyclic and cyclic networks, and any number of insertions/deletions.
 #' 
 #' When querying several networks in the same target network,
-#' \code{\link{net.query.batch}} will save much time.
+#' \code{\link{net_query_batch}} will save much time.
 #' 
 #' \itemize{ \item query.net: The query network file is written as follows:\cr
 #' v1 v2 v3 v4 v5\cr v3 v4 \cr ...  \cr where v1, v2, v3, v4, v5 ... are the
@@ -45,9 +45,7 @@
 #' 
 #' }
 #' 
-#' @aliases net.query net.query.batch
 #' @param query.net The input file name of the query network.
-#' @param query.nets The vector of input file names of the query networks.
 #' @param target.net The input file name of the target network.
 #' @param node.sim The input file name of the node similarity scores between
 #' the query network and the target network.
@@ -61,7 +59,7 @@
 #' @param output The suffix of output file name.
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
 #' Network Querying Method Based on Conditional Random Fields. Bioinformatics,
-#' 27(22):3173–3178, 2011.
+#' 27(22):3173-3178, 2011.
 #' @examples
 #' 
 #' \dontrun{
@@ -69,15 +67,18 @@
 #' 
 #' ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 #' ## three input files in the working directory
-#' net.query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
+#' net_query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
 #' 
 #' ## Batch example
-#' net.query.batch(c("querynet.txt", "querynet2.txt"),
+#' net_query_batch(c("querynet.txt", "querynet2.txt"),
 #' 	"targetnet.txt", "nodesim.txt", query.type=3)
 #' }
 #' 
-#' @export net.query
-net.query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
+#' @export
+#' @import CRF
+#' @useDynLib Corbi, .registration = TRUE
+#' 
+net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 # options
 #   query.net: input file name of query network
@@ -114,24 +115,6 @@ net.query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 # write result to output file
 
 	write.result(query, label, model, result, paste(query.net, output, sep="_"))
-}
-
-net.query.batch <- function(query.nets, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
-{
-	query.type <- as.numeric(query.type)
-	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
-	target <- read.net(target.net)
-	target$sim <- read.sim(node.sim)
-	target$dist <- .Call(NQ_ShortestDistances, target$matrix, rep(T, target$size))
-
-	for (query.net in query.nets)
-	{
-		query <- read.net(query.net)
-		label <- simplify.target(query, target, delta)
-		model <- build.model(query, label, delta)
-		result <- solve.crf(model, query.type)
-		write.result(query, label, model, result, paste(query.net, output, sep="_"))
-	}
 }
 
 read.net <- function(file)
