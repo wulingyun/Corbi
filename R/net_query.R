@@ -57,9 +57,11 @@
 #' @param delta.e The parameter delta.e is a parameter for single deletion.
 #' @param delta.s The parameter delta.s is a parameter for insertions.
 #' @param output The suffix of output file name.
+#' 
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
 #' Network Querying Method Based on Conditional Random Fields. Bioinformatics,
 #' 27(22):3173-3178, 2011.
+#' 
 #' @examples
 #' 
 #' \dontrun{
@@ -68,16 +70,9 @@
 #' ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 #' ## three input files in the working directory
 #' net_query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
-#' 
-#' ## Batch example
-#' net_query_batch(c("querynet.txt", "querynet2.txt"),
-#' 	"targetnet.txt", "nodesim.txt", query.type=3)
 #' }
 #' 
 #' @export
-#' @import CRF
-#' @useDynLib Corbi, .registration = TRUE
-#' 
 net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 # options
