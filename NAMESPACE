@@ -1,3 +1,4 @@
+export(neeat)
 export(net_align)
 export(net_query)
 export(net_query_batch)

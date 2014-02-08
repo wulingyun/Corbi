@@ -4,8 +4,15 @@
 #' 
 #' @param query.nets The vector of input file names of the query networks.
 #' 
-#' @export
+#' @examples
 #' 
+#' \dontrun{
+#' ## Batch example
+#' net_query_batch(c("querynet.txt", "querynet2.txt"),
+#'   "targetnet.txt", "nodesim.txt", query.type=3)
+#' }
+#' 
+#' @export
 net_query_batch <- function(query.nets, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
   query.type <- as.numeric(query.type)

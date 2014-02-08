@@ -3,17 +3,14 @@
 \alias{net_query_batch}
 \title{Network querying method based on conditional random fields}
 \usage{
+net_query(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
+  delta.c = 0.5, delta.e = 1, delta.s = 1, output = "result.txt")
+
 net_query_batch(query.nets, target.net, node.sim, query.type = 4,
   delta.d = 1e-10, delta.c = 0.5, delta.e = 1, delta.s = 1,
   output = "result.txt")
-
-net_query(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
-  delta.c = 0.5, delta.e = 1, delta.s = 1, output = "result.txt")
 }
 \arguments{
-  \item{query.nets}{The vector of input file names of the
-  query networks.}
-
   \item{query.net}{The input file name of the query
   network.}
 
@@ -40,6 +37,9 @@ net_query(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
   insertions.}
 
   \item{output}{The suffix of output file name.}
+
+  \item{query.nets}{The vector of input file names of the
+  query networks.}
 }
 \description{
 Find the best matching subnetworks from a large target
@@ -104,10 +104,11 @@ library(Corbi)
 ## An example: "querynet.txt", "targetnet.txt", "nodesim.txt" are
 ## three input files in the working directory
 net_query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
-
+}
+\dontrun{
 ## Batch example
 net_query_batch(c("querynet.txt", "querynet2.txt"),
-	"targetnet.txt", "nodesim.txt", query.type=3)
+  "targetnet.txt", "nodesim.txt", query.type=3)
 }
 }
 \references{

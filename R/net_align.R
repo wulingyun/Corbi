@@ -25,6 +25,7 @@
 #' @param output The suffix of output file name. The output contains two files
 #' in the working directory. One is the matching nodes and edges between query
 #' network and target network, the other is the unique matching node pairs.
+#' 
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. CNetA: Network
 #' alignment by combining biological and topological features. In Proceedings
 #' of 2012 IEEE International Conference on Systems Biology (ISB), 220-225,
@@ -32,6 +33,7 @@
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
 #' R package for biological network alignment and querying. BMC Systems Biology,
 #' 7(Suppl 2):S6, 2013.
+#' 
 #' @examples
 #' 
 #' \dontrun{
@@ -43,9 +45,6 @@
 #' }
 #' 
 #' @export
-#' @import CRF
-#' @useDynLib Corbi, .registration = TRUE
-#' 
 net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
 # options
@@ -150,9 +149,8 @@ target.part <- function(label,result,target0,query){
 	list(target=target,sim=sim)
 }
 
-match.com <- function(label,result,label1,result1){
-
-	
+match.com <- function(label,result,label1,result1)
+{
 	nodetarget <- label$node[result[result<=label$size]]
 	nodequery <- rownames(label$sim)[result<=label$size]
 	label1.name <- c(label1$node,"gap")
@@ -168,8 +166,8 @@ match.com <- function(label,result,label1,result1){
 	hitcom
 }
 
-update.sim <- function (hitcom,target,query){
-
+update.sim <- function (hitcom,target,query)
+{
 	# update sim
 	sim <- target$sim
 	sim[hitcom[,1],] <- 0
@@ -177,11 +175,10 @@ update.sim <- function (hitcom,target,query){
  	sim[hitcom] <-1 
 
 	list(sim=sim)
-
 }
 
-uni <- function(pairs){
-
+uni <- function(pairs)
+{
 	# first, remove the gap
 	pairs <- pairs[pairs[,2]!="gap",]
 	# the duplicated elements sub
@@ -244,7 +241,3 @@ write.result1 <- function(query, target, label, model, result, filename="result.
 	ftable <- rbind(x1,x1table)
 	write.table(ftable,paste("list",filename),row.names=FALSE,col.names=FALSE,quote=FALSE)
 }
-
-
-
-
