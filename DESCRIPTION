@@ -1,15 +1,13 @@
 Package: Corbi
 Version: 0.3-1
-Date: 2014-02-08
 Title: Corbi - Collection of reliable biomedical informatics tools
-Author: Ling-Yun Wu <wulingyun@gmail.com>
+Description: Biomedical informatics tools developed by WuLab at AMSS
 Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))
-Maintainer: Ling-Yun Wu <wulingyun@gmail.com>
-Imports:
-    CRF (>= 0.3-4)
 Depends:
     R (>= 2.12.0)
-Description: Biomedical informatics tools developed by WuLab at AMSS
+Imports:
+    CRF (>= 0.3-4)
 License: GPL (>= 2)
+URL: http://r-forge.r-project.org/projects/corbi/
