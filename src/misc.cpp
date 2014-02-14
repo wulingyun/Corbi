@@ -65,3 +65,25 @@ void setDim4(SEXP array, int x1, int x2, int x3, int x4)
 	SET_DIM(array, _dim);
 	UNPROTECT_PTR(_dim);
 }
+
+int *sampleWithoutReplace(int n, int k, int *result, int *buffer)
+{
+  if (result == NULL)
+    result = (int *) R_alloc(k, sizeof(int));
+  if (buffer == NULL)
+    buffer = (int *) R_alloc(n, sizeof(int));
+
+  for (int i = 0; i < n; i++)
+    buffer[i] = i;
+
+  GetRNGstate();
+  for (int i = 0; i < k; i++)
+  {
+    int j = n * unif_rand();
+    result[i] = buffer[j];
+    buffer[j] = buffer[--n];
+  }
+  PutRNGstate();
+
+  return result;
+}

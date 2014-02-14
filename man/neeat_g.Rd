@@ -1,8 +1,8 @@
-\name{neeat}
-\alias{neeat}
+\name{neeat_g}
+\alias{neeat_g}
 \title{Network enhanced enrichment analysis tool}
 \usage{
-neeat(w, r)
+neeat_g(gene.set, core.set, net, rho = 0.5, n.perm = 10000)
 }
 \description{
 Functional enrichment anslysis of gene sets by integrating

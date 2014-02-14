@@ -1,6 +1,7 @@
-export(neeat)
+export(neeat_g)
 export(net_align)
 export(net_query)
 export(net_query_batch)
+export(rmultihyper)
 import(CRF)
 useDynLib(Corbi, .registration = TRUE)

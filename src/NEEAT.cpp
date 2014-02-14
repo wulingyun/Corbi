@@ -1,49 +1,38 @@
 #include "Corbi.h"
 
-SEXP NE_Depths(SEXP _W, SEXP _R)
+inline int *getDepth(int *net, int *core, int n, int *depth)
 {
-	PROTECT(_W = AS_NUMERIC(_W));
-	double *W = NUMERIC_POINTER(_W);
-	PROTECT(_R = AS_LOGICAL(_R));
-	int *R = LOGICAL_POINTER(_R);
+  for (int i = 0; i < n; i++)
+    depth[i] = -1;
 
-	SEXP _dW;
-	PROTECT(_dW = GET_DIM(_W));
-	int dW = INTEGER_POINTER(AS_INTEGER(_dW))[0];
-
-	SEXP _D;
-	PROTECT(_D = NEW_INTEGER(dW));
-	int *D = INTEGER_POINTER(_D);
-	setValues(_D, D, -1);
-
-	int *out_links = (int *) R_alloc(dW * dW, sizeof(int));
-	int *out_degree = (int *) R_alloc(dW, sizeof(int));
-	for (int i = 0; i < dW; i++)
+	int *out_links = (int *) R_alloc(n * n, sizeof(int));
+	int *out_degree = (int *) R_alloc(n, sizeof(int));
+	for (int i = 0; i < n; i++)
 	{
 		out_degree[i] = 0;
-		for (int j = 0; j < dW; j++)
+		for (int j = 0; j < n; j++)
 		{
-			if (W[i + j * dW] != 0)
+			if (net[i + j * n] != 0)
 			{
-				out_links[i * dW + out_degree[i]] = j;
+				out_links[i * n + out_degree[i]] = j;
 				out_degree[i]++;
 			}
 		}
 	}
 
-	bool *label_free = (bool *) R_alloc(dW, sizeof(bool));
-	int *queue = (int *) R_alloc(dW, sizeof(int));
+	bool *label_free = (bool *) R_alloc(n, sizeof(bool));
+	int *queue = (int *) R_alloc(n, sizeof(int));
 	int queue_head, queue_tail;
 
 	queue_head = queue_tail = 0;
 
-	for (int i = 0; i < dW; i++)
+	for (int i = 0; i < n; i++)
 	{
-  	if (R[i])
+  	if (core[i])
     {
       queue[queue_tail++] = i;
       label_free[i] = false;
-  	  D[i] = 0;
+  	  depth[i] = 0;
 		}
     else
     {
@@ -53,21 +42,43 @@ SEXP NE_Depths(SEXP _W, SEXP _R)
 
   while (queue_head != queue_tail)
   {
-		int n = queue[queue_head++];
-		int d = D[n];
+		int k = queue[queue_head++];
+		int d = depth[k];
 
-		for (int i = 0; i < out_degree[n]; i++)
+		for (int i = 0; i < out_degree[k]; i++)
 		{
-			int t = out_links[n * dW + i];
+			int t = out_links[k * n + i];
 			if (label_free[t])
 			{
 				queue[queue_tail++] = t;
 				label_free[t] = false;
-				D[t] = d + 1;
+				depth[t] = d + 1;
 			}
 		}
 	}
 
-	UNPROTECT(4);
-	return (_D);
+	return (depth);
 }
+
+
+SEXP NE_Depths(SEXP _Net, SEXP _Core)
+{
+  PROTECT(_Net = AS_INTEGER(_Net));
+  int *Net = INTEGER_POINTER(_Net);
+  PROTECT(_Core = AS_LOGICAL(_Core));
+  int *Core = LOGICAL_POINTER(_Core);
+
+  SEXP _dNet;
+	PROTECT(_dNet = GET_DIM(_Net));
+	int dNet = INTEGER_POINTER(AS_INTEGER(_dNet))[0];
+
+  SEXP _Depth;
+	PROTECT(_Depth = NEW_INTEGER(dNet));
+	int *Depth = INTEGER_POINTER(_Depth);
+
+  getDepth(Net, Core, dNet, Depth);
+  
+  UNPROTECT(4);
+  return (_Depth);
+}
+

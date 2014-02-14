@@ -9,9 +9,11 @@ extern "C" {
   void R_init_Corbi(DllInfo *info);
 
 	/* Utils */
-	SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
+  SEXP RMultiHyper(SEXP _N, SEXP _M, SEXP _K);
+
+  SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
 	SEXP NQ_ShortestDistances(SEXP _W, SEXP _S);
-  SEXP NE_Depths(SEXP _W, SEXP _R);
+  SEXP NE_Depths(SEXP _Net, SEXP _Core);
 }
 
 
@@ -26,3 +28,6 @@ void setListElement(SEXP list, int i, const char *tag, SEXP value);
 void setDim2(SEXP array, int x1, int x2);
 void setDim3(SEXP array, int x1, int x2, int x3);
 void setDim4(SEXP array, int x1, int x2, int x3, int x4);
+
+/* sampling method */
+int *sampleWithoutReplace(int n, int k, int *result = NULL, int *buffer = NULL);
