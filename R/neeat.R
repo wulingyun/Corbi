@@ -6,6 +6,7 @@
 #' information.
 #' 
 #' 
+#' @import Matrix
 #'
 #' @export
 neeat_g <- function(gene.set, core.set, net, rho = 0.5, n.perm = 10000)
@@ -13,7 +14,8 @@ neeat_g <- function(gene.set, core.set, net, rho = 0.5, n.perm = 10000)
   gene.set <- as.logical(gene.set)
   core.set <- as.logical(core.set)
 
-  depth <- .Call(NE_Depths, net, core.set)
+  net.edges <- which(net != 0, arr.ind = T)
+  depth <- .Call(NE_Depths, net.edges, core.set)
   max.depth <- max(depth)
   n.depth <- sapply(-1:max.depth, function(d) sum(depth == d))
   w.depth <- c(0, rho^(0:max.depth))
@@ -24,8 +26,9 @@ neeat_g <- function(gene.set, core.set, net, rho = 0.5, n.perm = 10000)
   perm.depth <- rmultihyper(n.perm, n.depth, sum(gene.set))
   perm.score <- colSums(w.depth * perm.depth)
 
-  exp.score <- mean(perm.score)
-  g.score <- raw.score / exp.score
-  p.value <- sum(exp.score >= raw.score)
-  list(g.score=g.score, p.value=p.value, raw.score=raw.score, exp.score=exp.score)
+  avg.score <- mean(perm.score)
+  var.score <- var(perm.score)
+  z.score <- (raw.score - avg.score) / sqrt(var.score)
+  p.value <- sum(perm.score >= raw.score) / n.perm
+  list(z.score=z.score, p.value=p.value, raw.score=raw.score, avg.score=avg.score, var.score=var.score)
 }
