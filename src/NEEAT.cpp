@@ -1,11 +1,7 @@
 #include "Corbi.h"
 
-inline int *getDepth(int *edges, int *index, int nEdges, int *core, int nGene, int *depth)
+inline int *GetDepth(int *edges, int *index, int nEdges, int *core, int nGene, int *depth)
 {
-  for (int i = 0; i < nGene; i++)
-    depth[i] = -1;
-
-	bool *label_free = (bool *) R_alloc(nGene, sizeof(bool));
 	int *queue = (int *) R_alloc(nGene, sizeof(int));
 	int queue_head, queue_tail;
 
@@ -16,28 +12,24 @@ inline int *getDepth(int *edges, int *index, int nEdges, int *core, int nGene, i
   	if (core[i])
     {
       queue[queue_tail++] = i;
-      label_free[i] = false;
   	  depth[i] = 0;
 		}
     else
-    {
-			label_free[i] = true;
-		}
+      depth[i] = -1;
 	}
 
   while (queue_head != queue_tail)
   {
 		int k = queue[queue_head++];
-		int d = depth[k];
+		int d = depth[k] + 1;
 
 		for (int i = index[k]; i < index[k+1]; i++)
 		{
 			int t = edges[nEdges + i] - 1;
-			if (label_free[t])
+			if (depth[t] < 0)
 			{
 				queue[queue_tail++] = t;
-				label_free[t] = false;
-				depth[t] = d + 1;
+				depth[t] = d;
 			}
 		}
 	}
@@ -46,7 +38,7 @@ inline int *getDepth(int *edges, int *index, int nEdges, int *core, int nGene, i
 }
 
 
-SEXP NE_Depths(SEXP _Edges, SEXP _Index, SEXP _Core)
+SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core)
 {
   PROTECT(_Edges = AS_INTEGER(_Edges));
   int *Edges = INTEGER_POINTER(_Edges);
@@ -64,9 +56,28 @@ SEXP NE_Depths(SEXP _Edges, SEXP _Index, SEXP _Core)
 	PROTECT(_Depth = NEW_INTEGER(nGene));
 	int *Depth = INTEGER_POINTER(_Depth);
 
-  getDepth(Edges, Index, nEdges, Core, nGene, Depth);
+  GetDepth(Edges, Index, nEdges, Core, nGene, Depth);
   
   UNPROTECT(5);
   return (_Depth);
 }
 
+
+SEXP NE_CountDepths(SEXP _Depth, SEXP _MaxDepth)
+{
+  PROTECT(_Depth = AS_INTEGER(_Depth));
+	int *Depth = INTEGER_POINTER(_Depth);
+  int nCounter = INTEGER_POINTER(AS_INTEGER(_MaxDepth))[0] + 2;
+    
+  SEXP _Counter;
+  PROTECT(_Counter = NEW_INTEGER(nCounter));
+	int *Counter = INTEGER_POINTER(_Counter);
+  
+  for (int i = 0; i < nCounter; i++)
+    Counter[i] = 0;
+  for (int i = 0; i < length(_Depth); i++)
+    Counter[Depth[i]+1]++;
+    
+  UNPROTECT(2);
+  return (_Counter);
+}
