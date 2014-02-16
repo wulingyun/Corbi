@@ -1,6 +1,6 @@
 #include "Corbi.h"
 
-inline int *GetDepth(int *edges, int *index, int nEdges, int *core, int nGene, int *depth)
+inline int *GetDepth(int *edges, int *index, int nEdges, int *core, int nGene, int maxDepth, int *depth)
 {
 	int *queue = (int *) R_alloc(nGene, sizeof(int));
 	int queue_head, queue_tail;
@@ -22,6 +22,8 @@ inline int *GetDepth(int *edges, int *index, int nEdges, int *core, int nGene, i
   {
 		int k = queue[queue_head++];
 		int d = depth[k] + 1;
+    
+    if (d > maxDepth) break;
 
 		for (int i = index[k]; i < index[k+1]; i++)
 		{
@@ -38,7 +40,7 @@ inline int *GetDepth(int *edges, int *index, int nEdges, int *core, int nGene, i
 }
 
 
-SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core)
+SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core, SEXP _MaxDepth)
 {
   PROTECT(_Edges = AS_INTEGER(_Edges));
   int *Edges = INTEGER_POINTER(_Edges);
@@ -46,6 +48,7 @@ SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core)
   int *Index = INTEGER_POINTER(_Index);
   PROTECT(_Core = AS_LOGICAL(_Core));
   int *Core = LOGICAL_POINTER(_Core);
+  int MaxDepth = INTEGER_POINTER(AS_INTEGER(_MaxDepth))[0];
 
   SEXP _nEdges;
 	PROTECT(_nEdges = GET_DIM(_Edges));
@@ -56,7 +59,7 @@ SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core)
 	PROTECT(_Depth = NEW_INTEGER(nGene));
 	int *Depth = INTEGER_POINTER(_Depth);
 
-  GetDepth(Edges, Index, nEdges, Core, nGene, Depth);
+  GetDepth(Edges, Index, nEdges, Core, nGene, MaxDepth, Depth);
   
   UNPROTECT(5);
   return (_Depth);

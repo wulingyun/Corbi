@@ -9,24 +9,24 @@
 #' @import Matrix
 #'
 #' @export
-neeat <- function(gene.set, core.sets, net, rho = 0.5, n.perm = 10000)
+neeat <- function(gene.set, core.sets, net, rho = 0.5, n.perm = 10000, max.depth = 10)
 {
   net.edges <- which(net != 0, arr.ind = T)
   net.edges <- net.edges[order(net.edges[,1]),]
   net.index <- findInterval(0:dim(core.sets)[1], net.edges[,1])
-  sapply(1:dim(core.sets)[2], function(i) neeat_g(gene.set, core.sets[,i], net.edges, net.index, rho, n.perm))
+  sapply(1:dim(core.sets)[2], function(i) neeat_g(gene.set, core.sets[,i], net.edges, net.index, rho, n.perm, max.depth))
 }
  
-neeat_g <- function(gene.set, core.set, net.edges, net.index, rho = 0.5, n.perm = 10000)
+neeat_g <- function(gene.set, core.set, net.edges, net.index, rho = 0.5, n.perm = 10000, max.depth = 10)
 {
   gene.set <- as.logical(gene.set)
   core.set <- as.logical(core.set)
 
-  depth <- .Call(NE_GetDepths, net.edges, net.index, core.set)
+  depth <- .Call(NE_GetDepths, net.edges, net.index, core.set, max.depth)
   max.depth <- max(depth)
   n.depth <- .Call(NE_CountDepths, depth, max.depth)
   w.depth <- c(0, rho^(0:max.depth))
-  
+
   raw.depth <- .Call(NE_CountDepths, depth[gene.set], max.depth)
   raw.score <- sum(w.depth * raw.depth)
 
