@@ -32,7 +32,7 @@ inline int *getDepth(int *edges, int *index, int nEdges, int *core, int nGene, i
 
 		for (int i = index[k]; i < index[k+1]; i++)
 		{
-			int t = edges[nEdges + i];
+			int t = edges[nEdges + i] - 1;
 			if (label_free[t])
 			{
 				queue[queue_tail++] = t;
