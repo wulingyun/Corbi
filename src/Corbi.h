@@ -13,7 +13,7 @@ extern "C" {
 
   SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
 	SEXP NQ_ShortestDistances(SEXP _W, SEXP _S);
-  SEXP NE_Depths(SEXP _Net, SEXP _Core);
+  SEXP NE_Depths(SEXP _Edges, SEXP _Index, SEXP _Core);
 }
 
 

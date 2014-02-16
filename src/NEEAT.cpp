@@ -1,20 +1,9 @@
 #include "Corbi.h"
 
-inline int *getDepth(int *edges, int nEdges, int *core, int nGene, int *depth)
+inline int *getDepth(int *edges, int *index, int nEdges, int *core, int nGene, int *depth)
 {
   for (int i = 0; i < nGene; i++)
     depth[i] = -1;
-
-	int *out_links = (int *) R_alloc((size_t) nGene * nGene, sizeof(int));
-	int *out_degree = (int *) R_alloc(nGene, sizeof(int));
-	for (int i = 0; i < nGene; i++)
-		out_degree[i] = 0;
-  
-  for (int i = 0; i < nEdges; i++)
-  {
-    int k = edges[i] - 1;
-    out_links[(size_t) k * nGene + out_degree[k]++] = edges[i + nEdges] - 1;
-  }
 
 	bool *label_free = (bool *) R_alloc(nGene, sizeof(bool));
 	int *queue = (int *) R_alloc(nGene, sizeof(int));
@@ -41,9 +30,9 @@ inline int *getDepth(int *edges, int nEdges, int *core, int nGene, int *depth)
 		int k = queue[queue_head++];
 		int d = depth[k];
 
-		for (int i = 0; i < out_degree[k]; i++)
+		for (int i = index[k]; i < index[k+1]; i++)
 		{
-			int t = out_links[(size_t) k * nGene + i];
+			int t = edges[nEdges + i];
 			if (label_free[t])
 			{
 				queue[queue_tail++] = t;
@@ -57,10 +46,12 @@ inline int *getDepth(int *edges, int nEdges, int *core, int nGene, int *depth)
 }
 
 
-SEXP NE_Depths(SEXP _Edges, SEXP _Core)
+SEXP NE_Depths(SEXP _Edges, SEXP _Index, SEXP _Core)
 {
   PROTECT(_Edges = AS_INTEGER(_Edges));
   int *Edges = INTEGER_POINTER(_Edges);
+  PROTECT(_Index = AS_INTEGER(_Index));
+  int *Index = INTEGER_POINTER(_Index);
   PROTECT(_Core = AS_LOGICAL(_Core));
   int *Core = LOGICAL_POINTER(_Core);
 
@@ -73,9 +64,9 @@ SEXP NE_Depths(SEXP _Edges, SEXP _Core)
 	PROTECT(_Depth = NEW_INTEGER(nGene));
 	int *Depth = INTEGER_POINTER(_Depth);
 
-  getDepth(Edges, nEdges, Core, nGene, Depth);
+  getDepth(Edges, Index, nEdges, Core, nGene, Depth);
   
-  UNPROTECT(4);
+  UNPROTECT(5);
   return (_Depth);
 }
 
