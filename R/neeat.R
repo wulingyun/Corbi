@@ -9,12 +9,17 @@
 #' @import Matrix
 #'
 #' @export
-neeat_g <- function(gene.set, core.set, net, rho = 0.5, n.perm = 10000)
+neeat <- function(gene.set, core.sets, net, rho = 0.5, n.perm = 10000)
+{
+  net.edges <- which(net != 0, arr.ind = T)
+  sapply(1:dim(core.sets)[2], function(i) neeat_g(gene.set, core.sets[,i], net.edges, rho, n.perm))
+}
+ 
+neeat_g <- function(gene.set, core.set, net.edges, rho = 0.5, n.perm = 10000)
 {
   gene.set <- as.logical(gene.set)
   core.set <- as.logical(core.set)
 
-  net.edges <- which(net != 0, arr.ind = T)
   depth <- .Call(NE_Depths, net.edges, core.set)
   max.depth <- max(depth)
   n.depth <- sapply(-1:max.depth, function(d) sum(depth == d))
@@ -30,5 +35,6 @@ neeat_g <- function(gene.set, core.set, net, rho = 0.5, n.perm = 10000)
   var.score <- var(perm.score)
   z.score <- (raw.score - avg.score) / sqrt(var.score)
   p.value <- sum(perm.score >= raw.score) / n.perm
-  list(z.score=z.score, p.value=p.value, raw.score=raw.score, avg.score=avg.score, var.score=var.score)
+  c(z.score=z.score, p.value=p.value, raw.score=raw.score, 
+    avg.score=avg.score, var.score=var.score)
 }
