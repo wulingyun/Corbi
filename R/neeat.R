@@ -27,15 +27,13 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
     result <- sapply(1:dim(core.sets)[2], function(i) neeat_net(core.sets[,i], net, rho, n.perm, max.depth))
   }
   else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
-    if (is.null(subnet)) {
-      edges <- which(net != 0, arr.ind = T)
-      edges <- matrix(edges[gene.set[edges[,1]] & gene.set[edges[,2]], ], ncol=2)
-      subnet <- sparseMatrix(edges[,1], edges[,2], x=1, dims=dim(net))
-    }
-    if (nnzero(subnet) == 0)
-      stop("Subnet is empty!")
     net.edges <- net_edges(net)
-    subnet.edges <- net_edges(subnet)
+    if (is.null(subnet)) {
+      subnet.edges <- net_edges(net, gene.set)
+    }
+    else {
+      subnet.edges <- net_edges(subnet)
+    }
     result <- sapply(1:dim(core.sets)[2], function(i) neeat_subnet(core.sets[,i], gene.set, net.edges, subnet.edges, rho, n.perm, max.depth))
   }
   else {
@@ -44,10 +42,12 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
   result
 }
 
-net_edges <- function(net)
+net_edges <- function(net, gene.set = NULL)
 {
   edges <- which(net != 0, arr.ind = T)
-  edges <- edges[order(edges[,1]),]
+  if (!is.null(gene.set))
+    edges <- matrix(edges[gene.set[edges[,1]] & gene.set[edges[,2]], ], ncol=2)
+  edges <- edges[order(edges[,1]), ]
   index <- findInterval(0:dim(net)[1], edges[,1])
   list(edges=edges, index=index)
 }
