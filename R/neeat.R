@@ -28,9 +28,9 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
   }
   else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
     if (is.null(subnet)) {
-      subnet <- net
-      subnet[!gene.set, ] <- 0
-      subnet[, !gene.set] <- 0
+      edges <- which(net != 0, arr.ind = T)
+      edges <- matrix(edges[gene.set[edges[,1]] & gene.set[edges[,2]], ], ncol=2)
+      subnet <- sparseMatrix(edges[,1], edges[,2], x=1, dims=dim(net))
     }
     if (nnzero(subnet) == 0)
       stop("Subnet is empty!")
@@ -118,12 +118,11 @@ neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, rho, n.per
   node.depth[node.depth < 0] <- -length(gene.set)
   
   depth <- edge_depth(node.depth, net.edges)
-  subnet.depth <- edge_depth(node.depth, subnet.edges)
   max.depth <- max(depth)
   
   w.depth <- c(0, rho^(0:max.depth))
-  n.depth <- sapply(-1:max.depth, function(d) sum(depth == d))
-  raw.depth <- sapply(-1:max.depth, function(d) sum(subnet.depth == d))
+  n.depth <- .Call(NE_CountDepths, depth, max.depth)
+  raw.depth <- .Call(NE_CountDepths, edge_depth(node.depth, subnet.edges), max.depth)
   
   neeat_score(w.depth, n.depth, raw.depth, n.perm)
 }
