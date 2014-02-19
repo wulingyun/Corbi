@@ -9,23 +9,37 @@
 #' @import Matrix
 #'
 #' @export
-neeat <- function(gene.set, core.sets, net, bgnet, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10)
+neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10)
 {
-  if (method == "gene") {
+  if (method == "gene" && !is.null(gene.set)) {
+    if (is.null(net)) {
+      n.gene <- length(gene.set)
+      net <- sparseMatrix(n.gene, n.gene, x=0)
+    }
     net.edges <- net_edges(net)
-    result <- sapply(1:dim(core.sets)[2], function(i) neeat_gene(gene.set, core.sets[,i], net.edges, rho, n.perm, max.depth))
+    result <- sapply(1:dim(core.sets)[2], function(i) neeat_gene(core.sets[,i], gene.set, net.edges, rho, n.perm, max.depth))
   }
-  else if (method == "net") {
-    core.sets <- core.sets[gene.set,]
-    net <- net[gene.set, gene.set]
+  else if (method == "net" && !is.null(net)) {
+    if (!is.null(gene.set)) {
+      core.sets <- core.sets[gene.set, ]
+      net <- net[gene.set, gene.set]
+    }
     result <- sapply(1:dim(core.sets)[2], function(i) neeat_net(core.sets[,i], net, rho, n.perm, max.depth))
   }
-  else if (method == "subnet") {
-    net[!gene.set, ] <- 0
-    net[, !gene.set] <- 0
+  else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
+    if (is.null(subnet)) {
+      subnet <- net
+      subnet[!gene.set, ] <- 0
+      subnet[, !gene.set] <- 0
+    }
+    if (nnzero(subnet) == 0)
+      stop("Subnet is empty!")
     net.edges <- net_edges(net)
-    bgnet.edges <- net_edges(bgnet)
-    result <- sapply(1:dim(core.sets)[2], function(i) neeat_subnet(gene.set, core.sets[,i], net.edges, bgnet.edges, rho, n.perm, max.depth))
+    subnet.edges <- net_edges(subnet)
+    result <- sapply(1:dim(core.sets)[2], function(i) neeat_subnet(core.sets[,i], gene.set, net.edges, subnet.edges, rho, n.perm, max.depth))
+  }
+  else {
+    stop("Incorrect parameters!")
   }
   result
 }
@@ -54,7 +68,7 @@ neeat_score <- function(w.depth, n.depth, raw.depth, n.perm)
     avg.score=avg.score, var.score=var.score)
 }
 
-neeat_gene <- function(gene.set, core.set, net.edges, rho, n.perm, max.depth)
+neeat_gene <- function(core.set, gene.set, net.edges, rho, n.perm, max.depth)
 {
   gene.set <- as.logical(gene.set)
   core.set <- as.logical(core.set)
@@ -86,7 +100,30 @@ neeat_net <- function(core.set, net, rho, n.perm, max.depth)
   neeat_score(w.depth, n.depth, raw.depth, n.perm)
 }
 
-neeat_subnet <- function(gene.set, core.set, net.edges, bgnet.edges, rho, n.perm, max.depth)
+edge_depth <- function(node.depth, net.edges)
 {
+  edges <- net.edges$edges
+  edges <- matrix(edges[edges[,1] < edges[,2], ], ncol=2)
+  depth <- node.depth[edges[,1]] + node.depth[edges[,2]]
+  depth[depth < 0] <- -1
+  depth
+}
+
+neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, rho, n.perm, max.depth)
+{
+  gene.set <- as.logical(gene.set)
+  core.set <- as.logical(core.set)
   
+  node.depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, max.depth)
+  node.depth[node.depth < 0] <- -length(gene.set)
+  
+  depth <- edge_depth(node.depth, net.edges)
+  subnet.depth <- edge_depth(node.depth, subnet.edges)
+  max.depth <- max(depth)
+  
+  w.depth <- c(0, rho^(0:max.depth))
+  n.depth <- sapply(-1:max.depth, function(d) sum(depth == d))
+  raw.depth <- sapply(-1:max.depth, function(d) sum(subnet.depth == d))
+  
+  neeat_score(w.depth, n.depth, raw.depth, n.perm)
 }
