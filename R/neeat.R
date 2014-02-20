@@ -17,7 +17,7 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
     fun <- function (x, ...) neeat_internal(core.sets[, x], ...)
     result <- clusterApply(cl, jobs, fun, gene.set, net, subnet, method, rho, n.perm, max.depth)
     stopCluster(cl)
-    matrix(unlist(result), ncol = dim(core.sets)[2], dimnames = list(c("z.score", "p.value", "raw.score", "avg.score", "var.score")))
+    matrix(unlist(result), nrow = 5, dimnames = list(c("z.score", "p.value", "raw.score", "avg.score", "var.score")))
   }
   else
     neeat_internal(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
@@ -26,9 +26,10 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
 neeat_internal <- function(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
 {
   if (method == "gene" && !is.null(gene.set)) {
+    gene.set <- as.logical(gene.set)
     if (is.null(net)) {
       n.gene <- length(gene.set)
-      net <- sparseMatrix(n.gene, n.gene, x=0)
+      net <- sparseMatrix(n.gene, n.gene, x = 0)
     }
     net.edges <- net_edges(net)
     sapply(1:dim(core.sets)[2], function(i) neeat_gene(core.sets[,i], gene.set, net.edges, rho, n.perm, max.depth))
@@ -41,6 +42,7 @@ neeat_internal <- function(core.sets, gene.set, net, subnet, method, rho, n.perm
     sapply(1:dim(core.sets)[2], function(i) neeat_net(core.sets[,i], net, rho, n.perm, max.depth))
   }
   else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
+    gene.set <- as.logical(gene.set)
     net.edges <- net_edges(net)
     if (is.null(subnet)) {
       subnet.edges <- net_edges(net, gene.set)
@@ -83,11 +85,10 @@ neeat_score <- function(w.depth, n.depth, raw.depth, n.perm)
 
 neeat_gene <- function(core.set, gene.set, net.edges, rho, n.perm, max.depth)
 {
-  gene.set <- as.logical(gene.set)
   core.set <- as.logical(core.set)
 
   depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, max.depth)
-  max.depth <- max(depth)
+  max.depth <- max(0, depth)
 
   w.depth <- c(0, rho^(0:max.depth))
   n.depth <- .Call(NE_CountDepths, depth, max.depth)
@@ -124,14 +125,13 @@ edge_depth <- function(node.depth, net.edges)
 
 neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, rho, n.perm, max.depth)
 {
-  gene.set <- as.logical(gene.set)
   core.set <- as.logical(core.set)
   
   node.depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, max.depth)
   node.depth[node.depth < 0] <- -length(gene.set)
   
   depth <- edge_depth(node.depth, net.edges)
-  max.depth <- max(depth)
+  max.depth <- max(0, depth)
   
   w.depth <- c(0, rho^(0:max.depth))
   n.depth <- .Call(NE_CountDepths, depth, max.depth)
