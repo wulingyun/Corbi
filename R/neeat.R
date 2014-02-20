@@ -6,10 +6,24 @@
 #' information.
 #' 
 #' 
-#' @import Matrix
+#' @import Matrix parallel
 #'
 #' @export
-neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10)
+neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1)
+{
+  if (n.cpu > 1) {
+    cl <- makeCluster(n.cpu)
+    jobs <- clusterSplit(cl, 1:dim(core.sets)[2])
+    fun <- function (x, ...) neeat_internal(core.sets[, x], ...)
+    result <- clusterApply(cl, jobs, fun, gene.set, net, subnet, method, rho, n.perm, max.depth)
+    stopCluster(cl)
+    matrix(unlist(result), ncol = dim(core.sets)[2], dimnames = list(c("z.score", "p.value", "raw.score", "avg.score", "var.score")))
+  }
+  else
+    neeat_internal(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
+}
+
+neeat_internal <- function(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
 {
   if (method == "gene" && !is.null(gene.set)) {
     if (is.null(net)) {
@@ -17,14 +31,14 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
       net <- sparseMatrix(n.gene, n.gene, x=0)
     }
     net.edges <- net_edges(net)
-    result <- sapply(1:dim(core.sets)[2], function(i) neeat_gene(core.sets[,i], gene.set, net.edges, rho, n.perm, max.depth))
+    sapply(1:dim(core.sets)[2], function(i) neeat_gene(core.sets[,i], gene.set, net.edges, rho, n.perm, max.depth))
   }
   else if (method == "net" && !is.null(net)) {
     if (!is.null(gene.set)) {
       core.sets <- core.sets[gene.set, ]
       net <- net[gene.set, gene.set]
     }
-    result <- sapply(1:dim(core.sets)[2], function(i) neeat_net(core.sets[,i], net, rho, n.perm, max.depth))
+    sapply(1:dim(core.sets)[2], function(i) neeat_net(core.sets[,i], net, rho, n.perm, max.depth))
   }
   else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
     net.edges <- net_edges(net)
@@ -34,12 +48,11 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
     else {
       subnet.edges <- net_edges(subnet)
     }
-    result <- sapply(1:dim(core.sets)[2], function(i) neeat_subnet(core.sets[,i], gene.set, net.edges, subnet.edges, rho, n.perm, max.depth))
+    sapply(1:dim(core.sets)[2], function(i) neeat_subnet(core.sets[,i], gene.set, net.edges, subnet.edges, rho, n.perm, max.depth))
   }
   else {
     stop("Incorrect parameters!")
   }
-  result
 }
 
 net_edges <- function(net, gene.set = NULL)
