@@ -6,9 +6,10 @@ Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))
 Depends:
-    R (>= 2.12.0)
+    R (>= 3.0.2)
 Imports:
-    CRF (>= 0.3-4),
-    Matrix (>= 1.0-14)
+    CRF (>= 0.3-6),
+    Matrix (>= 1.0-14),
+    parallel (>= 3.0.2)
 License: GPL (>= 2)
 URL: http://r-forge.r-project.org/projects/corbi/
