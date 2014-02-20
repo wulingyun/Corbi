@@ -4,7 +4,7 @@
 \usage{
 neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
   method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10,
-  n.cpu = 1)
+  n.cpu = 1, batch.size = 5000)
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes
@@ -30,6 +30,9 @@ neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
   in the NEEAT models}
 
   \item{n.cpu}{The number of CPUs/cores used in the
+  parallel computation}
+
+  \item{batch.size}{The desired size of batches in the
   parallel computation}
 }
 \value{
