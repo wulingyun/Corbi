@@ -14,6 +14,7 @@
 #' @param n.perm The number of permutations for calculating p-values
 #' @param max.depth Integer for the maximum depth considered in the NEEAT models
 #' @param n.cpu The number of CPUs/cores used in the parallel computation
+#' @param batch.size The desired size of batches in the parallel computation
 #' @return This function will return a matrix of same columns as \code{core.sets}, and each column
 #' containing the following components for the correponding core gene set \code{core.sets[,i]}:
 #' \itemize{
@@ -27,11 +28,14 @@
 #' @import Matrix parallel
 #'
 #' @export
-neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1)
+neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1, batch.size = 5000)
 {
   if (n.cpu > 1) {
     cl <- makeCluster(n.cpu)
-    jobs <- clusterSplit(cl, 1:dim(core.sets)[2])
+    n.cl <- length(cl)
+    n.job <- dim(core.sets)[2]
+    n.batch <- max(1, round(n.job / (batch.size * n.cl))) * n.cl
+    jobs <- splitIndices(n.job, n.batch)
     fun <- function (x, ...) neeat_internal(core.sets[, x], ...)
     result <- clusterApply(cl, jobs, fun, gene.set, net, subnet, method, rho, n.perm, max.depth)
     stopCluster(cl)
