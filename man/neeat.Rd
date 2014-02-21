@@ -4,7 +4,7 @@
 \usage{
 neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
   method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10,
-  n.cpu = 1, batch.size = 5000)
+  n.cpu = 1, batch.size = 5000, use.multinom = FALSE)
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes
@@ -34,6 +34,10 @@ neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
 
   \item{batch.size}{The desired size of batches in the
   parallel computation}
+
+  \item{use.multinom}{Logical variable indicated whether
+  use \code{\link{rmultinom}} to approximate
+  \code{\link{rmultihyper}}}
 }
 \value{
 This function will return a matrix of same columns as

@@ -1,7 +1,7 @@
 #include "Corbi.h"
 #include <Rmath.h>
 
-SEXP RMultiHyper(SEXP _N, SEXP _M, SEXP _K)
+SEXP RMultiHyper(SEXP _N, SEXP _K, SEXP _M)
 {
   int N = INTEGER_POINTER(AS_INTEGER(_N))[0];
   int K = INTEGER_POINTER(AS_INTEGER(_K))[0];

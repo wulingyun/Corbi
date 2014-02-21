@@ -7,15 +7,15 @@
 #' \code{\link{rhyper}}.
 #' 
 #' @param n The number of observations
-#' @param m The vector containing the number of balls in each urn
 #' @param k The number of balls drawn from the urns
-#' @return This function will return a vector of the same length as \code{m},
+#' @param m The integer vector containing the number of balls in each urn
+#' @return This function will return a matrix of \code{length(m)} rows and \code{n} columns,
 #' containing the number of balls drawn from each urn
 #' 
 #' @seealso \code{\link{rhyper}}
 #'
 #' @export
-rmultihyper <- function(n, m, k)
+rmultihyper <- function(n, k, m)
 {
-  .Call(RMultiHyper, n, m, k)
+  .Call(RMultiHyper, n, k, m)
 }

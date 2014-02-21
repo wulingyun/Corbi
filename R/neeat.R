@@ -15,6 +15,8 @@
 #' @param max.depth Integer for the maximum depth considered in the NEEAT models
 #' @param n.cpu The number of CPUs/cores used in the parallel computation
 #' @param batch.size The desired size of batches in the parallel computation
+#' @param use.multinom Logical variable indicated whether use \code{\link{rmultinom}} to 
+#' approximate \code{\link{rmultihyper}}
 #' @return This function will return a matrix of same columns as \code{core.sets}, and each column
 #' containing the following components for the correponding core gene set \code{core.sets[,i]}:
 #' \itemize{
@@ -28,8 +30,15 @@
 #' @import Matrix parallel
 #'
 #' @export
-neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1, batch.size = 5000)
+neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", 
+                  rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1, batch.size = 5000,
+                  use.multinom = FALSE)
 {
+  if (use.multinom)
+    options(neeat_permutation = rmultinom)
+  else
+    options(neeat_permutation = rmultihyper)
+
   if (n.cpu > 1) {
     if (.Platform$OS.type == "windows")
       cl <- makeCluster(n.cpu)
@@ -96,7 +105,8 @@ neeat_score <- function(w.depth, n.depth, raw.depth, n.perm)
 {
   raw.score <- sum(w.depth * raw.depth)
   
-  perm.depth <- rmultihyper(n.perm, n.depth, sum(raw.depth))
+  permutation <- getOption("neeat_permutation", default = rmultihyper)
+  perm.depth <- permutation(n.perm, sum(raw.depth), n.depth)
   perm.score <- colSums(w.depth * perm.depth)
   
   avg.score <- mean(perm.score)
