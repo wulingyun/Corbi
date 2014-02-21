@@ -31,7 +31,10 @@
 neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1, batch.size = 5000)
 {
   if (n.cpu > 1) {
-    cl <- makeCluster(n.cpu)
+    if (.Platform$OS.type == "windows")
+      cl <- makeCluster(n.cpu)
+    else
+      cl <- makeForkCluster(n.cpu)
     n.cl <- length(cl)
     n.job <- dim(core.sets)[2]
     n.batch <- max(1, round(n.job / (batch.size * n.cl))) * n.cl
