@@ -6,11 +6,12 @@
 #' distribution by iteratively calling hypergeometric random variable generator
 #' \code{\link{rhyper}}.
 #' 
-#' @param n The number of observations
-#' @param k The number of balls drawn from the urns
-#' @param m The integer vector containing the number of balls in each urn
+#' @param n The number of observations.
+#' @param k The total number of balls drawn from the urn.
+#' @param m The integer vector containing the number of balls of each color in the urn.
+#' Length of vector is the number of colors.
 #' @return This function will return a matrix of \code{length(m)} rows and \code{n} columns,
-#' containing the number of balls drawn from each urn
+#' and each column contains the number of balls of each color drawn from the urn.
 #' 
 #' @seealso \code{\link{rhyper}}
 #'

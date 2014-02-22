@@ -5,17 +5,18 @@
 rmultihyper(n, k, m)
 }
 \arguments{
-  \item{n}{The number of observations}
+  \item{n}{The number of observations.}
 
-  \item{k}{The number of balls drawn from the urns}
+  \item{k}{The total number of balls drawn from the urn.}
 
   \item{m}{The integer vector containing the number of
-  balls in each urn}
+  balls of each color in the urn. Length of vector is the
+  number of colors.}
 }
 \value{
 This function will return a matrix of \code{length(m)} rows
-and \code{n} columns, containing the number of balls drawn
-from each urn
+and \code{n} columns, and each column contains the number
+of balls of each color drawn from the urn.
 }
 \description{
 Generate random variables for the multivariate
