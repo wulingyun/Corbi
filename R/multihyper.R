@@ -17,6 +17,4 @@
 #'
 #' @export
 rmultihyper <- function(n, k, m)
-{
   .Call(RMultiHyper, n, k, m)
-}

@@ -5,6 +5,7 @@ Description: Biomedical informatics tools developed by WuLab at AMSS
 Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))
+ByteCompile: TRUE
 Depends:
     R (>= 3.0.2)
 Imports:
