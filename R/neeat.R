@@ -174,3 +174,56 @@ neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, rho, n.per
   
   neeat_score(w.depth, n.depth, raw.depth, n.perm)
 }
+
+
+#' Extract core sets information from GO annotation
+#'
+#' Generate the core sets matrix from an object of class "Go3AnnDbBimap" in Bioconductor annotation package.
+#'
+#' This function generates the \code{core.sets} matrix required by \code{\link{neeat}} method.
+#' 
+#' @param go.map An object of class "Go3AnnDbBimap".
+#' @param evidence Vector of string to filter the GO annotations, could be "ALL" or a set of evidence codes.
+#' @param category Vector of string to filter the GO categories, could be "ALL" or a set of GO categories.
+#' @param gene.set Vector of string to filter the genes.
+#' @return This function returns a sparse matrix as required by \code{\link{neeat}} method.
+#'
+#' @examples
+#' 
+#' \dontrun{
+#' source("http://bioconductor.org/biocLite.R")
+#' biocLite("org.Hs.eg.db")
+#' library(org.Hs.eg.db)
+#' x <- getCoreSets(org.Hs.egGO2ALLEGS)
+#' }
+#'
+#' @import Matrix
+#' 
+#' @export
+getCoreSets <- function(go.map, evidence = "ALL", category = "ALL", gene.set = NULL)
+{
+  term.table <- AnnotationDbi::toTable(go.map)
+  term.table[,1] <- toupper(term.table[,1])
+  
+  if (evidence != "ALL")
+    term.table <- term.table[term.table[,3] %in% evidence, ]
+  
+  if (category != "ALL")
+    term.table <- term.table[term.table[,4] %in% category, ]
+  
+  if (!is.null(gene.set)) {
+    term.table <- term.table[term.table[,1] %in% gene.set, ]
+    all.gene <- gene.set    
+  }
+  else
+    all.gene <- unique(term.table[,1])
+  
+  all.term <- unique(term.table[,2])
+  
+  gene.id <- seq_along(all.gene)
+  names(gene.id) <- all.gene
+  term.id <- seq_along(all.term)
+  names(term.id) <- all.term
+  
+  sparseMatrix(gene.id[term.table[,1]], term.id[term.table[,2]], x = T, dimnames = list(all.gene, all.term))
+}
