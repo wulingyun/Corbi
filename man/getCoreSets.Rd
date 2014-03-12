@@ -1,0 +1,38 @@
+\name{getCoreSets}
+\alias{getCoreSets}
+\title{Extract core sets information from GO annotation}
+\usage{
+getCoreSets(go.map, evidence = "ALL", category = "ALL", gene.set = NULL)
+}
+\arguments{
+  \item{go.map}{An object of class "Go3AnnDbBimap".}
+
+  \item{evidence}{Vector of string to filter the GO
+  annotations, could be "ALL" or a set of evidence codes.}
+
+  \item{category}{Vector of string to filter the GO
+  categories, could be "ALL" or a set of GO categories.}
+
+  \item{gene.set}{Vector of string to filter the genes.}
+}
+\value{
+This function returns a sparse matrix as required by
+\code{\link{neeat}} method.
+}
+\description{
+Generate the core sets matrix from an object of class
+"Go3AnnDbBimap" in Bioconductor annotation package.
+}
+\details{
+This function generates the \code{core.sets} matrix
+required by \code{\link{neeat}} method.
+}
+\examples{
+\dontrun{
+source("http://bioconductor.org/biocLite.R")
+biocLite("org.Hs.eg.db")
+library(org.Hs.eg.db)
+x <- getCoreSets(org.Hs.egGO2ALLEGS)
+}
+}
+
