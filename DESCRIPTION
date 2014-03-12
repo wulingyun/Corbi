@@ -1,7 +1,10 @@
 Package: Corbi
 Version: 0.3-1
-Title: Corbi - Collection of reliable biomedical informatics tools
-Description: Biomedical informatics tools developed by WuLab at AMSS
+Title: Corbi - Tools for bioinformatics analysis
+Description: This package provides some bioinformatics analysis tools
+    developed by WuLab at Academy of Mathematics and Systems Science, Chinese
+    Academy of Sciences, including network comparison, functional enrichment
+    analysis, etc.
 Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))
@@ -12,5 +15,7 @@ Imports:
     CRF (>= 0.3-6),
     Matrix (>= 1.0-14),
     parallel (>= 3.0.2)
+Suggests:
+    AnnotationDbi (>= 1.24.0)
 License: GPL (>= 2)
 URL: http://r-forge.r-project.org/projects/corbi/
