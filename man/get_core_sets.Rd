@@ -1,8 +1,8 @@
-\name{getCoreSets}
-\alias{getCoreSets}
+\name{get_core_sets}
+\alias{get_core_sets}
 \title{Extract core sets information from GO annotation}
 \usage{
-getCoreSets(go.map, evidence = "ALL", category = "ALL", gene.set = NULL)
+get_core_sets(go.map, evidence = "ALL", category = "ALL", gene.set = NULL)
 }
 \arguments{
   \item{go.map}{An object of class "Go3AnnDbBimap".}
@@ -32,7 +32,7 @@ required by \code{\link{neeat}} method.
 source("http://bioconductor.org/biocLite.R")
 biocLite("org.Hs.eg.db")
 library(org.Hs.eg.db)
-x <- getCoreSets(org.Hs.egGO2ALLEGS)
+x <- get_core_sets(org.Hs.egGO2ALLEGS)
 }
 }
 

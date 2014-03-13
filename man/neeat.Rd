@@ -43,14 +43,14 @@ neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
 This function will return a matrix of same columns as
 \code{core.sets}, and each column containing the following
 components for the correponding core gene set
-\code{core.sets[,i]}: \itemize{ \item \code{z.score} The
-Z-score for \code{gene.set} \item \code{p.value} The
-statistic significance for \code{gene.set} under specified
-NEEAT model \item \code{raw.score} The raw score for
-\code{gene.set} under specified NEEAT model \item
-\code{avg.score} The average score for \code{n.perm} random
-permutations \item \code{var.score} The variance of scores
-for \code{n.perm} random permutations }
+\code{core.sets[,i]}: \item{\code{z.score}}{The Z-score for
+\code{gene.set}} \item{\code{p.value}}{The statistic
+significance for \code{gene.set} under specified NEEAT
+model} \item{\code{raw.score}}{The raw score for
+\code{gene.set} under specified NEEAT model}
+\item{\code{avg.score}}{The average score for \code{n.perm}
+random permutations} \item{\code{var.score}}{The variance
+of scores for \code{n.perm} random permutations}
 }
 \description{
 Functional enrichment anslysis of gene sets by integrating

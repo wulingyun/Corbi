@@ -1,0 +1,25 @@
+\name{write_net}
+\alias{write_net}
+\title{Write network information to text file}
+\usage{
+write_net(net, file)
+}
+\arguments{
+  \item{net}{A list as returned by \code{\link{read_net}}}
+
+  \item{file}{The name of text file}
+}
+\description{
+Write the network information to a text file with specific
+format.
+}
+\details{
+This function writes the network information to a text file
+with specific format: each line contains two strings
+separated by spaces, which correspond to the names of two
+end points of one edge in the network.
+}
+\seealso{
+\code{\link{read_net}}
+}
+

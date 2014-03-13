@@ -8,6 +8,9 @@
 #' 
 #' @param file The name of text file
 #' @return A list with the following components:
+#'   \item{size}{The number of network nodes}
+#'   \item{node}{The vector of network node names}
+#'   \item{matrix}{The logical adjacency matrix}
 #' 
 #' @seealso \code{\link{write_net}}
 #' 
@@ -41,6 +44,8 @@ read_net <- function(file)
 #' 
 #' @seealso \code{\link{read_net}}
 #' 
+#' @import Matrix
+#' 
 #' @export
 write_net <- function(net, file)
 {
@@ -49,7 +54,24 @@ write_net <- function(net, file)
   write.table(net.edge, file, quote=F, row.names=F, col.names=F)
 }
 
-
+#' Calculate shortest distances of unweighted network
+#' 
+#' Calculate all pairs of shortest distances of unweighted network
+#' 
+#' This function calculates all pairs of shortest distances of unweighted network
+#' by using breadth-first-search (BFS) algorithm.
+#' 
+#' @param net.matrix Logical adjacency matrix of given unweighted network
+#' @param source.nodes Logical vector to indicate the source nodes that 
+#' need to calculate the shortest distances
+#' @return This function will return the shortest distance matrix, where the element
+#' \code{[i, j]} is the shortest distance between node i and j. Value -1 means unreachable.
+#' If \code{source.nodes[i]} equals FALSE, the shortest distance from i to other nodes
+#' will not be calculated and the row i will be all -1.
+#' 
+#' @import Matrix
+#' 
+#' @export
 get_shortest_distances <- function(net.matrix, source.nodes = rep_len(T, dim(net.matrix)[1]))
 {
   edges <- which(net.matrix != 0, arr.ind = T)

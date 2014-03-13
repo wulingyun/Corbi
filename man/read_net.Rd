@@ -1,0 +1,28 @@
+\name{read_net}
+\alias{read_net}
+\title{Read network information from text file}
+\usage{
+read_net(file)
+}
+\arguments{
+  \item{file}{The name of text file}
+}
+\value{
+A list with the following components: \item{size}{The
+number of network nodes} \item{node}{The vector of network
+node names} \item{matrix}{The logical adjacency matrix}
+}
+\description{
+Read the network information from a text file with specific
+format.
+}
+\details{
+This function reads the network information from a text
+file with specific format: each line contains two strings
+separated by spaces, which correspond to the names of two
+end points of one edge in the network.
+}
+\seealso{
+\code{\link{write_net}}
+}
+
