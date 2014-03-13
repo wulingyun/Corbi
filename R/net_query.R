@@ -92,47 +92,27 @@ net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 
 	query.type <- as.numeric(query.type)
 	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
-	target <- read.net(target.net)
-	target$sim <- read.sim(node.sim)
+	target <- read_net(target.net)
+	target$sim <- read_sim(node.sim)
 
-	query <- read.net(query.net)
+	query <- read_net(query.net)
 
 # compute the shortest distance matrix for the target network
 # and simplify the target network
 
-	label <- simplify.target(query, target, delta)
+	label <- simplify_target(query, target, delta)
 
 # build and solve CRF model
 
-	model <- build.model(query, label, delta)
-	result <- solve.crf(model, query.type)
+	model <- build_model(query, label, delta)
+	result <- solve_crf(model, query.type)
 
 # write result to output file
 
-	write.result(query, label, model, result, paste(query.net, output, sep="_"))
+	write_result(query, label, model, result, paste(query.net, output, sep="_"))
 }
 
-read.net <- function(file)
-{
-	net.text <- as.matrix(read.table(file, fill=T, as.is=T, col.names=1:max(count.fields(file))))
-	net.node <- unique(as.character(net.text))
-	net.node <- net.node[net.node != ""]
-	net.size <- length(net.node)
-	net.edge <- cbind(as.character(net.text[,1]), as.character(net.text[,-1]))
-	net.edge <- net.edge[net.edge[,2] != "", ]
-	net.matrix <- matrix(0, net.size, net.size, dimnames=list(net.node, net.node))
-	net.matrix[net.edge] <- 1
-	list(size=net.size, node=net.node, matrix=net.matrix)
-}
-
-write.net <- function(net, file)
-{
-	net.edge <- which(net$matrix == 1, arr.ind=1)
-	net.edge <- matrix(net$node[net.edge], ncol=2)
-	write.table(net.edge, file, quote=F, row.names=F, col.names=F)
-}
-
-read.sim <- function(file)
+read_sim <- function(file)
 {
 	sim.text <- read.table(file, as.is=T)
 	sim.node1 <- unique(as.character(sim.text[,1]))
@@ -144,7 +124,7 @@ read.sim <- function(file)
 	sim.matrix
 }
 
-simplify.target <- function(query, target, delta)
+simplify_target <- function(query, target, delta)
 {
 	net.sim <- matrix(0, query$size, target$size, dimnames=list(query$node, target$node))
 	n1 <- query$node[query$node %in% rownames(target$sim)]
@@ -173,7 +153,7 @@ simplify.target <- function(query, target, delta)
 	list(size=net.size, node=net.node, matrix=net.matrix, sim=net.sim, dist=net.dist)
 }
 
-build.model <- function(query, label, delta)
+build_model <- function(query, label, delta)
 {
 	query.size <- query$size
 	query.net <- query$matrix
@@ -217,7 +197,7 @@ build.model <- function(query, label, delta)
 	crf
 }
 
-decode.heuristic <- function(crf)
+decode_heuristic <- function(crf)
 {
 	result <- try(decode.junction(crf), T)
 	if (class(result) == "try-error")
@@ -227,15 +207,15 @@ decode.heuristic <- function(crf)
 	result
 }
 
-solve.crf <- function(model, query.type)
+solve_crf <- function(model, query.type)
 {
-	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode.heuristic, decode.ilp)
+	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode_heuristic, decode.ilp)
 	if (!is.numeric(query.type) || query.type > length(decode.method) || query.type < 1) query.type = 4
 	result <- decode.method[[query.type]](model)
 	result <- model$state.map[cbind(1:model$n.nodes, result)]
 }
 
-write.result <- function(query, label, model, result, filename="result.txt")
+write_result <- function(query, label, model, result, filename="result.txt")
 {
 	query.name <- query$node
 	label.name <- c(label$node, "gap")
