@@ -4,7 +4,7 @@
 \usage{
 neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
   method = "gene", rho = 0.5, n.perm = 10000, max.depth = 10,
-  n.cpu = 1, batch.size = 5000, use.multinom = FALSE)
+  n.cpu = 1, batch.size = 5000, use.multinom = FALSE, adjust.p = "BH")
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes
