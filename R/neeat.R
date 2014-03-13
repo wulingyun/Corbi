@@ -30,7 +30,7 @@
 #' @export
 neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", 
                   rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1, batch.size = 5000,
-                  use.multinom = FALSE)
+                  use.multinom = FALSE, adjust.p = "BH")
 {
   if (use.multinom)
     options(neeat_permutation = rmultinom)
@@ -49,10 +49,14 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method 
     fun <- function (x, ...) neeat_internal(core.sets[, x], ...)
     result <- clusterApply(cl, jobs, fun, gene.set, net, subnet, method, rho, n.perm, max.depth)
     stopCluster(cl)
-    matrix(unlist(result), nrow = 5, dimnames = list(c("z.score", "p.value", "raw.score", "avg.score", "var.score")))
+    result <- matrix(unlist(result), nrow = 5)
   }
-  else
-    neeat_internal(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
+  else {
+    result <- neeat_internal(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
+  }
+  result[2,] <- p.adjust(result[2,], method = adjust.p)
+  rownames(result) <- c("z.score", "p.value", "raw.score", "avg.score", "var.score")
+  result
 }
 
 neeat_internal <- function(core.sets, gene.set, net, subnet, method, rho, n.perm, max.depth)
