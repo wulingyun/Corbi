@@ -1,73 +1,53 @@
 #include "Corbi.h"
 
-SEXP NQ_ShortestDistances(SEXP _W, SEXP _F)
+SEXP NQ_ShortestDistances(SEXP _Edges, SEXP _Index, SEXP _SourceNodes)
 {
-	PROTECT(_W = AS_NUMERIC(_W));
-	double *W = NUMERIC_POINTER(_W);
-	PROTECT(_F = AS_LOGICAL(_F));
-	int *F = LOGICAL_POINTER(_F);
+  PROTECT(_Edges = AS_INTEGER(_Edges));
+  int *Edges = INTEGER_POINTER(_Edges);
+  PROTECT(_Index = AS_INTEGER(_Index));
+  int *Index = INTEGER_POINTER(_Index);
+	PROTECT(_SourceNodes = AS_LOGICAL(_SourceNodes));
+	int *SourceNodes = LOGICAL_POINTER(_SourceNodes);
 
-	SEXP _dW;
-	PROTECT(_dW = GET_DIM(_W));
-	int dW = INTEGER_POINTER(AS_INTEGER(_dW))[0];
+  SEXP _nEdges;
+  PROTECT(_nEdges = GET_DIM(_Edges));
+	int nEdges = INTEGER_POINTER(AS_INTEGER(_nEdges))[0];
+  int nNodes = length(_SourceNodes);
 
-	SEXP _D;
-	PROTECT(_D = NEW_INTEGER(dW * dW));
-	setDim2(_D, dW, dW);
-	int *D = INTEGER_POINTER(_D);
-	setValues(_D, D, -1);
+	SEXP _Dist;
+	PROTECT(_Dist = NEW_INTEGER(nNodes * nNodes));
+	setDim2(_Dist, nNodes, nNodes);
+	int *Dist = INTEGER_POINTER(_Dist);
+	setValues(_Dist, Dist, -1);
 
-	int *out_links = (int *) R_alloc(dW * dW, sizeof(int));
-	int *out_degree = (int *) R_alloc(dW, sizeof(int));
-	for (int i = 0; i < dW; i++)
-	{
-		out_degree[i] = 0;
-		for (int j = 0; j < dW; j++)
-		{
-			if (W[i + j * dW] != 0)
-			{
-				out_links[i * dW + out_degree[i]] = j;
-				out_degree[i]++;
-			}
-		}
-	}
-
-	bool *label_free = (bool *) R_alloc(dW, sizeof(bool));
-	int *queue = (int *) R_alloc(dW, sizeof(int));
+	int *queue = (int *) R_alloc(nNodes, sizeof(int));
 	int queue_head, queue_tail;
 
-	for (int s = 0; s < dW; s++)
+	for (int s = 0; s < nNodes; s++)
 	{
-		if (!F[s]) continue;
-
-		for (int i = 0; i < dW; i++)
-		{
-			label_free[i] = true;
-		}
+		if (!SourceNodes[s]) continue;
 
 		queue_head = queue_tail = 0;
 		queue[queue_tail++] = s;
-		label_free[s] = false;
-		D[s + s * dW] = 0;
+		Dist[s + s * nNodes] = 0;
 
 		while (queue_head != queue_tail)
 		{
 			int n = queue[queue_head++];
-			int d = D[s + n * dW];
+			int d = Dist[s + n * nNodes] + 1;
 
-			for (int i = 0; i < out_degree[n]; i++)
+			for (int i = Index[n]; i < Index[n+1]; i++)
 			{
-				int t = out_links[n * dW + i];
-				if (label_free[t])
+				int t = Edges[nEdges + i] - 1;
+				if (Dist[s + t * nNodes] < 0)
 				{
 					queue[queue_tail++] = t;
-					label_free[t] = false;
-					D[s + t * dW] = d + 1;
+					Dist[s + t * nNodes] = d;
 				}
 			}
 		}
 	}
 
-	UNPROTECT(4);
-	return (_D);
+	UNPROTECT(5);
+	return (_Dist);
 }
