@@ -17,16 +17,16 @@ net_query_batch <- function(query.nets, target.net, node.sim, query.type=4, delt
 {
   query.type <- as.numeric(query.type)
   delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
-  target <- read.net(target.net)
-  target$sim <- read.sim(node.sim)
+  target <- read_net(target.net)
+  target$sim <- read_sim(node.sim)
   target$dist <- .Call(NQ_ShortestDistances, target$matrix, rep(T, target$size))
   
   for (query.net in query.nets)
   {
-    query <- read.net(query.net)
-    label <- simplify.target(query, target, delta)
-    model <- build.model(query, label, delta)
-    result <- solve.crf(model, query.type)
-    write.result(query, label, model, result, paste(query.net, output, sep="_"))
+    query <- read_net(query.net)
+    label <- simplify_target(query, target, delta)
+    model <- build_model(query, label, delta)
+    result <- solve_crf(model, query.type)
+    write_result(query, label, model, result, paste(query.net, output, sep="_"))
   }
 }

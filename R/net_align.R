@@ -64,11 +64,11 @@ net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 
 	query.type <- as.numeric(query.type)
 	delta <- lapply(list(d=delta.d, c=delta.c, e=delta.e, s=delta.s), as.numeric)
-	target <- read.net(target.net)
-	target$sim <- read.sim(node.sim)
+	target <- read_net(target.net)
+	target$sim <- read_sim(node.sim)
 	target0 <- target
  
-	query <- read.net(query.net)
+	query <- read_net(query.net)
 
 	# iter times
 	k=0;
@@ -81,25 +81,25 @@ net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 		# and simplify the target network
 		# build and solve CRF model
 
-		label <- simplify.target(query, target, delta)
-		model <- build.model(query, label, delta)
-		result <- solve.crf(model, query.type)
+		label <- simplify_target(query, target, delta)
+		model <- build_model(query, label, delta)
+		result <- solve_crf(model, query.type)
 	
 		# change the target subnet as query network 
 
-		modelchange <- target.part(label,result,target,query)
+		modelchange <- target_part(label,result,target,query)
 		targetpart <- modelchange$target
 		query$sim <- modelchange$sim
 		 
 
 	## target part --> query
 
-		label1 <- simplify.target( targetpart, query, delta)
-		model1 <- build.model(targetpart, label1, delta)
-		result1 <- solve.crf(model1, query.type)
+		label1 <- simplify_target( targetpart, query, delta)
+		model1 <- build_model(targetpart, label1, delta)
+		result1 <- solve_crf(model1, query.type)
 
 		# update the common match pairs
-		hitcom <- match.com(label,result,label1,result1)
+		hitcom <- match_com(label,result,label1,result1)
 		
 
 	## given the stop rule
@@ -120,7 +120,7 @@ net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 
 	## update
 		# the node similarity matrix
-		newtarget <- update.sim(hitcom,target,query)
+		newtarget <- update_sim(hitcom,target,query)
 		target$sim <- newtarget$sim
 
 		k=k+1;
@@ -128,11 +128,11 @@ net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 	}
 	
 	# write unique corresponding list
-	write.result1(query, target0, label, model, result, paste(query.net, output, sep="_"))  
+	write_result1(query, target0, label, model, result, paste(query.net, output, sep="_"))  
 
 }
 
-target.part <- function(label,result,target0,query){
+target_part <- function(label,result,target0,query){
 
 	sub <- result<=label$size
 	node <- label$node[unique(result[sub])]
@@ -149,7 +149,7 @@ target.part <- function(label,result,target0,query){
 	list(target=target,sim=sim)
 }
 
-match.com <- function(label,result,label1,result1)
+match_com <- function(label,result,label1,result1)
 {
 	nodetarget <- label$node[result[result<=label$size]]
 	nodequery <- rownames(label$sim)[result<=label$size]
@@ -166,7 +166,7 @@ match.com <- function(label,result,label1,result1)
 	hitcom
 }
 
-update.sim <- function (hitcom,target,query)
+update_sim <- function (hitcom,target,query)
 {
 	# update sim
 	sim <- target$sim
@@ -193,7 +193,7 @@ uni <- function(pairs)
 	unipair
 }
 
-write.result1 <- function(query, target, label, model, result, filename="result.txt")
+write_result1 <- function(query, target, label, model, result, filename="result.txt")
 {
 	query.name <- query$node
 	label.name <- c(label$node, "gap")
