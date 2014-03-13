@@ -11,10 +11,11 @@ extern "C" {
 	/* Utils */
   SEXP RMultiHyper(SEXP _N, SEXP _M, SEXP _K);
 
-  SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
-	SEXP NQ_ShortestDistances(SEXP _W, SEXP _S);
+	SEXP NQ_ShortestDistances(SEXP _Edges, SEXP _Index, SEXP _SourceNodes);
   SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core, SEXP _MaxDepth);
   SEXP NE_CountDepths(SEXP _Depth, SEXP _MaxDepth);
+
+  SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
 }
 
 

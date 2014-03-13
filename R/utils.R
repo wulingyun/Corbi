@@ -52,5 +52,8 @@ write_net <- function(net, file)
 
 get_shortest_distances <- function(net.matrix, source.nodes = rep_len(T, dim(net.matrix)[1]))
 {
-  .Call(NQ_ShortestDistances, as.matrix(net.matrix), source.nodes)
+  edges <- which(net.matrix != 0, arr.ind = T)
+  edges <- edges[order(edges[,1]), ]
+  index <- findInterval(0:dim(net.matrix)[1], edges[,1])
+  .Call(NQ_ShortestDistances, edges, index, source.nodes)
 }
