@@ -10,7 +10,8 @@
 #' When querying several networks in the same target network,
 #' \code{\link{net_query_batch}} will save much time.
 #' 
-#' \itemize{ \item query.net: The query network file is written as follows:\cr
+#' \itemize{
+#' \item query.net: The query network file is written as follows:\cr
 #' v1 v2 v3 v4 v5\cr v3 v4 \cr ...  \cr where v1, v2, v3, v4, v5 ... are the
 #' nodes' names and each line indicates there are edges between the first node
 #' and other nodes in the line. For example, the first line denotes 4 edges:

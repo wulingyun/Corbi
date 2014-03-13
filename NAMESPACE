@@ -1,4 +1,5 @@
 export(get_core_sets)
+export(get_shortest_distances)
 export(neeat)
 export(net_align)
 export(net_query)

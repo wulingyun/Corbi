@@ -1,0 +1,32 @@
+\name{get_shortest_distances}
+\alias{get_shortest_distances}
+\title{Calculate shortest distances of unweighted network}
+\usage{
+get_shortest_distances(net.matrix, source.nodes = rep_len(T,
+  dim(net.matrix)[1]))
+}
+\arguments{
+  \item{net.matrix}{Logical adjacency matrix of given
+  unweighted network}
+
+  \item{source.nodes}{Logical vector to indicate the source
+  nodes that need to calculate the shortest distances}
+}
+\value{
+This function will return the shortest distance matrix,
+where the element \code{[i, j]} is the shortest distance
+between node i and j. Value -1 means unreachable. If
+\code{source.nodes[i]} equals FALSE, the shortest distance
+from i to other nodes will not be calculated and the row i
+will be all -1.
+}
+\description{
+Calculate all pairs of shortest distances of unweighted
+network
+}
+\details{
+This function calculates all pairs of shortest distances of
+unweighted network by using breadth-first-search (BFS)
+algorithm.
+}
+
