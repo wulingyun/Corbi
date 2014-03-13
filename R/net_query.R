@@ -142,7 +142,7 @@ simplify_target <- function(query, target, delta)
 	net.sim[net.sim <= delta$d] <- 0
 	if (is.null(target$dist))
 	{
-		net.dist <- .Call(NQ_ShortestDistances, target$matrix, select)[select, select]
+		net.dist <- get_shortest_distances(target$matrix, select)[select, select]
 	}
 	else
 	{
@@ -157,7 +157,6 @@ build_model <- function(query, label, delta)
 {
 	query.size <- query$size
 	query.net <- query$matrix
-	query.net[query.net != 0] <- 1
 	label.size <- label$size
 	label.gap <- label.size + 1
 	n.labels <- label.gap
@@ -171,9 +170,7 @@ build_model <- function(query, label, delta)
 	W[,label.gap] <- delta$e
 	W[label.gap, label.gap] <- delta$c
 
-	crf.net <- query.net + t(query.net)
-	crf.net[crf.net != 0] <- 1
-	crf <- make.crf(crf.net, rowSums(S > 0))
+	crf <- make.crf(query.net, rowSums(S > 0))
 
 	crf$state.map <- matrix(label.gap, nrow=crf$n.nodes, ncol=crf$max.state)
 	for (i in 1:crf$n.nodes)

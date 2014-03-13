@@ -201,7 +201,7 @@ write_result1 <- function(query, target, label, model, result, filename="result.
 	#
 	select <- matrix(TRUE,target$size,1)
 	net.dist <- matrix(,target$size,target$size,dimnames=dimnames(target$matrix))
-	net.dist[select,select] <- .Call(NQ_ShortestDistances, target$matrix, select)
+	net.dist[select,select] <- get_shortest_distances(target$matrix, select)[select, select]
 	net.dist[net.dist == -1] <- Inf
 	net.dist[cbind(1:target$size, 1:target$size)] <- 1
 

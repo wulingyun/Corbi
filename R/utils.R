@@ -19,11 +19,12 @@ read_net <- function(file)
   net.text <- as.matrix(read.table(file, fill=T, as.is=T, col.names=1:max(count.fields(file))))
   net.node <- unique(as.character(net.text))
   net.node <- net.node[net.node != ""]
-  net.size <- length(net.node)
   net.edge <- cbind(as.character(net.text[,1]), as.character(net.text[,-1]))
   net.edge <- net.edge[net.edge[,2] != "", ]
-  net.matrix <- matrix(0, net.size, net.size, dimnames=list(net.node, net.node))
-  net.matrix[net.edge] <- 1
+  net.size <- length(net.node)
+  node.id <- seq_along(net.node)
+  names(node.id) <- net.node
+  net.matrix <- sparseMatrix(node.id[net.edge[,1]], node.id[net.edge[,2]], x=T, dims=c(net.size, net.size), dimnames=list(net.node, net.node))
   list(size=net.size, node=net.node, matrix=net.matrix)
 }
 
@@ -46,4 +47,10 @@ write_net <- function(net, file)
   net.edge <- which(net$matrix != 0, arr.ind=1)
   net.edge <- matrix(net$node[net.edge], ncol=2)
   write.table(net.edge, file, quote=F, row.names=F, col.names=F)
+}
+
+
+get_shortest_distances <- function(net.matrix, source.nodes = rep_len(T, dim(net.matrix)[1]))
+{
+  .Call(NQ_ShortestDistances, as.matrix(net.matrix), source.nodes)
 }

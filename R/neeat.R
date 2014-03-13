@@ -194,13 +194,13 @@ neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, rho, n.per
 #' source("http://bioconductor.org/biocLite.R")
 #' biocLite("org.Hs.eg.db")
 #' library(org.Hs.eg.db)
-#' x <- getCoreSets(org.Hs.egGO2ALLEGS)
+#' x <- get_core_sets(org.Hs.egGO2ALLEGS)
 #' }
 #'
 #' @import Matrix
 #' 
 #' @export
-getCoreSets <- function(go.map, evidence = "ALL", category = "ALL", gene.set = NULL)
+get_core_sets <- function(go.map, evidence = "ALL", category = "ALL", gene.set = NULL)
 {
   term.table <- AnnotationDbi::toTable(go.map)
   term.table[,1] <- toupper(term.table[,1])
@@ -225,5 +225,5 @@ getCoreSets <- function(go.map, evidence = "ALL", category = "ALL", gene.set = N
   term.id <- seq_along(all.term)
   names(term.id) <- all.term
   
-  sparseMatrix(gene.id[term.table[,1]], term.id[term.table[,2]], x = T, dimnames = list(all.gene, all.term))
+  sparseMatrix(gene.id[term.table[,1]], term.id[term.table[,2]], x = T, dims = c(length(all.gene), length(all.term)), dimnames = list(all.gene, all.term))
 }
