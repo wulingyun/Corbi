@@ -5,18 +5,21 @@
 #' This is a novel functional enrichment analysis tool based on the gene set and network
 #' information.
 #' 
-#' @param core.sets Logical matrix indicated the core genes associated with specific functions or pathways
-#' @param gene.set Logical vector indicated the gene set for evaluating
-#' @param net The adjacent matrix of network
-#' @param subnet The adjacent matrix of sub-network for evaluating in the NEEAT-subnet model
-#' @param method A string indicated the NEEAT model, including "gene", "net" and "subnet"
-#' @param rho The weight parameter for depths
-#' @param n.perm The number of permutations for calculating p-values
-#' @param max.depth Integer for the maximum depth considered in the NEEAT models
-#' @param n.cpu The number of CPUs/cores used in the parallel computation
-#' @param batch.size The desired size of batches in the parallel computation
+#' @param core.sets Logical matrix indicated the core genes associated with specific functions or pathways.
+#' @param gene.set Logical vector indicated the gene set for evaluating.
+#' @param net The adjacent matrix of network.
+#' @param subnet The adjacent matrix of sub-network for evaluating in the NEEAT-subnet model.
+#' @param method A string indicated the NEEAT model, including "gene", "net" and "subnet".
+#' @param rho The weight parameter for depths.
+#' @param n.perm The number of permutations for calculating p-values.
+#' @param max.depth Integer for the maximum depth considered in the NEEAT models.
+#' @param n.cpu The number of CPUs/cores used in the parallel computation.
+#' @param batch.size The desired size of batches in the parallel computation.
 #' @param use.multinom Logical variable indicated whether use \code{\link{rmultinom}} to 
-#' approximate \code{\link{rmultihyper}}
+#' approximate \code{\link{rmultihyper}}.
+#' @param adjust.p The method for adjusting p-values for multiple testing. Use "none" for bypassing.
+#' See \code{\link{p.adjust}} for available methods.
+#' 
 #' @return This function will return a matrix of same columns as \code{core.sets}, and each column
 #' containing the following components for the correponding core gene set \code{core.sets[,i]}:
 #'   \item{\code{z.score}}{The Z-score for \code{gene.set}}
@@ -24,6 +27,8 @@
 #'   \item{\code{raw.score}}{The raw score for \code{gene.set} under specified NEEAT model}
 #'   \item{\code{avg.score}}{The average score for \code{n.perm} random permutations}
 #'   \item{\code{var.score}}{The variance of scores for \code{n.perm} random permutations}
+#'
+#' @seealso \code{\link{get_core_sets}}
 #' 
 #' @import Matrix parallel
 #'
@@ -188,7 +193,10 @@ neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, rho, n.per
 #' @param evidence Vector of string to filter the GO annotations, could be "ALL" or a set of evidence codes.
 #' @param category Vector of string to filter the GO categories, could be "ALL" or a set of GO categories.
 #' @param gene.set Vector of string to filter the genes.
+#' 
 #' @return This function returns a sparse matrix as required by \code{\link{neeat}} method.
+#' 
+#' @seealso \code{\link{neeat}}
 #'
 #' @examples
 #' 

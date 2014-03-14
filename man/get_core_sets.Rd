@@ -35,4 +35,7 @@ library(org.Hs.eg.db)
 x <- get_core_sets(org.Hs.egGO2ALLEGS)
 }
 }
+\seealso{
+\code{\link{neeat}}
+}
 
