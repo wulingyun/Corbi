@@ -8,36 +8,40 @@ neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes
-  associated with specific functions or pathways}
+  associated with specific functions or pathways.}
 
   \item{gene.set}{Logical vector indicated the gene set for
-  evaluating}
+  evaluating.}
 
-  \item{net}{The adjacent matrix of network}
+  \item{net}{The adjacent matrix of network.}
 
   \item{subnet}{The adjacent matrix of sub-network for
-  evaluating in the NEEAT-subnet model}
+  evaluating in the NEEAT-subnet model.}
 
   \item{method}{A string indicated the NEEAT model,
-  including "gene", "net" and "subnet"}
+  including "gene", "net" and "subnet".}
 
-  \item{rho}{The weight parameter for depths}
+  \item{rho}{The weight parameter for depths.}
 
   \item{n.perm}{The number of permutations for calculating
-  p-values}
+  p-values.}
 
   \item{max.depth}{Integer for the maximum depth considered
-  in the NEEAT models}
+  in the NEEAT models.}
 
   \item{n.cpu}{The number of CPUs/cores used in the
-  parallel computation}
+  parallel computation.}
 
   \item{batch.size}{The desired size of batches in the
-  parallel computation}
+  parallel computation.}
 
   \item{use.multinom}{Logical variable indicated whether
   use \code{\link{rmultinom}} to approximate
-  \code{\link{rmultihyper}}}
+  \code{\link{rmultihyper}}.}
+
+  \item{adjust.p}{The method for adjusting p-values for
+  multiple testing. Use "none" for bypassing. See
+  \code{\link{p.adjust}} for available methods.}
 }
 \value{
 This function will return a matrix of same columns as
@@ -59,5 +63,8 @@ network information
 \details{
 This is a novel functional enrichment analysis tool based
 on the gene set and network information.
+}
+\seealso{
+\code{\link{get_core_sets}}
 }
 
