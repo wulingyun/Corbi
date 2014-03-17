@@ -14,7 +14,7 @@
 #' 
 #' Functional enrichment analysis:
 #' \itemize{
-#'   \item \code{\link{neeat}} Network enhanced functional enrichment analysis tool
+#'   \item \code{\link{neeat}} Network enhanced enrichment analysis tool
 #' }
 #' 
 #' 
@@ -23,7 +23,6 @@
 #' @aliases Corbi-package Corbi
 #' @docType package
 #' @keywords package
-#' @author Ling-Yun Wu \email{wulingyun@@gmail.com}
 #' 
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
 #' Network Querying Method Based on Conditional Random Fields. Bioinformatics,

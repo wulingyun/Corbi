@@ -20,11 +20,8 @@ version of \code{\link{net_query}} \item
 conditional random fields }
 
 Functional enrichment analysis: \itemize{ \item
-\code{\link{neeat}} Network enhanced functional enrichment
-analysis tool }
-}
-\author{
-Ling-Yun Wu \email{wulingyun@gmail.com}
+\code{\link{neeat}} Network enhanced enrichment analysis
+tool }
 }
 \references{
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
