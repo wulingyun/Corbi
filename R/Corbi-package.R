@@ -1,8 +1,9 @@
-#' Corbi - Collection of reliable biomedical informatics tools
+#' Corbi - Bioinformatics analysis tools
 #' 
-#' This pakcage provides a bundle of analysis tools for biomedical research.
+#' This pakcage provides a bundle of bioinformatics analysis tools for biomedical research.
 #'
-#' This ia a collection of biomedical informatics tools developed by WuLab at AMSS, including:
+#' This is a collection of bioinformatics analysis tools developed by WuLab at Academy of Mathematics
+#' and Systems Science, Chinese Academy of Sciences.
 #' 
 #' Network comparison:
 #' \itemize{

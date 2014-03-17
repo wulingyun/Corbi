@@ -1,10 +1,9 @@
 Package: Corbi
 Version: 0.3-1
-Title: Corbi - Tools for bioinformatics analyses
-Description: This package provides some bioinformatics analysis tools
-    developed by WuLab at Academy of Mathematics and Systems Science, Chinese
-    Academy of Sciences, including network comparison, functional enrichment
-    analysis, etc.
+Title: Corbi - Bioinformatics analysis tools
+Description: This package provides a bundle of bioinformatics analysis tools
+    for biomedical research, including network comparison, functional
+    enrichment analysis, etc.
 Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))

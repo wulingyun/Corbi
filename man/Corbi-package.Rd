@@ -2,14 +2,15 @@
 \name{Corbi-package}
 \alias{Corbi}
 \alias{Corbi-package}
-\title{Corbi - Collection of reliable biomedical informatics tools}
+\title{Corbi - Bioinformatics analysis tools}
 \description{
-This pakcage provides a bundle of analysis tools for
-biomedical research.
+This pakcage provides a bundle of bioinformatics analysis
+tools for biomedical research.
 }
 \details{
-This ia a collection of biomedical informatics tools
-developed by WuLab at AMSS, including:
+This is a collection of bioinformatics analysis tools
+developed by WuLab at Academy of Mathematics and Systems
+Science, Chinese Academy of Sciences.
 
 Network comparison: \itemize{ \item \code{\link{net_query}}
 Network querying method based on conditional random fields
