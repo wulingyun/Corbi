@@ -19,6 +19,8 @@
 #' approximate \code{\link{rmultihyper}}.
 #' @param adjust.p The method for adjusting p-values for multiple testing. Use "none" for bypassing.
 #' See \code{\link{p.adjust}} for available methods.
+#' @param z.threshold The threshold for filtering out small Z-scores. The p-values are calculated only
+#' for the Z-scores \code{>= z.threshold}, otherwise p-values are set as 1.
 #' 
 #' @return This function will return a matrix of same columns as \code{core.sets}, and each column
 #' containing the following components for the correponding core gene set \code{core.sets[,i]}:
@@ -35,12 +37,10 @@
 #' @export
 neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, method = "gene", 
                   rho = 0.5, n.perm = 10000, max.depth = 10, n.cpu = 1, batch.size = 5000,
-                  use.multinom = FALSE, adjust.p = "BH")
+                  use.multinom = FALSE, adjust.p = "BH", z.threshold = 2.0)
 {
-  if (use.multinom)
-    options(neeat_permutation = rmultinom)
-  else
-    options(neeat_permutation = rmultihyper)
+  options(neeat_use_multinom = use.multinom, 
+          neeat_z_threshold = z.threshold)
 
   if (n.cpu > 1) {
     if (.Platform$OS.type == "windows")
@@ -110,16 +110,38 @@ net_edges <- function(net, gene.set = NULL)
 
 neeat_score <- function(w.depth, n.depth, raw.depth, n.perm)
 {
+  use.multinom <- getOption("neeat_use_multinom", default = FALSE)
+  z.threshold <- getOption("neeat_z_threshold", default = 2.0)
+
+  p <- n.depth / sum(n.depth)
+  w <- w.depth * p
+  n <- sum(raw.depth)
+  N <- sum(n.depth)
+  cov <- -tcrossprod(w)
+  diag(cov) <- w.depth * w * (1-p)
+
   raw.score <- sum(w.depth * raw.depth)
-  
-  permutation <- getOption("neeat_permutation", default = rmultihyper)
-  perm.depth <- permutation(n.perm, sum(raw.depth), n.depth)
-  perm.score <- colSums(w.depth * perm.depth)
-  
-  avg.score <- mean(perm.score)
-  var.score <- var(perm.score)
+  avg.score <- sum(w) * n
+  var.score <- sum(cov) * n
+
+  if (use.multinom) {
+    simulate <- rmultinom
+  }
+  else {
+    var.score <- var.score * (N - n) / (N - 1)
+    simulate <- rmultihyper
+  }
+
   z.score <- (raw.score - avg.score) / sqrt(var.score)
-  p.value <- sum(perm.score >= raw.score) / n.perm
+
+  if (z.score >= z.threshold) {
+    perm.depth <- simulate(n.perm, sum(raw.depth), n.depth)
+    perm.score <- colSums(w.depth * perm.depth)
+    p.value <- sum(perm.score >= raw.score) / n.perm
+  }
+  else {
+    p.value <- 1.0
+  }
 
   c(z.score=z.score, p.value=p.value, raw.score=raw.score, 
     avg.score=avg.score, var.score=var.score)
