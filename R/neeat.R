@@ -27,8 +27,8 @@
 #'   \item{\code{z.score}}{The Z-score for \code{gene.set}}
 #'   \item{\code{p.value}}{The statistic significance for \code{gene.set} under specified NEEAT model}
 #'   \item{\code{raw.score}}{The raw score for \code{gene.set} under specified NEEAT model}
-#'   \item{\code{avg.score}}{The average score for \code{n.perm} random permutations}
-#'   \item{\code{var.score}}{The variance of scores for \code{n.perm} random permutations}
+#'   \item{\code{avg.score}}{The average score for random permutations of \code{gene.set}}
+#'   \item{\code{var.score}}{The variance of scores for random permutations of \code{gene.set}}
 #'
 #' @seealso \code{\link{get_core_sets}}
 #' 

@@ -58,9 +58,10 @@ components for the correponding core gene set
 significance for \code{gene.set} under specified NEEAT
 model} \item{\code{raw.score}}{The raw score for
 \code{gene.set} under specified NEEAT model}
-\item{\code{avg.score}}{The average score for \code{n.perm}
-random permutations} \item{\code{var.score}}{The variance
-of scores for \code{n.perm} random permutations}
+\item{\code{avg.score}}{The average score for random
+permutations of \code{gene.set}}
+\item{\code{var.score}}{The variance of scores for random
+permutations of \code{gene.set}}
 }
 \description{
 Functional enrichment anslysis of gene sets by integrating
