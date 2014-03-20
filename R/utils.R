@@ -79,3 +79,16 @@ get_shortest_distances <- function(net.matrix, source.nodes = rep_len(T, dim(net
   index <- findInterval(0:dim(net.matrix)[1], edges[,1])
   .Call(NQ_ShortestDistances, edges, index, source.nodes)
 }
+
+
+column <- function(m, i)
+{
+  if (class(m) == "lgCMatrix") {
+    v <- logical(m@Dim[1])
+    p <- (m@p[i]+1):m@p[i+1]
+    v[m@i[p]+1] <- m@x[p]
+  }
+  else
+    v <- m[,i]
+  v
+}
