@@ -101,7 +101,9 @@ neeat_internal <- function(core.sets, gene.set, net, subnet, method, options)
     gene.set <- as.logical(gene.set)
     N <- length(gene.set)
     n <- sum(gene.set)
-    sapply(1:dim(core.sets)[2], function(i) neeat_hyper(core.sets[,i], gene.set, N, n))
+    M <- colSums(core.sets)
+    m <- colSums(core.sets & gene.set)
+    sapply(1:dim(core.sets)[2], function(i) neeat_hyper(N, n, M[i], m[i]))
   }
   else {
     stop("Incorrect parameters!")
@@ -218,24 +220,19 @@ neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, options)
   neeat_score(w.depth, n.depth, raw.depth, options)
 }
 
-neeat_hyper <- function(core.set, gene.set, N, n)
+neeat_hyper <- function(N, n, M, m)
 {
-  core.set <- as.logical(core.set)
-
-  M <- sum(core.set)
-
-  raw.score <- sum(core.set & gene.set)
   avg.score <- n * M / N
   var.score <- n * (M / N) * ((N - M) / N) * ((N - n) / (N - 1))
   
   if (var.score > 0)
-    z.score <- (raw.score - avg.score) / sqrt(var.score)
+    z.score <- (m - avg.score) / sqrt(var.score)
   else
     z.score <- 0
   
-  p.value <- 1 - phyper(raw.score-1, M, N-M, n)
+  p.value <- 1 - phyper(m-1, M, N-M, n)
   
-  c(z.score=z.score, p.value=p.value, raw.score=raw.score, 
+  c(z.score=z.score, p.value=p.value, raw.score=m, 
     avg.score=avg.score, var.score=var.score)
 }
 
