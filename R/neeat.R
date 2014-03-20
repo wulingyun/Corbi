@@ -77,14 +77,14 @@ neeat_internal <- function(core.sets, gene.set, net, subnet, method, options)
       net <- sparseMatrix(n.gene, n.gene, x = 0)
     }
     net.edges <- net_edges(net)
-    sapply(1:dim(core.sets)[2], function(i) neeat_gene(core.sets[,i], gene.set, net.edges, options))
+    sapply(1:dim(core.sets)[2], function(i) neeat_gene(column(core.sets, i), gene.set, net.edges, options))
   }
   else if (method == "net" && !is.null(net)) {
     if (!is.null(gene.set)) {
       core.sets <- core.sets[gene.set, ]
       net <- net[gene.set, gene.set]
     }
-    sapply(1:dim(core.sets)[2], function(i) neeat_net(core.sets[,i], net, options))
+    sapply(1:dim(core.sets)[2], function(i) neeat_net(column(core.sets, i), net, options))
   }
   else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
     gene.set <- as.logical(gene.set)
@@ -95,7 +95,7 @@ neeat_internal <- function(core.sets, gene.set, net, subnet, method, options)
     else {
       subnet.edges <- net_edges(subnet)
     }
-    sapply(1:dim(core.sets)[2], function(i) neeat_subnet(core.sets[,i], gene.set, net.edges, subnet.edges, options))
+    sapply(1:dim(core.sets)[2], function(i) neeat_subnet(column(core.sets, i), gene.set, net.edges, subnet.edges, options))
   }
   else if (method == "hyper" && !is.null(gene.set)) {
     gene.set <- as.logical(gene.set)
