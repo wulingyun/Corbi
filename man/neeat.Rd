@@ -20,7 +20,9 @@ neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
   evaluating in the NEEAT-subnet model.}
 
   \item{method}{A string indicated the NEEAT model,
-  including "gene", "net" and "subnet".}
+  including "gene", "net" and "subnet". Use "hyper" for
+  traditional hypergeometric test, in which the network
+  information is ignored.}
 
   \item{rho}{The weight parameter for depths.}
 
