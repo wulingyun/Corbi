@@ -10,6 +10,7 @@
 #' @param net The adjacent matrix of network.
 #' @param subnet The adjacent matrix of sub-network for evaluating in the NEEAT-subnet model.
 #' @param method A string indicated the NEEAT model, including "gene", "net" and "subnet".
+#' Use "hyper" for traditional hypergeometric test, in which the network information is ignored.
 #' @param rho The weight parameter for depths.
 #' @param max.depth Integer for the maximum depth considered in the NEEAT models.
 #' @param n.perm The number of permutations for calculating p-values.
@@ -95,6 +96,12 @@ neeat_internal <- function(core.sets, gene.set, net, subnet, method, options)
       subnet.edges <- net_edges(subnet)
     }
     sapply(1:dim(core.sets)[2], function(i) neeat_subnet(core.sets[,i], gene.set, net.edges, subnet.edges, options))
+  }
+  else if (method == "hyper" && !is.null(gene.set)) {
+    gene.set <- as.logical(gene.set)
+    N <- length(gene.set)
+    n <- sum(gene.set)
+    sapply(1:dim(core.sets)[2], function(i) neeat_hyper(core.sets[,i], gene.set, N, n))
   }
   else {
     stop("Incorrect parameters!")
@@ -210,6 +217,28 @@ neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, options)
   
   neeat_score(w.depth, n.depth, raw.depth, options)
 }
+
+neeat_hyper <- function(core.set, gene.set, N, n)
+{
+  core.set <- as.logical(core.set)
+
+  M <- sum(core.set)
+
+  raw.score <- sum(core.set & gene.set)
+  avg.score <- n * M / N
+  var.score <- n * (M / N) * ((N - M) / N) * ((N - n) / (N - 1))
+  
+  if (var.score > 0)
+    z.score <- (raw.score - avg.score) / sqrt(var.score)
+  else
+    z.score <- 0
+  
+  p.value <- 1 - phyper(raw.score-1, M, N-M, n)
+  
+  c(z.score=z.score, p.value=p.value, raw.score=raw.score, 
+    avg.score=avg.score, var.score=var.score)
+}
+
 
 
 #' Extract core sets information from GO annotation
