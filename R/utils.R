@@ -80,11 +80,24 @@ get_shortest_distances <- function(net.matrix, source.nodes = rep_len(T, dim(net
   .Call(NQ_ShortestDistances, edges, index, source.nodes)
 }
 
-
+#' Extract a column from a matrix
+#' 
+#' Extract a specified column from a sparse matrix rapidly
+#' 
+#' This function use faster extraction algorithm for the \code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
+#' 
+#' @param m The matrix
+#' @param i The column index
+#' 
+#' @return This function will return the specified column as a vector of corresponding type.
+#' 
+#' @import Matrix
+#' 
+#' @export
 column <- function(m, i)
 {
-  if (class(m) == "lgCMatrix") {
-    v <- logical(m@Dim[1])
+  if (inherits(m, "CsparseMatrix")) {
+    v <- vector(typeof(m@x), m@Dim[1])
     p <- (m@p[i]+1):m@p[i+1]
     v[m@i[p]+1] <- m@x[p]
   }
