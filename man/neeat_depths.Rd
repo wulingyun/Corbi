@@ -1,0 +1,33 @@
+\name{neeat_depths}
+\alias{neeat_depths}
+\title{Compute the node depths}
+\usage{
+neeat_depths(core.sets, net, max.depth)
+}
+\arguments{
+  \item{core.sets}{Logical matrix indicated the core genes
+  associated with specific functions or pathways.}
+
+  \item{net}{The adjacent matrix of network.}
+
+  \item{max.depth}{Integer for the maximum depth that will
+  be computed.}
+}
+\value{
+This function returns a matrix with the same dimensions as
+\code{core.sets}, where the element \code{[i, j]}
+represents the depth of node \code{i} under the condition
+(function or pathway) \code{j}.
+}
+\description{
+Compute the node depths for given core sets and network
+}
+\details{
+This function calculates the node depths, which can be used
+for calling \code{\link{neeat}} in the batch mode to reduce
+the computation time.
+}
+\seealso{
+\code{\link{neeat}}
+}
+

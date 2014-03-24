@@ -6,9 +6,14 @@
 #' information.
 #' 
 #' @param core.sets Logical matrix indicated the core genes associated with specific functions or pathways.
-#' @param gene.set Logical vector indicated the gene set for evaluating.
+#' The rows correspond to genes, while the columns represent the functions or pathways.
+#' @param gene.sets Logical vector or matrix indicated the gene set(s) for evaluating.
+#' The rows correspond to genes, while the columns represent the gene sets.
 #' @param net The adjacent matrix of network.
 #' @param subnet The adjacent matrix of sub-network for evaluating in the NEEAT-subnet model.
+#' @param depths The node depths defined in the NEEAT model, which can be pre-computed by calling
+#' \code{\link{neeat_depths}} in advance in order to reduce the computation time. If not provided,
+#' it will be computed on-demand.
 #' @param method A string indicated the NEEAT model, including "gene", "net" and "subnet".
 #' Use "hyper" for traditional hypergeometric test, in which the network information is ignored.
 #' @param rho The weight parameter for depths.
@@ -23,20 +28,21 @@
 #' @param n.cpu The number of CPUs/cores used in the parallel computation.
 #' @param batch.size The desired size of batches in the parallel computation.
 #' 
-#' @return This function will return a matrix of same columns as \code{core.sets}, and each column
-#' containing the following components for the correponding core gene set \code{core.sets[,i]}:
-#'   \item{\code{z.score}}{The Z-score for \code{gene.set}}
-#'   \item{\code{p.value}}{The statistic significance for \code{gene.set} under specified NEEAT model}
-#'   \item{\code{raw.score}}{The raw score for \code{gene.set} under specified NEEAT model}
-#'   \item{\code{avg.score}}{The average score for random permutations of \code{gene.set}}
-#'   \item{\code{var.score}}{The variance of scores for random permutations of \code{gene.set}}
+#' @return This function will return a 3-dimensional array of dimensions \code{c(5, dim(gene.sets)[2], dim(core.sets)[2])},
+#' and each column \code{[,i,j]} containing the following components for the correponding gene set \code{gene.sets[,i]}
+#' and core set \code{core.sets[,j]}:
+#'   \item{\code{z.score}}{The Z-score for the gene set}
+#'   \item{\code{p.value}}{The statistic significance for the gene set under specified NEEAT model}
+#'   \item{\code{raw.score}}{The raw score for the gene set under specified NEEAT model}
+#'   \item{\code{avg.score}}{The average score for random permutations of the gene set}
+#'   \item{\code{var.score}}{The variance of scores for random permutations of the gene set}
 #'
-#' @seealso \code{\link{get_core_sets}}
+#' @seealso \code{\link{get_core_sets}}, \code{\link{neeat_depths}}
 #' 
 #' @import Matrix parallel
 #'
 #' @export
-neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, depths = NULL,
+neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths = NULL,
                   method = "gene", rho = 0.5, max.depth = 10, n.perm = 10000, use.multinom = FALSE,
                   z.threshold = 2.0, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 {
@@ -45,7 +51,17 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, depths 
                   n.perm = n.perm,
                   use.multinom = use.multinom,
                   z.threshold = z.threshold)
+
+  if (is.null(gene.sets))
+    gene.sets <- matrix(T, dim(core.sets)[1], 1, dimnames = list(rownames(core.sets), "net"))
   
+  if (is.null(dim(core.sets)))
+    core.sets <- Matrix(as.logical(core.sets))
+  if (is.null(dim(gene.sets)))
+    gene.sets <- Matrix(as.logical(gene.sets))
+  if (!is.null(depths) && is.null(dim(depths)))
+    depths <- Matrix(depths)
+
   if (n.cpu > 1) {
     if (.Platform$OS.type == "windows")
       cl <- makeCluster(n.cpu)
@@ -55,58 +71,80 @@ neeat <- function(core.sets, gene.set = NULL, net = NULL, subnet = NULL, depths 
     n.job <- dim(core.sets)[2]
     n.batch <- max(1, round(n.job / (batch.size * n.cl))) * n.cl
     jobs <- splitIndices(n.job, n.batch)
-    result <- clusterApply(cl, jobs, neeat_internal, core.sets, gene.set, net, subnet, depths, method, options)
+    result <- clusterApply(cl, jobs, neeat_internal, core.sets, gene.sets, net, subnet, depths, method, options)
     stopCluster(cl)
-    result <- matrix(unlist(result), nrow = 5)
+    result <- unlist(result)
   }
   else {
-    result <- neeat_internal(1:dim(core.sets)[2], core.sets, gene.set, net, subnet, depths, method, options)
+    result <- neeat_internal(seq_len(dim(core.sets)[2]), core.sets, gene.sets, net, subnet, depths, method, options)
   }
-  result[2,] <- p.adjust(result[2,], method = adjust.p)
-  rownames(result) <- c("z.score", "p.value", "raw.score", "avg.score", "var.score")
+  result <- array(result, dim = c(5, dim(gene.sets)[2], dim(core.sets)[2]),
+                  dimnames <- list(c("z.score", "p.value", "raw.score", "avg.score", "var.score"),
+                                   colnames(gene.sets), colnames(core.sets)))
+  result[2,,] <- p.adjust(result[2,,], method = adjust.p)
   result
 }
 
-neeat_internal <- function(core.ids, core.sets, gene.set, net, subnet, depths, method, options)
+neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, method, options)
 {
-  if (method == "gene" && !is.null(gene.set)) {
-    gene.set <- as.logical(gene.set)
+  gs.ids <- seq_len(dim(gene.sets)[2])
+  if (method == "gene") {
     if (is.null(net)) {
-      n.gene <- length(gene.set)
-      net <- sparseMatrix(n.gene, n.gene, x = 0)
+      n.gene <- dim(gene.sets)[1]
+      net <- sparseMatrix(n.gene, n.gene, x = F)
     }
     net.edges <- net_edges(net)
-    sapply(core.ids, function(i) neeat_gene(column(core.sets, i), gene.set, net.edges, column(depths, i), options))
+    fun <- function(i)
+    {
+      cs <- column(core.sets, i)
+      if (is.null(depths)) {
+        dp <- get_depths(cs, net.edges, options$max.depth)
+      }
+      else {
+        dp <- column(depths, i)
+      }
+      sapply(gs.ids, function(j) neeat_gene(cs, column(gene.sets, j), net.edges, dp, options))
+    }
   }
   else if (method == "net" && !is.null(net)) {
-    if (!is.null(gene.set)) {
-      core.sets <- core.sets[gene.set, ]
-      net <- net[gene.set, gene.set]
+    fun <- function(i)
+    {
+      cs <- column(core.sets, i)
+      sapply(gs.ids, function(j) neeat_net(cs, column(gene.sets, j), net, options))
     }
-    sapply(core.ids, function(i) neeat_net(column(core.sets, i), net, options))
   }
-  else if (method == "subnet" && !is.null(gene.set) && !is.null(net)) {
-    gene.set <- as.logical(gene.set)
+  else if (method == "subnet" && !is.null(net)) {
     net.edges <- net_edges(net)
     if (is.null(subnet)) {
-      subnet.edges <- net_edges(net, gene.set)
+      subnet <- net
     }
-    else {
-      subnet.edges <- net_edges(subnet)
+    subnet.edges <- lapply(gs.ids, function(i) net_edges(subnet, column(gene.sets, i)))
+    fun <- function(i)
+    {
+      cs <- column(core.sets, i)
+      if (is.null(depths)) {
+        dp <- get_depths(cs, net.edges, options$max.depth)
+      }
+      else {
+        dp <- column(depths, i)
+      }
+      sapply(gs.ids, function(j) neeat_subnet(cs, column(gene.sets, j), net.edges, subnet.edges[[j]], dp, options))
     }
-    sapply(core.ids, function(i) neeat_subnet(column(core.sets, i), gene.set, net.edges, subnet.edges, column(depths, i), options))
   }
-  else if (method == "hyper" && !is.null(gene.set)) {
-    gene.set <- as.logical(gene.set)
-    N <- length(gene.set)
-    n <- sum(gene.set)
+  else if (method == "hyper") {
+    N <- dim(core.sets)[1]
     M <- colSums(core.sets)
-    m <- colSums(core.sets & gene.set)
-    sapply(core.ids, function(i) neeat_hyper(N, n, M[i], m[i]))
+    n <- colSums(gene.sets)
+    fun <- function(i)
+    {
+      m <- colSums(column(core.sets, i) & gene.sets)
+      sapply(gs.ids, function(j) neeat_hyper(N, n[j], M[i], m[j]))
+    }
   }
   else {
     stop("Incorrect parameters!")
   }
+  sapply(cs.ids, fun)
 }
 
 net_edges <- function(net, gene.set = NULL)
@@ -160,8 +198,6 @@ neeat_score <- function(w.depth, n.depth, raw.depth, options)
 
 neeat_gene <- function(core.set, gene.set, net.edges, depth, options)
 {
-  core.set <- as.logical(core.set)
-
   if (is.null(depth))
     depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, options$max.depth)
   max.depth <- max(0, depth)
@@ -173,21 +209,23 @@ neeat_gene <- function(core.set, gene.set, net.edges, depth, options)
   neeat_score(w.depth, n.depth, raw.depth, options)
 }
 
-neeat_net <- function(core.set, net, options)
+neeat_net <- function(core.set, gene.set, net, options)
 {
-  core.set <- as.logical(core.set)
-  
   max.depth <- min(2, options$max.depth)
   w.depth <- c(0, options$rho^(0:max.depth))
   
-  nc <- sum(core.set)
-  nn <- length(core.set) - nc
+  cs.0 <- core.set & gene.set
+  cs.1 <- !core.set & gene.set
+  
+  nc <- sum(cs.0)
+  nn <- sum(gene.set) - nc
   n.depth <- c(nc*(nc-1)/2, nc*nn, nn*(nn-1)/2)
   n.depth <- c(sum(n.depth[-(0:max.depth+1)]), n.depth[0:max.depth+1])
 
-  nc <- nnzero(net[core.set, core.set])
-  nn <- nnzero(net[!core.set, !core.set])
-  raw.depth <- c(nc/2, (nnzero(net)-nc-nn)/2, nn/2)
+  n0 <- nnzero(net[cs.0, cs.0]) / 2
+  n1 <- (nnzero(net[cs.0, cs.1]) + nnzero(net[cs.1, cs.0])) / 2
+  n2 <- nnzero(net[cs.1, cs.1]) / 2
+  raw.depth <- c(n0, n1, n2)
   raw.depth <- c(sum(raw.depth[-(0:max.depth+1)]), raw.depth[0:max.depth+1])
   
   neeat_score(w.depth, n.depth, raw.depth, options)
@@ -205,8 +243,6 @@ edge_depth <- function(node.depth, net.edges, max.depth)
 
 neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, node.depth, options)
 {
-  core.set <- as.logical(core.set)
-  
   if (is.null(node.depth))
     node.depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, (options$max.depth+1)/2)
   node.depth[node.depth < 0] <- -Inf
@@ -237,6 +273,33 @@ neeat_hyper <- function(N, n, M, m)
     avg.score=avg.score, var.score=var.score)
 }
 
+
+#' Compute the node depths
+#' 
+#' Compute the node depths for given core sets and network
+#' 
+#' This function calculates the node depths, which can be used for calling \code{\link{neeat}} in the
+#' batch mode to reduce the computation time.
+#' 
+#' @param core.sets Logical matrix indicated the core genes associated with specific functions or pathways.
+#' @param net The adjacent matrix of network.
+#' @param max.depth Integer for the maximum depth that will be computed.
+#' 
+#' @return This function returns a matrix with the same dimensions as \code{core.sets}, where the element
+#' \code{[i, j]} represents the depth of node \code{i} under the condition (function or pathway) \code{j}.
+#' 
+#' @seealso \code{\link{neeat}}
+#' 
+#' @export
+neeat_depths <- function(core.sets, net, max.depth)
+{
+  net.edges <- net_edges(net)
+  fun <- function(i) get_depths(column(core.sets, i), net.edges, max.depth)
+  sapply(seq_len(dim(core.sets)[2]), fun)
+}
+
+get_depths <- function(core.set, net.edges, max.depth)
+  .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, max.depth)
 
 
 #' Extract core sets information from GO annotation
