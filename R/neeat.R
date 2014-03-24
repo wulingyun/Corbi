@@ -135,11 +135,8 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
     N <- dim(core.sets)[1]
     M <- colSums(core.sets)
     n <- colSums(gene.sets)
-    fun <- function(i)
-    {
-      m <- colSums(column(core.sets, i) & gene.sets)
-      sapply(gs.ids, function(j) neeat_hyper(N, n[j], M[i], m[j]))
-    }
+    m <- sapply(gs.ids, function(i) colSums(core.sets & column(gene.sets, i)))
+    fun <- function(i) sapply(gs.ids, function(j) neeat_hyper(N, n[j], M[i], m[i,j]))
   }
   else {
     stop("Incorrect parameters!")
