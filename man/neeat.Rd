@@ -2,22 +2,31 @@
 \alias{neeat}
 \title{Network enhanced enrichment analysis tool}
 \usage{
-neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
+neeat(core.sets, gene.sets = NULL, net = NULL, subnet = NULL,
   depths = NULL, method = "gene", rho = 0.5, max.depth = 10,
   n.perm = 10000, use.multinom = FALSE, z.threshold = 2,
   adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes
-  associated with specific functions or pathways.}
+  associated with specific functions or pathways. The rows
+  correspond to genes, while the columns represent the
+  functions or pathways.}
 
-  \item{gene.set}{Logical vector indicated the gene set for
-  evaluating.}
+  \item{gene.sets}{Logical vector or matrix indicated the
+  gene set(s) for evaluating. The rows correspond to genes,
+  while the columns represent the gene sets.}
 
   \item{net}{The adjacent matrix of network.}
 
   \item{subnet}{The adjacent matrix of sub-network for
   evaluating in the NEEAT-subnet model.}
+
+  \item{depths}{The node depths defined in the NEEAT model,
+  which can be pre-computed by calling
+  \code{\link{neeat_depths}} in advance in order to reduce
+  the computation time. If not provided, it will be
+  computed on-demand.}
 
   \item{method}{A string indicated the NEEAT model,
   including "gene", "net" and "subnet". Use "hyper" for
@@ -52,18 +61,19 @@ neeat(core.sets, gene.set = NULL, net = NULL, subnet = NULL,
   parallel computation.}
 }
 \value{
-This function will return a matrix of same columns as
-\code{core.sets}, and each column containing the following
-components for the correponding core gene set
-\code{core.sets[,i]}: \item{\code{z.score}}{The Z-score for
-\code{gene.set}} \item{\code{p.value}}{The statistic
-significance for \code{gene.set} under specified NEEAT
-model} \item{\code{raw.score}}{The raw score for
-\code{gene.set} under specified NEEAT model}
-\item{\code{avg.score}}{The average score for random
-permutations of \code{gene.set}}
+This function will return a 3-dimensional array of
+dimensions \code{c(5, dim(gene.sets)[2],
+dim(core.sets)[2])}, and each column \code{[,i,j]}
+containing the following components for the correponding
+gene set \code{gene.sets[,i]} and core set
+\code{core.sets[,j]}: \item{\code{z.score}}{The Z-score for
+the gene set} \item{\code{p.value}}{The statistic
+significance for the gene set under specified NEEAT model}
+\item{\code{raw.score}}{The raw score for the gene set
+under specified NEEAT model} \item{\code{avg.score}}{The
+average score for random permutations of the gene set}
 \item{\code{var.score}}{The variance of scores for random
-permutations of \code{gene.set}}
+permutations of the gene set}
 }
 \description{
 Functional enrichment anslysis of gene sets by integrating
@@ -74,6 +84,6 @@ This is a novel functional enrichment analysis tool based
 on the gene set and network information.
 }
 \seealso{
-\code{\link{get_core_sets}}
+\code{\link{get_core_sets}}, \code{\link{neeat_depths}}
 }
 
