@@ -219,9 +219,9 @@ neeat_net <- function(core.set, gene.set, net, options)
   n.depth <- c(nc*(nc-1)/2, nc*nn, nn*(nn-1)/2)
   n.depth <- c(sum(n.depth[-(0:max.depth+1)]), n.depth[0:max.depth+1])
 
-  n0 <- nnzero(net[cs.0, cs.0]) / 2
-  n1 <- (nnzero(net[cs.0, cs.1]) + nnzero(net[cs.1, cs.0])) / 2
-  n2 <- nnzero(net[cs.1, cs.1]) / 2
+  n0 <- nnzero(net, cs.0, cs.0) / 2
+  n1 <- (nnzero(net, cs.0, cs.1) + nnzero(net, cs.1, cs.0)) / 2
+  n2 <- nnzero(net, cs.1, cs.1) / 2
   raw.depth <- c(n0, n1, n2)
   raw.depth <- c(sum(raw.depth[-(0:max.depth+1)]), raw.depth[0:max.depth+1])
   
