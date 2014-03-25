@@ -99,7 +99,8 @@ column <- function(m, i)
   if (inherits(m, "CsparseMatrix")) {
     v <- vector(typeof(m@x), m@Dim[1])
     p <- (m@p[i]+1):m@p[i+1]
-    v[m@i[p]+1] <- m@x[p]
+    if (p[1] <= p[length(p)])
+      v[m@i[p]+1] <- m@x[p]
   }
   else
     v <- m[,i]
