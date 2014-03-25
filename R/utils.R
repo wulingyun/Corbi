@@ -107,32 +107,20 @@ column <- function(m, i)
   v
 }
 
-
 nnzero <- function(m, r, c)
 {
+  in.r <- if (missing(r)) function(i) T else function(i) r[i]
+  in.c <- if (missing(c)) function(i) T else function(i) c[i]
+  fun <- function(i) if (m@p[i] < m@p[i+1]) (m@p[i]+1):m@p[i+1] else NULL
   if (sum(r) == 0 || sum(c) == 0)
     0
   else if (inherits(m, "CsparseMatrix")) {
-    fun <- function(i)
-    {
-      p <- (m@p[i]+1):m@p[i+1]
-      if (p[1] <= p[length(p)])
-        sum(m@x[p[r[m@i[p]+1]]] != 0)
-      else
-        0
-    }
-    sum(sapply(which(c), fun))
+    p <- unlist(lapply(which(c), fun))
+    sum(m@x[p[in.r(m@i[p]+1)]] != 0)
   }
   else if (inherits(m, "RsparseMatrix")) {
-    fun <- function(i)
-    {
-      p <- (m@p[i]+1):m@p[i+1]
-      if (p[1] <= p[length(p)])
-        sum(m@x[p[c[m@i[p]+1]]] != 0)
-      else
-        0
-    }
-    sum(sapply(which(r), fun))
+    p <- unlist(lapply(which(r), fun))
+    sum(m@x[p[in.c(m@i[p]+1)]] != 0)
   }
   else
     Matrix::nnzero(m[r,c])
