@@ -107,10 +107,11 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
     }
   }
   else if (method == "net" && !is.null(net)) {
+    n.gene <- colSums(gene.sets)
     fun <- function(i)
     {
       cs <- column(core.sets, i)
-      sapply(gs.ids, function(j) neeat_net(cs, column(gene.sets, j), net, options))
+      sapply(gs.ids, function(j) neeat_net(cs, column(gene.sets, j), net, n.gene[j], options))
     }
   }
   else if (method == "subnet" && !is.null(net)) {
@@ -206,7 +207,7 @@ neeat_gene <- function(core.set, gene.set, net.edges, depth, options)
   neeat_score(w.depth, n.depth, raw.depth, options)
 }
 
-neeat_net <- function(core.set, gene.set, net, options)
+neeat_net <- function(core.set, gene.set, net, n.gene, options)
 {
   max.depth <- min(2, options$max.depth)
   w.depth <- c(0, options$rho^(0:max.depth))
@@ -215,7 +216,7 @@ neeat_net <- function(core.set, gene.set, net, options)
   cs.1 <- !core.set & gene.set
   
   nc <- sum(cs.0)
-  nn <- sum(gene.set) - nc
+  nn <- n.gene - nc
   n.depth <- c(nc*(nc-1)/2, nc*nn, nn*(nn-1)/2)
   n.depth <- c(sum(n.depth[-(0:max.depth+1)]), n.depth[0:max.depth+1])
 
