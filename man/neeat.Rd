@@ -5,7 +5,7 @@
 neeat(core.sets, gene.sets = NULL, net = NULL, subnet = NULL,
   depths = NULL, method = "gene", rho = 0.5, max.depth = 10,
   n.perm = 10000, use.multinom = FALSE, z.threshold = 2,
-  adjust.p = "BH", n.cpu = 1, batch.size = 5000)
+  verbose = FALSE, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes

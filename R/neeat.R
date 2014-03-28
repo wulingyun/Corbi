@@ -44,13 +44,14 @@
 #' @export
 neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths = NULL,
                   method = "gene", rho = 0.5, max.depth = 10, n.perm = 10000, use.multinom = FALSE,
-                  z.threshold = 2.0, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
+                  z.threshold = 2.0, verbose = FALSE, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 {
   options <- list(rho = rho,
                   max.depth = max.depth,
                   n.perm = n.perm,
                   use.multinom = use.multinom,
-                  z.threshold = z.threshold)
+                  z.threshold = z.threshold,
+                  verbose = verbose)
 
   if (is.null(gene.sets))
     gene.sets <- matrix(T, dim(core.sets)[1], 1, dimnames = list(rownames(core.sets), "net"))
@@ -78,9 +79,14 @@ neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths
   else {
     result <- neeat_internal(seq_len(dim(core.sets)[2]), core.sets, gene.sets, net, subnet, depths, method, options)
   }
-  result <- array(result, dim = c(5, dim(gene.sets)[2], dim(core.sets)[2]),
-                  dimnames <- list(c("z.score", "p.value", "raw.score", "avg.score", "var.score"),
-                                   colnames(gene.sets), colnames(core.sets)))
+  if (options$verbose)
+    result <- array(result, dim = c(5, dim(gene.sets)[2], dim(core.sets)[2]),
+                    dimnames <- list(c("z.score", "p.value", "raw.score", "avg.score", "var.score"),
+                                     colnames(gene.sets), colnames(core.sets)))
+  else
+    result <- array(result, dim = c(2, dim(gene.sets)[2], dim(core.sets)[2]),
+                    dimnames <- list(c("z.score", "p.value"),
+                                     colnames(gene.sets), colnames(core.sets)))
   result[2,,] <- p.adjust(result[2,,], method = adjust.p)
   result
 }
@@ -193,8 +199,10 @@ neeat_score <- function(w.depth, n.depth, raw.depth, options)
     p.value <- 1.0
   }
 
-  c(z.score=z.score, p.value=p.value, raw.score=raw.score, 
-    avg.score=avg.score, var.score=var.score)
+  if (options$verbose)
+    c(z.score, p.value, raw.score, avg.score, var.score)
+  else
+    c(z.score, p.value)
 }
 
 neeat_gene <- function(core.set, gene.set, net.edges, depth, options)
