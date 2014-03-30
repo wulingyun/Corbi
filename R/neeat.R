@@ -80,13 +80,11 @@ neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths
     result <- neeat_internal(seq_len(dim(core.sets)[2]), core.sets, gene.sets, net, subnet, depths, method, options)
   }
   if (options$verbose)
-    result <- array(result, dim = c(5, dim(gene.sets)[2], dim(core.sets)[2]),
-                    dimnames <- list(c("z.score", "p.value", "raw.score", "avg.score", "var.score"),
-                                     colnames(gene.sets), colnames(core.sets)))
+    output.names <- c("z.score", "p.value", "raw.score", "avg.score", "var.score")
   else
-    result <- array(result, dim = c(2, dim(gene.sets)[2], dim(core.sets)[2]),
-                    dimnames <- list(c("z.score", "p.value"),
-                                     colnames(gene.sets), colnames(core.sets)))
+    output.names <- c("z.score", "p.value")
+  result <- array(result, dim = c(length(output.names), dim(gene.sets)[2], dim(core.sets)[2]),
+                  dimnames <- list(output.names, colnames(gene.sets), colnames(core.sets)))
   result[2,,] <- p.adjust(result[2,,], method = adjust.p)
   result
 }
