@@ -46,12 +46,13 @@ neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths
                   method = "gene", rho = 0.5, max.depth = 10, n.perm = 10000, use.multinom = FALSE,
                   z.threshold = 2.0, verbose = FALSE, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 {
-  neeat.par <- list(rho = rho,
-                  max.depth = max.depth,
-                  n.perm = n.perm,
-                  use.multinom = use.multinom,
-                  z.threshold = z.threshold,
-                  verbose = verbose)
+  neeat.par <- new.env()
+  neeat.par$rho = rho
+  neeat.par$max.depth = max.depth
+  neeat.par$n.perm = n.perm
+  neeat.par$use.multinom = use.multinom
+  neeat.par$z.threshold = z.threshold
+  neeat.par$verbose = verbose
 
   if (is.null(gene.sets))
     gene.sets <- matrix(T, dim(core.sets)[1], 1, dimnames = list(rownames(core.sets), "net"))
@@ -100,6 +101,7 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
     net.edges <- net_edges(net)
     neeat_cs <- function(i)
     {
+      neeat_score_init(neeat.par)
       cs <- column(core.sets, i)
       if (is.null(depths)) {
         node.depth <- get_depths(cs, net.edges, neeat.par$max.depth)
@@ -122,6 +124,7 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
     n.gene <- colSums(gene.sets)
     neeat_cs <- function(i)
     {
+      neeat_score_init(neeat.par)
       cs <- column(core.sets, i)
       sapply(gs.ids, function(j) neeat_net(cs, column(gene.sets, j), net, n.gene[j], neeat.par))
     }
@@ -134,6 +137,7 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
     subnet.edges <- lapply(gs.ids, function(i) net_edges(subnet, column(gene.sets, i)))
     neeat_cs <- function(i)
     {
+      neeat_score_init(neeat.par)
       cs <- column(core.sets, i)
       if (is.null(depths)) {
         node.depth <- get_depths(cs, net.edges, neeat.par$max.depth)
@@ -180,6 +184,11 @@ net_edges <- function(net, gene.set = NULL)
   list(edges=edges, index=index)
 }
 
+neeat_score_init <- function(neeat.par)
+{
+  neeat.par$perm.score <- list()
+}
+
 neeat_score <- function(w.depth, n.depth, raw.depth, neeat.par)
 {
   p <- n.depth / sum(n.depth)
@@ -194,11 +203,11 @@ neeat_score <- function(w.depth, n.depth, raw.depth, neeat.par)
   var.score <- sum(cov) * n
 
   if (neeat.par$use.multinom) {
-    simulate <- rmultinom
+    permutation <- rmultinom
   }
   else {
     var.score <- var.score * (N - n) / (N - 1)
-    simulate <- rmultihyper
+    permutation <- rmultihyper
   }
 
   if (!is.nan(var.score) && var.score > 0)
@@ -207,9 +216,9 @@ neeat_score <- function(w.depth, n.depth, raw.depth, neeat.par)
     z.score <- 0
 
   if (z.score >= neeat.par$z.threshold) {
-    perm.depth <- simulate(neeat.par$n.perm, sum(raw.depth), n.depth)
-    perm.score <- colSums(w.depth * perm.depth)
-    p.value <- sum(perm.score >= raw.score) / neeat.par$n.perm
+    if(n > length(neeat.par$perm.score) || is.null(neeat.par$perm.score[[n]]))
+      neeat.par$perm.score[[n]] <- colSums(w.depth * permutation(neeat.par$n.perm, n, n.depth))
+    p.value <- sum(neeat.par$perm.score[[n]] >= raw.score) / neeat.par$n.perm
   }
   else {
     p.value <- 1.0
