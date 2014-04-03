@@ -46,7 +46,7 @@ neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths
                   method = "gene", rho = 0.5, max.depth = 10, n.perm = 10000, use.multinom = FALSE,
                   z.threshold = 2.0, verbose = FALSE, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 {
-  options <- list(rho = rho,
+  neeat.par <- list(rho = rho,
                   max.depth = max.depth,
                   n.perm = n.perm,
                   use.multinom = use.multinom,
@@ -72,14 +72,14 @@ neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths
     n.job <- dim(core.sets)[2]
     n.batch <- max(1, round(n.job / (batch.size * n.cl))) * n.cl
     jobs <- splitIndices(n.job, n.batch)
-    result <- clusterApply(cl, jobs, neeat_internal, core.sets, gene.sets, net, subnet, depths, method, options)
+    result <- clusterApply(cl, jobs, neeat_internal, core.sets, gene.sets, net, subnet, depths, method, neeat.par)
     stopCluster(cl)
     result <- unlist(result)
   }
   else {
-    result <- neeat_internal(seq_len(dim(core.sets)[2]), core.sets, gene.sets, net, subnet, depths, method, options)
+    result <- neeat_internal(seq_len(dim(core.sets)[2]), core.sets, gene.sets, net, subnet, depths, method, neeat.par)
   }
-  if (options$verbose)
+  if (neeat.par$verbose)
     output.names <- c("z.score", "p.value", "raw.score", "avg.score", "var.score")
   else
     output.names <- c("z.score", "p.value")
@@ -89,7 +89,7 @@ neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths
   result
 }
 
-neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, method, options)
+neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, method, neeat.par)
 {
   gs.ids <- seq_len(dim(gene.sets)[2])
   if (method == "gene") {
@@ -98,24 +98,32 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
       net <- sparseMatrix(n.gene, n.gene, x = F)
     }
     net.edges <- net_edges(net)
-    fun <- function(i)
+    neeat_cs <- function(i)
     {
       cs <- column(core.sets, i)
       if (is.null(depths)) {
-        dp <- get_depths(cs, net.edges, options$max.depth)
+        node.depth <- get_depths(cs, net.edges, neeat.par$max.depth)
       }
       else {
-        dp <- column(depths, i)
+        node.depth <- column(depths, i)
       }
-      sapply(gs.ids, function(j) neeat_gene(cs, column(gene.sets, j), net.edges, dp, options))
+      max.depth <- max(0, node.depth)
+      w.depth <- c(0, neeat.par$rho^(0:max.depth))
+      n.depth <- .Call(NE_CountDepths, node.depth, max.depth)
+      neeat_gs <- function(j)
+      {
+        raw.depth <- .Call(NE_CountDepths, node.depth[column(gene.sets, j)], max.depth)
+        neeat_score(w.depth, n.depth, raw.depth, neeat.par)
+      }
+      sapply(gs.ids, neeat_gs)
     }
   }
   else if (method == "net" && !is.null(net)) {
     n.gene <- colSums(gene.sets)
-    fun <- function(i)
+    neeat_cs <- function(i)
     {
       cs <- column(core.sets, i)
-      sapply(gs.ids, function(j) neeat_net(cs, column(gene.sets, j), net, n.gene[j], options))
+      sapply(gs.ids, function(j) neeat_net(cs, column(gene.sets, j), net, n.gene[j], neeat.par))
     }
   }
   else if (method == "subnet" && !is.null(net)) {
@@ -124,32 +132,42 @@ neeat_internal <- function(cs.ids, core.sets, gene.sets, net, subnet, depths, me
       subnet <- net
     }
     subnet.edges <- lapply(gs.ids, function(i) net_edges(subnet, column(gene.sets, i)))
-    fun <- function(i)
+    neeat_cs <- function(i)
     {
       cs <- column(core.sets, i)
       if (is.null(depths)) {
-        dp <- get_depths(cs, net.edges, options$max.depth)
+        node.depth <- get_depths(cs, net.edges, neeat.par$max.depth)
       }
       else {
-        dp <- column(depths, i)
+        node.depth <- column(depths, i)
       }
-      sapply(gs.ids, function(j) neeat_subnet(cs, column(gene.sets, j), net.edges, subnet.edges[[j]], dp, options))
+      node.depth[node.depth < 0] <- -Inf
+      edge.depth <- edge_depth(node.depth, net.edges, neeat.par$max.depth)
+      max.depth <- max(0, edge.depth)
+      w.depth <- c(0, neeat.par$rho^(0:max.depth))
+      n.depth <- .Call(NE_CountDepths, edge.depth, max.depth)
+      neeat_gs <- function(j)
+      {
+        raw.depth <- .Call(NE_CountDepths, edge_depth(node.depth, subnet.edges[[j]], max.depth), max.depth)
+        neeat_score(w.depth, n.depth, raw.depth, neeat.par)
+      }
+      sapply(gs.ids, neeat_gs)
     }
   }
   else if (method == "hyper") {
     N <- dim(core.sets)[1]
     M <- colSums(core.sets)
     n <- colSums(gene.sets)
-    fun <- function(i)
+    neeat_cs <- function(i)
     {
       cs <- column(core.sets, i)
-      sapply(gs.ids, function(j) neeat_hyper(N, n[j], M[i], sum(cs & column(gene.sets, j))))
+      sapply(gs.ids, function(j) neeat_hyper(N, n[j], M[i], sum(cs & column(gene.sets, j)), neeat.par))
     }
   }
   else {
     stop("Incorrect parameters!")
   }
-  sapply(cs.ids, fun)
+  sapply(cs.ids, neeat_cs)
 }
 
 net_edges <- function(net, gene.set = NULL)
@@ -162,7 +180,7 @@ net_edges <- function(net, gene.set = NULL)
   list(edges=edges, index=index)
 }
 
-neeat_score <- function(w.depth, n.depth, raw.depth, options)
+neeat_score <- function(w.depth, n.depth, raw.depth, neeat.par)
 {
   p <- n.depth / sum(n.depth)
   w <- w.depth * p
@@ -175,7 +193,7 @@ neeat_score <- function(w.depth, n.depth, raw.depth, options)
   avg.score <- sum(w) * n
   var.score <- sum(cov) * n
 
-  if (options$use.multinom) {
+  if (neeat.par$use.multinom) {
     simulate <- rmultinom
   }
   else {
@@ -183,43 +201,30 @@ neeat_score <- function(w.depth, n.depth, raw.depth, options)
     simulate <- rmultihyper
   }
 
-  if (var.score > 0)
+  if (!is.nan(var.score) && var.score > 0)
     z.score <- (raw.score - avg.score) / sqrt(var.score)
   else
     z.score <- 0
 
-  if (z.score >= options$z.threshold) {
-    perm.depth <- simulate(options$n.perm, sum(raw.depth), n.depth)
+  if (z.score >= neeat.par$z.threshold) {
+    perm.depth <- simulate(neeat.par$n.perm, sum(raw.depth), n.depth)
     perm.score <- colSums(w.depth * perm.depth)
-    p.value <- sum(perm.score >= raw.score) / options$n.perm
+    p.value <- sum(perm.score >= raw.score) / neeat.par$n.perm
   }
   else {
     p.value <- 1.0
   }
 
-  if (options$verbose)
+  if (neeat.par$verbose)
     c(z.score, p.value, raw.score, avg.score, var.score)
   else
     c(z.score, p.value)
 }
 
-neeat_gene <- function(core.set, gene.set, net.edges, depth, options)
+neeat_net <- function(core.set, gene.set, net, n.gene, neeat.par)
 {
-  if (is.null(depth))
-    depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, options$max.depth)
-  max.depth <- max(0, depth)
-
-  w.depth <- c(0, options$rho^(0:max.depth))
-  n.depth <- .Call(NE_CountDepths, depth, max.depth)
-  raw.depth <- .Call(NE_CountDepths, depth[gene.set], max.depth)
-  
-  neeat_score(w.depth, n.depth, raw.depth, options)
-}
-
-neeat_net <- function(core.set, gene.set, net, n.gene, options)
-{
-  max.depth <- min(2, options$max.depth)
-  w.depth <- c(0, options$rho^(0:max.depth))
+  max.depth <- min(2, neeat.par$max.depth)
+  w.depth <- c(0, neeat.par$rho^(0:max.depth))
   
   cs.0 <- core.set & gene.set
   cs.1 <- !core.set & gene.set
@@ -235,7 +240,7 @@ neeat_net <- function(core.set, gene.set, net, n.gene, options)
   raw.depth <- c(n0, n1, n2)
   raw.depth <- c(sum(raw.depth[-(0:max.depth+1)]), raw.depth[0:max.depth+1])
   
-  neeat_score(w.depth, n.depth, raw.depth, options)
+  neeat_score(w.depth, n.depth, raw.depth, neeat.par)
 }
 
 edge_depth <- function(node.depth, net.edges, max.depth)
@@ -248,23 +253,7 @@ edge_depth <- function(node.depth, net.edges, max.depth)
   depth
 }
 
-neeat_subnet <- function(core.set, gene.set, net.edges, subnet.edges, node.depth, options)
-{
-  if (is.null(node.depth))
-    node.depth <- .Call(NE_GetDepths, net.edges$edges, net.edges$index, core.set, (options$max.depth+1)/2)
-  node.depth[node.depth < 0] <- -Inf
-  
-  depth <- edge_depth(node.depth, net.edges, options$max.depth)
-  max.depth <- max(0, depth)
-  
-  w.depth <- c(0, options$rho^(0:max.depth))
-  n.depth <- .Call(NE_CountDepths, depth, max.depth)
-  raw.depth <- .Call(NE_CountDepths, edge_depth(node.depth, subnet.edges, max.depth), max.depth)
-  
-  neeat_score(w.depth, n.depth, raw.depth, options)
-}
-
-neeat_hyper <- function(N, n, M, m)
+neeat_hyper <- function(N, n, M, m, neeat.par)
 {
   avg.score <- n * M / N
   var.score <- n * (M / N) * ((N - M) / N) * ((N - n) / (N - 1))
@@ -274,10 +263,12 @@ neeat_hyper <- function(N, n, M, m)
   else
     z.score <- 0
   
-  p.value <- 1 - phyper(m-1, M, N-M, n)
-  
-  c(z.score=z.score, p.value=p.value, raw.score=m, 
-    avg.score=avg.score, var.score=var.score)
+  p.value <- phyper(m-1, M, N-M, n, lower.tail=F)
+
+  if (neeat.par$verbose)
+    c(z.score, p.value, m, avg.score, var.score)
+  else
+    c(z.score, p.value)
 }
 
 
