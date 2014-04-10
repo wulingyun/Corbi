@@ -43,7 +43,7 @@
 #'
 #' @export
 neeat <- function(core.sets, gene.sets = NULL, net = NULL, subnet = NULL, depths = NULL,
-                  method = "gene", rho = 0.5, max.depth = 10, n.perm = 10000, use.multinom = FALSE,
+                  method = "gene", rho = 0.5, max.depth = 1, n.perm = 10000, use.multinom = FALSE,
                   z.threshold = 2.0, verbose = FALSE, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 {
   neeat.par <- new.env()
