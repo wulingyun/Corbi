@@ -351,18 +351,48 @@ get_core_sets <- function(go.map, evidence = "ALL", category = "ALL", gene.set =
     term.table <- term.table[term.table[,4] %in% category, ]
   
   if (!is.null(gene.set)) {
-    term.table <- term.table[term.table[,1] %in% gene.set, ]
     all.gene <- gene.set    
   }
   else
     all.gene <- unique(term.table[,1])
   
-  all.term <- unique(term.table[,2])
-  
-  gene.id <- seq_along(all.gene)
-  names(gene.id) <- all.gene
-  term.id <- seq_along(all.term)
-  names(term.id) <- all.term
-  
-  sparseMatrix(gene.id[term.table[,1]], term.id[term.table[,2]], x = T, dims = c(length(all.gene), length(all.term)), dimnames = list(all.gene, all.term))
+  toMatrix(term.table, all.gene)
+}
+
+
+#' Turn a two-columns mapping table to matrix
+#'
+#' Generate the sparse mapping matrix from a two-columns table.
+#'
+#' This function generates the sparse logical matrix from the two-columns table returned by \code{\link{toTable}} 
+#' in Bioconductor package \code{\link{AnnotationDbi}}.
+#' 
+#' @param table The two-columns table as matrix or data frame. The other columns will not be used, if available.
+#' @param rows The row names for the mapping matrix.
+#' @param cols The column names for the mapping matrix.
+#' 
+#' @return This function returns a sparse logical matrix.
+#' 
+#' @seealso \code{\link{toTable}}
+#'
+#' @examples
+#' 
+#' \dontrun{
+#' source("http://bioconductor.org/biocLite.R")
+#' biocLite("org.Hs.eg.db")
+#' library(org.Hs.eg.db)
+#' x <- toMatrix(toTable(org.Hs.egGO2ALLEGS))
+#' }
+#'
+#' @import Matrix
+#' 
+#' @export
+toMatrix <- function(table, rows = unique(table[,1]), cols = unique(table[,2]))
+{
+  rid <- seq_along(rows)
+  names(rid) <- rows
+  cid <- seq_along(cols)
+  names(cid) <- cols
+  table <- table[table[,1] %in% rows & table[,2] %in% cols, ]
+  sparseMatrix(rid[table[,1]], cid[table[,2]], x = T, dims = c(length(rows), length(cols)), dimnames = list(rows, cols))
 }
