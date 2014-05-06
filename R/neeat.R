@@ -396,3 +396,33 @@ toMatrix <- function(table, rows = unique(table[,1]), cols = unique(table[,2]))
   table <- table[table[,1] %in% rows & table[,2] %in% cols, ]
   sparseMatrix(rid[table[,1]], cid[table[,2]], x = T, dims = c(length(rows), length(cols)), dimnames = list(rows, cols))
 }
+
+
+#' Transform the gene lists into the matrix of gene sets
+#'
+#' Generate the gene sets matrix from several gene lists.
+#'
+#' This function generates the \code{gene.sets} matrix required by \code{\link{neeat}} method.
+#' The name of each gene set is given by the name of corresponding component of \code{gene.lists},
+#' and assigned to the column of \code{gene.sets}.
+#' 
+#' @param gene.lists A list of vectors of gene ids.
+#' @param all.gene A vector of all gene ids.
+#' 
+#' @return This function returns a sparse matrix as required by \code{\link{neeat}} method.
+#' 
+#' @seealso \code{\link{neeat}}
+#'
+#' @import Matrix
+#' 
+#' @export
+get_gene_sets <- function(gene.lists, all.gene)
+{
+  gene.set <- Matrix(F, nrow=length(all.gene), ncol=length(gene.lists), dimnames=list(all.gene, names(gene.lists)))
+  for (i in 1:length(gene.lists)) {
+    genes <- as.character(gene.lists[[i]])
+    genes <- genes[genes %in% all.gene]
+    gene.set[genes, i] <- T
+  }
+  gene.set
+}
