@@ -1,5 +1,6 @@
 export(column)
 export(get_core_sets)
+export(get_gene_sets)
 export(get_shortest_distances)
 export(neeat)
 export(neeat_depths)

@@ -1,0 +1,29 @@
+\name{get_gene_sets}
+\alias{get_gene_sets}
+\title{Transform the gene lists into the matrix of gene sets}
+\usage{
+get_gene_sets(gene.lists, all.gene)
+}
+\arguments{
+  \item{gene.lists}{A list of vectors of gene ids.}
+
+  \item{all.gene}{A vector of all gene ids.}
+}
+\value{
+This function returns a sparse matrix as required by
+\code{\link{neeat}} method.
+}
+\description{
+Generate the gene sets matrix from several gene lists.
+}
+\details{
+This function generates the \code{gene.sets} matrix
+required by \code{\link{neeat}} method. The name of each
+gene set is given by the name of corresponding component of
+\code{gene.lists}, and assigned to the column of
+\code{gene.sets}.
+}
+\seealso{
+\code{\link{neeat}}
+}
+
