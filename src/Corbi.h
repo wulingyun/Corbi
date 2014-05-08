@@ -10,6 +10,7 @@ extern "C" {
 
 	/* Utils */
   SEXP RMultiHyper(SEXP _N, SEXP _M, SEXP _K);
+  SEXP PMultiHyper(SEXP _X, SEXP _K, SEXP _M, SEXP _W);
 
 	SEXP NQ_ShortestDistances(SEXP _Edges, SEXP _Index, SEXP _SourceNodes);
   SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core, SEXP _MaxDepth);
