@@ -20,13 +20,4 @@ rmultihyper <- function(n, k, m)
   .Call(RMultiHyper, n, k, m)
 
 pmultihyper <- function(x, k, m, w)
-{
-  p <- .Call(PMultiHyper, x, k, m, w)
-  p0 <- phyper(x-1, m[1], m[2], k, F)
-  if (abs(p - p0) > 0.0001)
-  {
-    print(p)
-    print(p0)
-  }
-  p
-}
+  .Call(PMultiHyper, x, k, m, w)
