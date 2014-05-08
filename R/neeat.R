@@ -205,11 +205,13 @@ neeat_score <- function(w.depth, n.depth, raw.depth, neeat.par)
   var.score <- neeat.par$var.score * n
 
   if (neeat.par$use.multinom) {
-    permutation <- rmultinom
+    r.fun <- rmultinom
+    p.fun <- pmultinom
   }
   else {
     var.score <- var.score * (neeat.par$N - n) / (neeat.par$N - 1)
-    permutation <- rmultihyper
+    r.fun <- rmultihyper
+    p.fun <- pmultihyper
   }
 
   if (!is.nan(var.score) && var.score > 0)
@@ -220,11 +222,11 @@ neeat_score <- function(w.depth, n.depth, raw.depth, neeat.par)
   if (z.score >= neeat.par$z.threshold) {
     if (neeat.par$n.perm > 0) {
       if(n > length(neeat.par$perm.score) || is.null(neeat.par$perm.score[[n]]))
-        neeat.par$perm.score[[n]] <- colSums(w.depth * permutation(neeat.par$n.perm, n, n.depth))
+        neeat.par$perm.score[[n]] <- colSums(w.depth * r.fun(neeat.par$n.perm, n, n.depth))
       p.value <- sum(neeat.par$perm.score[[n]] >= raw.score) / neeat.par$n.perm
     }
     else {
-      p.value <- pmultihyper(raw.score, n, n.depth, w.depth)
+      p.value <- p.fun(raw.score, n, n.depth, w.depth)
     }
   }
   else {
