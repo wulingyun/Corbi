@@ -3,9 +3,9 @@
 \title{Network enhanced enrichment analysis tool}
 \usage{
 neeat(core.sets, gene.sets = NULL, net = NULL, subnet = NULL,
-  depths = NULL, method = "gene", rho = 0.5, max.depth = 1,
-  n.perm = 10000, use.multinom = FALSE, z.threshold = 2,
-  verbose = FALSE, adjust.p = "BH", n.cpu = 1, batch.size = 5000)
+  depths = NULL, method = "gene", rho = 0.001, max.depth = 2,
+  n.perm = 0, use.multinom = FALSE, z.threshold = 0, verbose = FALSE,
+  adjust.p = "BH", n.cpu = 1, batch.size = 5000)
 }
 \arguments{
   \item{core.sets}{Logical matrix indicated the core genes

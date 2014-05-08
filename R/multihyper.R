@@ -21,3 +21,6 @@ rmultihyper <- function(n, k, m)
 
 pmultihyper <- function(x, k, m, w)
   .Call(PMultiHyper, x, k, m, w)
+
+pmultinom <- function(x, k, m, w)
+  .Call(PMultiNom, x, k, m, w)
