@@ -64,13 +64,13 @@ SEXP PMultiHyper(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
   double X = NUMERIC_POINTER(AS_NUMERIC(_X))[0];
   int K = INTEGER_POINTER(AS_INTEGER(_K))[0];
 
-  PROTECT(_M = AS_INTEGER(_M));
+  PROTECT(_M = AS_INTEGER(duplicate(_M)));
   int *M = INTEGER_POINTER(_M);
   int nM = length(_M);
   
-  PROTECT(_W = AS_NUMERIC(_W));
+  PROTECT(_W = AS_NUMERIC(duplicate(_W)));
   double *W = NUMERIC_POINTER(_W);
-  
+
 	revsort(W, M, nM);
 
   int tM = 0;
