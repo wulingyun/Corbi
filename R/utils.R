@@ -125,3 +125,26 @@ nnzero <- function(m, r, c)
   else
     Matrix::nnzero(m[r,c])
 }
+
+#' Cohen's kappa score
+#' 
+#' Calculate Cohen's kappa score for two vectors.
+#' 
+#' This function calculate Cohen's kappa score for two logical vectors.
+#' 
+#' @param x1 The first logical vector
+#' @param x2 The second logical vector
+#' 
+#' @return The Cohen's kappa score
+#' 
+#' @export
+kappa_score <- function(x1, x2)
+{
+  if (length(x1) != length(x2)) stop("x1 and x2 are not of same length!")
+  t <- length(x1)
+  p1 <- sum(x1)
+  p2 <- sum(x2)
+  p <- sum(x1 == x2) / t
+  e <- (p1*p2 + (t-p1)*(t-p2)) / t^2
+  (p-e) / (1-e)
+}
