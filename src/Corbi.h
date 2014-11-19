@@ -14,8 +14,6 @@ extern "C" {
   SEXP PMultiNom(SEXP _X, SEXP _K, SEXP _M, SEXP _W);
 
 	SEXP NQ_ShortestDistances(SEXP _Edges, SEXP _Index, SEXP _SourceNodes);
-  SEXP NE_GetDepths(SEXP _Edges, SEXP _Index, SEXP _Core, SEXP _MaxDepth);
-  SEXP NE_CountDepths(SEXP _Depth, SEXP _MaxDepth);
 
   SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength);
 }
