@@ -172,6 +172,50 @@ int Intersection(int *overlap, int *vector1, int size1, int *vector2, int size2)
 	return n;
 }
 
+/* Get union of two ascending ordered vectors */
+
+int Union(int *combination, int *vector1, int size1, int *vector2, int size2)
+{
+  int n, i1, i2;
+	if (vector1[0] > vector2[size2-1])
+  {
+    for (int i = 0; i < size2; i++)
+      combination[i] = vector2[i];
+    for (int i = 0; i < size1; i++)
+      combination[size2+i] = vector1[i];
+    n = size1 + size2;
+  }
+  else if (vector2[0] > vector1[size1-1])
+  {
+    for (int i = 0; i < size1; i++)
+      combination[i] = vector1[i];
+    for (int i = 0; i < size2; i++)
+      combination[size1+i] = vector2[i];
+    n = size1 + size2;
+  }
+	else
+  {
+    n = i1 = i2 = 0;
+  	while (i1 < size1 && i2 < size2)
+  	{
+  		if (vector1[i1] == vector2[i2])
+  		{
+  			combination[n++] = vector1[i1++];
+  			i2++;
+  		}
+  		else if (vector1[i1] < vector2[i2])
+        combination[n++] = vector1[i1++];
+  		else
+        combination[n++] = vector2[i2++];
+  	}
+    while (i1 < size1)
+      combination[n++] = vector1[i1++];
+    while (i2 < size2)
+      combination[n++] = vector2[i2++];
+  }
+	return n;
+}
+
 /* Insert element to ascending ordered vector */
 
 void Insert(int *vector, int &size, int v)
