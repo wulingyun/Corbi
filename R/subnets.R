@@ -4,7 +4,7 @@
 get_subnets <- function(net.matrix, max.size = 2)
 {
   edges <- which(net.matrix != 0, arr.ind = T)
-  edges <- edges[edges[,1] <= edges[,2], ]
+  edges <- edges[edges[,1] < edges[,2], ]
   edges <- edges[order(edges[,1]), ]
   .Call(BS_GetSubnets, edges, dim(net.matrix)[1], max.size)
 }
