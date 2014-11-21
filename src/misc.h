@@ -71,6 +71,7 @@ int MinSpanTree(int *tree, int nNodes, int nEdges, int *edges, double *costs, in
 /* utils for ascending ordered vector */
 
 int Intersection(int *overlap, int *vector1, int size1, int *vector2, int size2);
+int Union(int *combination, int *vector1, int size1, int *vector2, int size2);
 void Insert(int *vector, int &size, int v);
 void Remove(int *vector, int &size, int v);
 
