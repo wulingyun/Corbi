@@ -6,6 +6,7 @@ const R_CallMethodDef callMethods[] = {
   {"PMultiNom", (DL_FUNC) &PMultiNom, 4},
   {"PA_Scores", (DL_FUNC) &PA_Scores, 5},
   {"NQ_ShortestDistances", (DL_FUNC) &NQ_ShortestDistances, 3},
+  {"BS_GetSubnets", (DL_FUNC) &BS_GetSubnets, 4},
   {NULL, NULL, 0}
 };
 

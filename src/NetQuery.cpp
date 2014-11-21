@@ -16,9 +16,9 @@ SEXP NQ_ShortestDistances(SEXP _Edges, SEXP _Index, SEXP _SourceNodes)
 
 	SEXP _Dist;
 	PROTECT(_Dist = NEW_INTEGER(nNodes * nNodes));
-	setDim2(_Dist, nNodes, nNodes);
+	SetDim2(_Dist, nNodes, nNodes);
 	int *Dist = INTEGER_POINTER(_Dist);
-	setValues(_Dist, Dist, -1);
+	SetValues(_Dist, Dist, -1);
 
 	int *queue = (int *) R_alloc(nNodes, sizeof(int));
 	int queue_head, queue_tail;

@@ -26,18 +26,6 @@ inline double _afp_dist(double *D1, double *D2, int nD1, int nD2, int afpLength,
 	return (d);
 }
 
-template <class T>
-inline const T& min(const T& a, const T& b)
-{
-	return a < b ? a : b;
-}
-
-template <class T>
-inline const T& max(const T& a, const T& b)
-{
-	return a > b ? a : b;
-}
-
 SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength)
 {
 	PROTECT(_D1 = AS_NUMERIC(_D1));
@@ -55,7 +43,7 @@ SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength)
 
 	SEXP _nodeScore;
 	PROTECT(_nodeScore = NEW_NUMERIC(nD1 * nD2));
-	setDim2(_nodeScore, nD1, nD2);
+	SetDim2(_nodeScore, nD1, nD2);
 	double *nodeScore = NUMERIC_POINTER(_nodeScore);
 
 	double *afpScore = (double *) R_alloc(nAFP1 * nAFP2, sizeof(double));
@@ -86,7 +74,7 @@ SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength)
 
 	SEXP _edgeScore;
 	PROTECT(_edgeScore = NEW_NUMERIC(nD2 * nD2 * (nD1 - 1)));
-	setDim3(_edgeScore, nD2, nD2, (nD1 - 1));
+	SetDim3(_edgeScore, nD2, nD2, (nD1 - 1));
 	double *edgeScore = NUMERIC_POINTER(_edgeScore);
 
 	double *afpDist = (double *) R_alloc(nAFP2 * nAFP2 * afpLength * (nAFP1 - 1), sizeof(double));
@@ -145,8 +133,8 @@ SEXP PA_Scores(SEXP _D1, SEXP _D2, SEXP _nD1, SEXP _nD2, SEXP _afpLength)
 
 	SEXP _scores;
 	PROTECT(_scores = NEW_LIST(2));
-	setListElement(_scores, 0, "node.score", _nodeScore);
-	setListElement(_scores, 1, "edge.score", _edgeScore);
+	SetListElement(_scores, 0, "node.score", _nodeScore);
+	SetListElement(_scores, 1, "edge.score", _edgeScore);
 
 	UNPROTECT(5);
 	return (_scores);
