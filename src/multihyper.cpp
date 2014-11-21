@@ -12,7 +12,7 @@ SEXP RMultiHyper(SEXP _N, SEXP _K, SEXP _M)
 
   SEXP _X;
   PROTECT(_X = NEW_INTEGER(nM * N));
-  setDim2(_X, nM, N);
+  SetDim2(_X, nM, N);
   int *X = INTEGER_POINTER(_X);
 
   int sumM = 0;
