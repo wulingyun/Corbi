@@ -1,5 +1,7 @@
 #include "Corbi.h"
 
+#define maxTemp 100000000
+
 SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
 {
   int **sub1 = C_allocArray<int>(n1, s1);
@@ -7,29 +9,39 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
     for (int k = 0; k < s1; k++)
       sub1[i][k] = Sub1[k * n1 + i];
 
-  int **sub2 = C_allocArray<int>(n2, s2);
-  for (int i = 0; i < n2; i++)
-    for (int k = 0; k < s2; k++)
-      sub2[i][k] = Sub2[k * n2 + i];
+  int **sub2;
+  if (Sub2 != Sub1)
+  {
+    sub2 = C_allocArray<int>(n2, s2);
+    for (int i = 0; i < n2; i++)
+      for (int k = 0; k < s2; k++)
+        sub2[i][k] = Sub2[k * n2 + i];
+  }
+  else
+  {
+    sub2 = sub1;
+  }
 
-  int nTemp = n1 * n2;
+  size_t nTemp = n1 * n2;
+  if (nTemp > maxTemp) nTemp = maxTemp;
   int **temp = C_allocArray<int>(nTemp, size);
   int *v1 = C_allocVector<int>(n1 + n2);
-  int *v2 = C_allocVector<int>(n1 + n2);
 
-  int nSub = 0, t1, t2;
+  int nSub = 0, j0;
   for (int i = 0; i < n1; i++)
   {
-    for (int j = 0; j < n2; j++)
+    if (Sub2 != Sub1)
+      j0 = 0;
+    else
+      j0 = i+1;
+    for (int j = j0; j < n2; j++)
     {
-      t1 = Union(v1, sub1[i], s1, sub2[j], s2);
-      if (t1 == size)
+      if (Union(v1, sub1[i], s1, sub2[j], s2) == size)
       {
         bool duplicated = false;
         for (int k = 0; k < nSub; k++)
         {
-          t2 = Intersection(v2, v1, t1, temp[k], size);
-          if (t2 == size)
+          if (Equal(v1, temp[k], size))
           {
             duplicated = true;
             break;
@@ -40,9 +52,11 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
           for (int k = 0; k < size; k++)
             temp[nSub][k] = v1[k];
           nSub++;
+          if (nSub >= nTemp) break;
         }
       }
     }
+    if (nSub >= nTemp) break;
   }
 
   SEXP _sub;
@@ -54,10 +68,9 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
       sub[k * nSub + i] = temp[i][k];
 
   C_freeArray<int, 2>(sub1);
-  C_freeArray<int, 2>(sub2);
+  if (Sub2 != Sub1) C_freeArray<int, 2>(sub2);
   C_freeArray<int, 2>(temp);
   C_freeVector(v1);
-  C_freeVector(v2);
 
   UNPROTECT(1);
   return(_sub);
