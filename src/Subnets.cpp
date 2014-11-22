@@ -213,7 +213,7 @@ SEXP BS_GetSubnets(SEXP _Edges, SEXP _nNodes, SEXP _maxSize)
   int n = nEdges;
   for (int i = 2; i < maxSize; i++)
   {
-    PROTECT(_temp = extend(Subnets[i-1], Subnets[i-1], n, n, i, i, i+1));
+    PROTECT(_temp = extend(Subnets[i-1], Subnets[1], n, nEdges, i, 2, i+1));
   	Subnets[i] = INTEGER_POINTER(_temp);
   	SET_VECTOR_ELT(_Subnets, i, _temp);
     n = INTEGER_POINTER(AS_INTEGER(GET_DIM(_temp)))[0];
