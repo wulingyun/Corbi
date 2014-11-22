@@ -216,6 +216,22 @@ int Union(int *combination, int *vector1, int size1, int *vector2, int size2)
 	return n;
 }
 
+/* Check equal of two ascending ordered vectors */
+
+bool Equal(int *vector1, int *vector2, int size)
+{
+  bool equal = true;
+  for (int i = 0; i < size; i++)
+  {
+    if (vector1[i] != vector2[i])
+    {
+      equal = false;
+      break;
+    }
+  }
+  return equal;
+}
+
 /* Insert element to ascending ordered vector */
 
 void Insert(int *vector, int &size, int v)
