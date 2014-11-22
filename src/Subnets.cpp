@@ -1,6 +1,123 @@
 #include "Corbi.h"
 
-#define maxTemp 100000000
+class Tree {
+public:
+  int value;
+  Tree *child;
+  Tree *next;
+  
+  Tree(int v = -1);
+  ~Tree();
+  
+  bool Add(int *vector, int size);
+  bool Find(int *vector, int size);
+  int *Export(int *matrix, int nRow, int size);
+};
+
+Tree::Tree(int v)
+{
+  value = v;
+  child = NULL;
+  next = NULL;
+}
+
+Tree::~Tree()
+{
+  delete child;
+  delete next;
+}
+
+bool Tree::Add(int *vector, int size)
+{
+  bool added = false;
+  Tree *p = this, *p0, *p1;
+  for (int i = 0; i < size; i++)
+  {
+    p0 = p;
+    while (p->value < vector[i] && p->next != NULL)
+    {
+      p0 = p;
+      p = p->next;
+    }
+    if (p->value < vector[i])
+    {
+      added = true;
+      p1 = new Tree(vector[i]);
+      p->next = p1;
+    }
+    else if (p->value > vector[i])
+    {
+      added = true;
+      p1 = new Tree(vector[i]);
+      p0->next = p1;
+      p1->next = p;
+    }
+    else
+      p1 = p;
+    if (i < (size-1) && p1->child == NULL)
+    {
+      p = new Tree();
+      p1->child = p;
+    }
+    else
+      p = p1->child;
+  }
+  return added;
+}
+
+bool Tree::Find(int *vector, int size)
+{
+  bool found = false;
+  Tree *p = this;
+  for (int i = 0; i < size; i++)
+  {
+    while (p->value < vector[i] && p->next != NULL)
+      p = p->next;
+    if (p->value == vector[i])
+    {
+      if (p->child != NULL)
+        p = p->child;
+      else if (i == (size-1))
+        found = true;
+      else
+        break;
+    }
+    else
+      break;
+  }
+  return found;
+}
+
+int *Tree::Export(int *matrix, int nRow, int size)
+{
+  Tree **p = (Tree **) Calloc(size, Tree *);
+  
+  int n = 0, i = 0;
+  p[0] = this;
+  while (i >= 0)
+  {
+    while (p[i]->child != NULL)
+    {
+      p[i+1] = p[i]->child;
+      i++;
+    }
+    if (p[i]->value >= 0)
+    {
+      for (int k = 0; k < size; k++)
+        matrix[k * nRow + n] = p[k]->value;
+      n++;
+    }
+    while (i >= 0 && p[i]->next == NULL)
+    {
+      i--;
+    }
+    if (i >= 0)
+      p[i] = p[i]->next;
+  }
+
+  free(p);
+  return matrix;
+}
 
 SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
 {
@@ -22,10 +139,8 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
     sub2 = sub1;
   }
 
-  size_t nTemp = n1 * n2;
-  if (nTemp > maxTemp) nTemp = maxTemp;
-  int **temp = C_allocArray<int>(nTemp, size);
-  int *v1 = C_allocVector<int>(n1 + n2);
+  Tree tree;
+  int *temp = C_allocVector<int>(n1 + n2);
 
   int nSub = 0, j0;
   for (int i = 0; i < n1; i++)
@@ -36,41 +151,23 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
       j0 = i+1;
     for (int j = j0; j < n2; j++)
     {
-      if (Union(v1, sub1[i], s1, sub2[j], s2) == size)
+      if (Union(temp, sub1[i], s1, sub2[j], s2) == size)
       {
-        bool duplicated = false;
-        for (int k = 0; k < nSub; k++)
-        {
-          if (Equal(v1, temp[k], size))
-          {
-            duplicated = true;
-            break;
-          }
-        }
-        if (!duplicated)
-        {
-          for (int k = 0; k < size; k++)
-            temp[nSub][k] = v1[k];
+        if (tree.Add(temp, size))
           nSub++;
-          if (nSub >= nTemp) break;
-        }
       }
     }
-    if (nSub >= nTemp) break;
   }
 
   SEXP _sub;
   PROTECT(_sub = NEW_INTEGER(nSub * size));
   SetDim2(_sub, nSub, size);
   int *sub = INTEGER_POINTER(_sub);
-  for (int i = 0; i < nSub; i++)
-    for (int k = 0; k < size; k++)
-      sub[k * nSub + i] = temp[i][k];
+  tree.Export(sub, nSub, size);
 
   C_freeArray<int, 2>(sub1);
   if (Sub2 != Sub1) C_freeArray<int, 2>(sub2);
-  C_freeArray<int, 2>(temp);
-  C_freeVector(v1);
+  C_freeVector(temp);
 
   UNPROTECT(1);
   return(_sub);
