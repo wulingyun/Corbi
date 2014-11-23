@@ -115,7 +115,7 @@ int *Tree::Export(int *matrix, int nRow, int size)
       p[i] = p[i]->next;
   }
 
-  free(p);
+  Free(p);
   return matrix;
 }
 
