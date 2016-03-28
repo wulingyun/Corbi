@@ -140,7 +140,7 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
   }
 
   Tree tree;
-  int *temp = C_allocVector<int>(n1 + n2);
+  int *temp = C_allocVector<int>(s1 + s2);
 
   int nSub = 0, j0;
   for (int i = 0; i < n1; i++)
@@ -151,11 +151,8 @@ SEXP extend(int *Sub1, int *Sub2, int n1, int n2, int s1, int s2, int size)
       j0 = i+1;
     for (int j = j0; j < n2; j++)
     {
-      if (Union(temp, sub1[i], s1, sub2[j], s2) == size)
-      {
-        if (tree.Add(temp, size))
+      if (Union(temp, sub1[i], s1, sub2[j], s2) == size && tree.Add(temp, size))
           nSub++;
-      }
     }
   }
 
