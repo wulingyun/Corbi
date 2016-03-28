@@ -3,6 +3,7 @@
 #' @export
 best_subnets <- function(func, net.matrix, max.size = 10, exhaust.size = 5, max.top = 10000)
 {
+  exhaust.size <- min(max.size, exhaust.size)
   subnets <- get_subnets(net.matrix, exhaust.size)
   results <- lapply(subnets, function (x) apply(x, 1, func))
   orders <- lapply(results, function(x) order(x, decreasing = TRUE))
