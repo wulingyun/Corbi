@@ -41,7 +41,7 @@ pro_align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length
 	ep[cbind(1:n.d2, (n.d2+1):n.states)] <- gap.penalty1
 	ep[cbind((n.d2+1):n.states, (n.d2+1):n.states)] <- gap.penalty2
 	temp <- matrix(gap.penalty1, nrow=n.d2, ncol=n.d2)
-	temp[lower.tri(temp, diag=T)] <- 0
+	temp[lower.tri(temp, diag=TRUE)] <- 0
 	ep[(n.d2+1):n.states, 1:n.d2] <- temp
 
 	for (e in 1:crf$n.edges)

@@ -73,6 +73,8 @@
 #' net_query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
 #' }
 #' 
+#' @import CRF
+#' 
 #' @export
 net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
@@ -115,7 +117,7 @@ net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 
 read_sim <- function(file)
 {
-	sim.text <- read.table(file, as.is=T)
+	sim.text <- utils::read.table(file, as.is=TRUE)
 	sim.node1 <- unique(as.character(sim.text[,1]))
 	sim.node2 <- unique(as.character(sim.text[,2]))
 	sim.size1 <- length(sim.node1)
@@ -188,7 +190,7 @@ build_model <- function(query, label, delta)
 		m1 <- 1:crf$n.states[n1]
 		m2 <- 1:crf$n.states[n2]
 		S1 <- matrix(crf$node.pot[n1, m1], crf$n.states[n1], crf$n.states[n2])
-		S2 <- matrix(crf$node.pot[n2, m2], crf$n.states[n1], crf$n.states[n2], byrow=T)
+		S2 <- matrix(crf$node.pot[n2, m2], crf$n.states[n1], crf$n.states[n2], byrow=TRUE)
 		W1 <- W[crf$state.map[n1, m1], crf$state.map[n2, m2]]
 		W2 <- W[crf$state.map[n2, m2], crf$state.map[n1, m1]]
 		crf$edge.pot[[e]] <- (S1 + S2) * pmax(W1 * query.net[n1, n2], t(W2) * query.net[n2, n1]) / 2
@@ -198,7 +200,7 @@ build_model <- function(query, label, delta)
 
 decode_heuristic <- function(crf)
 {
-	result <- try(decode.junction(crf), T)
+	result <- try(decode.junction(crf), TRUE)
 	if (class(result) == "try-error")
 	{
 		result <- decode.lbp(crf)
