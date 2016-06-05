@@ -4,7 +4,7 @@
 \alias{get_shortest_distances}
 \title{Calculate shortest distances of unweighted network}
 \usage{
-get_shortest_distances(net.matrix, source.nodes = rep_len(T,
+get_shortest_distances(net.matrix, source.nodes = rep_len(TRUE,
   dim(net.matrix)[1]))
 }
 \arguments{

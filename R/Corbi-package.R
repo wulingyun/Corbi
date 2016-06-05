@@ -12,12 +12,6 @@
 #'   \item \code{\link{net_align}} Network alignment method based on conditional random fields
 #' }
 #' 
-#' Functional enrichment analysis:
-#' \itemize{
-#'   \item \code{\link{neeat}} Network enhanced enrichment analysis tool
-#' }
-#' 
-#' 
 #' 
 #' @name Corbi-package
 #' @aliases Corbi-package Corbi
@@ -31,7 +25,6 @@
 #' R package for biological network alignment and querying. BMC Systems Biology,
 #' 7(Suppl 2):S6, 2013.
 #' 
-#' @import CRF
 #' @useDynLib Corbi, .registration = TRUE
 #' 
 NULL

@@ -18,11 +18,6 @@ Network comparison:
   \item \code{\link{net_query_batch}} Batch processing version of \code{\link{net_query}}
   \item \code{\link{net_align}} Network alignment method based on conditional random fields
 }
-
-Functional enrichment analysis:
-\itemize{
-  \item \code{\link{neeat}} Network enhanced enrichment analysis tool
-}
 }
 \references{
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient

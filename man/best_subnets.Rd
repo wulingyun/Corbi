@@ -2,12 +2,44 @@
 % Please edit documentation in R/subnets.R
 \name{best_subnets}
 \alias{best_subnets}
-\title{Find the optimal sub-networks}
+\title{The best subnetworks that maximize given objective function}
 \usage{
 best_subnets(func, net.matrix, max.size = 10, exhaust.size = 5,
   max.top = 10000)
 }
+\arguments{
+\item{func}{The objective function to maximize}
+
+\item{net.matrix}{The adjacent matrix of network}
+
+\item{max.size}{The maximal size of subnetworks}
+
+\item{exhaust.size}{The maximal size of subnetworks that use exhaustive searching strategy}
+
+\item{max.top}{The maiximal number of top candidates kept for evaluation of next size,
+used in heuristic searching strategy}
+}
+\value{
+A list with the following two components:
+  \item{subnets}{The list of top subnetworks in different sizes}
+  \item{obj.values}{The list of objective values of corresponding subnetworks}
+}
 \description{
-Find the optimal sub-networks
+Find the best subnetworks that maximize given objective function. If the size of 
+subnetworks <= \code{exhaust.size}, exact exhaustive searching is applied,
+otherwise, heuristic searching algorithm is used.
+}
+\examples{
+
+library(Corbi)
+net <- matrix(FALSE, nrow=10, ncol=10)
+net[sample.int(100, 20)] <- TRUE
+net <- net | t(net)
+func <- function(subnet) max(subnet) - min(subnet)
+result <- best_subnets(func, net, 5)
+
+}
+\seealso{
+get_subnets, extend_subnets
 }
 

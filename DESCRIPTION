@@ -1,5 +1,5 @@
 Package: Corbi
-Version: 0.3-3
+Version: 0.3-4
 Title: Collection of rudimentary bioinformatics tools
 Description: Provides a bundle of basic and fundamental bioinformatics tools,
     such as network querying and alignment.
@@ -10,9 +10,8 @@ ByteCompile: TRUE
 Depends:
     R (>= 3.0.2)
 Imports:
-    CRF (>= 0.3-7),
-    Matrix (>= 1.0-14),
-    parallel (>= 3.0.2)
+    CRF (>= 0.3-10),
+    Matrix (>= 1.0-14)
 License: GPL (>= 2)
 URL: http://r-forge.r-project.org/projects/corbi/
 RoxygenNote: 5.0.1

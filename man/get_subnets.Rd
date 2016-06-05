@@ -2,11 +2,29 @@
 % Please edit documentation in R/subnets.R
 \name{get_subnets}
 \alias{get_subnets}
-\title{Get all sub-networks}
+\title{All subnetworks with limited size}
 \usage{
 get_subnets(net.matrix, max.size = 2)
 }
+\arguments{
+\item{net.matrix}{The adjacent matrix of network}
+
+\item{max.size}{The maximal size of subnetworks}
+}
+\value{
+A list of generated subnetworks, with element $i$ corresponds the subnetworks
+of size $i$. Each element is a matrix, in which each row represents a subnetwork.
+}
 \description{
-Get all sub-networks
+Enumerate all subnetworks of size <= \code{max.size} from given network.
+}
+\examples{
+
+library(Corbi)
+net <- matrix(FALSE, nrow=10, ncol=10)
+net[sample.int(100, 20)] <- TRUE
+net <- net | t(net)
+subnets <- get_subnets(net, 3)
+
 }
 
