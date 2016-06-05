@@ -84,7 +84,8 @@ get_shortest_distances <- function(net.matrix, source.nodes = rep_len(T, dim(net
 #' 
 #' Extract a specified column from a sparse matrix rapidly
 #' 
-#' This function use faster extraction algorithm for the \code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
+#' This function implements faster column extraction algorithm for the 
+#' \code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
 #' 
 #' @param m The matrix
 #' @param i The column index
@@ -107,23 +108,72 @@ column <- function(m, i)
   v
 }
 
-nnzero <- function(m, r, c)
+
+#' Extract a submatrix from a matrix
+#' 
+#' Extract a specified submatrix from a sparse matrix rapidly
+#' 
+#' This function implements faster submatrix extraction algorithm for the 
+#' \code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
+#' 
+#' @param m The matrix
+#' @param rows The integer vectors of row index(es)
+#' @param cols The integer vectors of column index(es)
+#' 
+#' @return This function will return the specified submatrix as a matrix of corresponding type.
+#' 
+#' @export
+submatrix <- function(m, rows, cols)
 {
-  in.r <- if (missing(r)) function(i) T else function(i) r[i]
-  in.c <- if (missing(c)) function(i) T else function(i) c[i]
+  sapply(cols, function(i) column(m, i)[rows])
+}
+
+#' The number of non-zero values of a submatrix
+#' 
+#' Retuen the number of non-zero values of the specified submatrix of a given sparse matrix rapidly
+#' 
+#' This function implements faster calculation algorithm for the 
+#' \code{\link[=CsparseMatrix-class]{CsparseMatrix}} and \code{\link[=RsparseMatrix-class]{RsparseMatrix}}
+#' class in the package \pkg{Matrix}.
+#' 
+#' @param m The matrix
+#' @param rows The integer vector of row index(es) or logical vector indicated the selected rows
+#' @param cols The integer vector of column index(es) or logical vector indicated the selected cols
+#' 
+#' @return This function will return the number of non-zero values in the specified submatrix.
+#' 
+#' @export
+nnzero <- function(m, rows = 1:dim(m)[1], cols = 1:dim(m)[2])
+{
+  r <- logical(dim(m)[1])
+  c <- logical(dim(m)[2])
+  if (is.integer(rows)) {
+    r[rows] <- T
+  }
+  else {
+    r <- rows
+    rows <- which(r)
+  }
+  if (is.integer(cols)) {
+    c[cols] <- T
+  }
+  else {
+    c <- cols
+    cols <- which(c)
+  }
   fun <- function(i) if (m@p[i] < m@p[i+1]) (m@p[i]+1):m@p[i+1] else NULL
   if (sum(r) == 0 || sum(c) == 0)
     0
   else if (inherits(m, "CsparseMatrix")) {
-    p <- unlist(lapply(which(c), fun))
-    sum(m@x[p[in.r(m@i[p]+1)]] != 0)
+    p <- unlist(lapply(cols, fun))
+    sum(m@x[p[r[m@i[p]+1]]] != 0)
   }
   else if (inherits(m, "RsparseMatrix")) {
-    p <- unlist(lapply(which(r), fun))
-    sum(m@x[p[in.c(m@i[p]+1)]] != 0)
+    p <- unlist(lapply(rows, fun))
+    sum(m@x[p[c[m@i[p]+1]]] != 0)
   }
   else
-    Matrix::nnzero(m[r,c])
+    Matrix::nnzero(m[rows, cols])
 }
 
 #' Cohen's kappa score

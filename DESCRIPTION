@@ -1,9 +1,8 @@
 Package: Corbi
 Version: 0.3-3
-Title: Corbi - Bioinformatics analysis tools
-Description: This package provides a bundle of bioinformatics analysis tools
-    for biomedical research, including network comparison, functional
-    enrichment analysis, etc.
+Title: Collection of rudimentary bioinformatics tools
+Description: Provides a bundle of basic and fundamental bioinformatics tools,
+    such as network querying and alignment.
 Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))
@@ -14,9 +13,6 @@ Imports:
     CRF (>= 0.3-7),
     Matrix (>= 1.0-14),
     parallel (>= 3.0.2)
-Suggests:
-    AnnotationDbi,
-    org.Hs.eg.db
 License: GPL (>= 2)
 URL: http://r-forge.r-project.org/projects/corbi/
 RoxygenNote: 5.0.1

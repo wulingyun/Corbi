@@ -18,6 +18,7 @@ This function will return the specified column as a vector of corresponding type
 Extract a specified column from a sparse matrix rapidly
 }
 \details{
-This function use faster extraction algorithm for the \code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
+This function implements faster column extraction algorithm for the 
+\code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
 }
 
