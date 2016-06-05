@@ -135,7 +135,8 @@ simplify_target <- function(query, target, delta)
 	net.size <- sum(select)
 	if (net.size <= 0)
 	{
-		stop("The simplified target network is empty, you should give a smaller cut values!")
+		stop("The simplified target network is empty, please check the node similarity file, 
+		     or decrease the value of parameter delta.d!")
 	}
 	net.node <- target$node[select]
 	net.matrix <- target$matrix[select, select]
