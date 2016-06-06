@@ -1,8 +1,8 @@
 Package: Corbi
-Version: 0.3-4
+Version: 0.3-5
 Title: Collection of Rudimentary Bioinformatics Tools
 Description: Provides a bundle of basic and fundamental bioinformatics tools,
-    such as network querying and alignment.
+    such as network querying and alignment, subnetwork extraction and search.
 Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "wulingyun@gmail.com"), person("Qiang", "Huang", role = c("aut"), email =
     "hq04405114@gmail.com"))
