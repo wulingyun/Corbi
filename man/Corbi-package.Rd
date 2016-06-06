@@ -4,12 +4,12 @@
 \name{Corbi-package}
 \alias{Corbi}
 \alias{Corbi-package}
-\title{Corbi - Bioinformatics analysis tools}
+\title{Corbi - Collection of Rudimentary Bioinformatics Tools}
 \description{
-This pakcage provides a bundle of bioinformatics analysis tools for biomedical research.
+This pakcage provides a bundle of basic and fundamental bioinformatics tools.
 }
 \details{
-This is a collection of bioinformatics analysis tools developed by WuLab at Academy of Mathematics
+These bioinformatics tools are developed by \href{http://wulab.aporc.org}{WuLab} at Academy of Mathematics
 and Systems Science, Chinese Academy of Sciences.
 
 Network comparison:
@@ -17,6 +17,13 @@ Network comparison:
   \item \code{\link{net_query}} Network querying method based on conditional random fields
   \item \code{\link{net_query_batch}} Batch processing version of \code{\link{net_query}}
   \item \code{\link{net_align}} Network alignment method based on conditional random fields
+}
+
+Subnetwork extraction and search
+\itemize{
+  \item \code{\link{get_subnets}} Enumerate all subnetworks of limited size
+  \item \code{\link{extend_subnets}} Extend subnetworks from smaller subnetworks
+  \item \code{\link{best_subnets}} Search best subnetworks that maximize given objective function
 }
 }
 \references{

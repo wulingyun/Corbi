@@ -2,7 +2,7 @@
 % Please edit documentation in R/subnets.R
 \name{get_subnets}
 \alias{get_subnets}
-\title{All subnetworks with limited size}
+\title{All subnetworks of limited size}
 \usage{
 get_subnets(net.matrix, max.size = 2)
 }

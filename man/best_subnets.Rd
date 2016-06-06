@@ -2,7 +2,7 @@
 % Please edit documentation in R/subnets.R
 \name{best_subnets}
 \alias{best_subnets}
-\title{The best subnetworks that maximize given objective function}
+\title{The best subnetworks}
 \usage{
 best_subnets(func, net.matrix, max.size = 10, exhaust.size = 5,
   max.top = 10000)
@@ -25,7 +25,10 @@ A list with the following two components:
   \item{obj.values}{The list of objective values of corresponding subnetworks}
 }
 \description{
-Find the best subnetworks that maximize given objective function. If the size of 
+Search best subnetworks that maximize given objective functions
+}
+\details{
+Enumerate and search the best subnetworks that maximize given objective function. If the size of 
 subnetworks <= \code{exhaust.size}, exact exhaustive searching is applied,
 otherwise, heuristic searching algorithm is used.
 }

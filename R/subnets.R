@@ -1,6 +1,8 @@
-#' The best subnetworks that maximize given objective function
+#' The best subnetworks
 #' 
-#' Find the best subnetworks that maximize given objective function. If the size of 
+#' Search best subnetworks that maximize given objective functions.
+#' 
+#' Enumerate and search the best subnetworks that maximize given objective function. If the size of 
 #' subnetworks <= \code{exhaust.size}, exact exhaustive searching is applied,
 #' otherwise, heuristic searching algorithm is used.
 #' 
@@ -54,7 +56,7 @@ best_subnets <- function(func, net.matrix, max.size = 10, exhaust.size = 5, max.
 }
 
 
-#' All subnetworks with limited size
+#' All subnetworks of limited size
 #' 
 #' Enumerate all subnetworks of size <= \code{max.size} from given network.
 #' 
@@ -82,12 +84,14 @@ get_subnets <- function(net.matrix, max.size = 2)
 }
 
 
-#' All subnetworks by overlapping two subnetworks
-#' 
-#' Enumerate all possible subnetworks of desired size by overlapping two sets of subnetworks
-#' of size \code{s1} and \code{s2}. The desired size should be between \code{max(s1,s2)+1} 
-#' and \code{s1+s2-1}. Invalid desired size will be replaced by the minimum allowed value 
-#' \code{max(s1,s2)+1}.
+#' Extend subnetworks from smaller subnetworks
+#'
+#' Extend subnetworks by pairwise overlapping two sets of smaller subnetworks.
+#'
+#' Enumerate all possible subnetworks of desired size by pairwise overlapping two sets of 
+#' subnetworks of size \code{s1} and \code{s2}. The desired size should be between 
+#' \code{max(s1,s2)+1} and \code{s1+s2-1}. Invalid desired size will be replaced by the 
+#' minimum allowed value \code{max(s1,s2)+1}.
 #' 
 #' @param subnet1 The matrix representing the first set of subnetworks
 #' @param subnet2 The matrix representing the second set of subnetworks

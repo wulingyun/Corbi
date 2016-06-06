@@ -2,7 +2,7 @@
 % Please edit documentation in R/subnets.R
 \name{extend_subnets}
 \alias{extend_subnets}
-\title{All subnetworks by overlapping two subnetworks}
+\title{Extend subnetworks from smaller subnetworks}
 \usage{
 extend_subnets(subnet1, subnet2, size = 0)
 }
@@ -17,10 +17,13 @@ extend_subnets(subnet1, subnet2, size = 0)
 A matrix represents the extended subnetworks, in which each row represents a subnetwork.
 }
 \description{
-Enumerate all possible subnetworks of desired size by overlapping two sets of subnetworks
-of size \code{s1} and \code{s2}. The desired size should be between \code{max(s1,s2)+1} 
-and \code{s1+s2-1}. Invalid desired size will be replaced by the minimum allowed value 
-\code{max(s1,s2)+1}.
+Extend subnetworks by pairwise overlapping two sets of smaller subnetworks.
+}
+\details{
+Enumerate all possible subnetworks of desired size by pairwise overlapping two sets of 
+subnetworks of size \code{s1} and \code{s2}. The desired size should be between 
+\code{max(s1,s2)+1} and \code{s1+s2-1}. Invalid desired size will be replaced by the 
+minimum allowed value \code{max(s1,s2)+1}.
 }
 \examples{
 
