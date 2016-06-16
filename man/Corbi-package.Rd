@@ -12,14 +12,14 @@ This pakcage provides a bundle of basic and fundamental bioinformatics tools.
 These bioinformatics tools are developed by \href{http://wulab.aporc.org}{WuLab} at Academy of Mathematics
 and Systems Science, Chinese Academy of Sciences.
 
-Network comparison:
+Network querying and alignment:
 \itemize{
   \item \code{\link{net_query}} Network querying method based on conditional random fields
   \item \code{\link{net_query_batch}} Batch processing version of \code{\link{net_query}}
   \item \code{\link{net_align}} Network alignment method based on conditional random fields
 }
 
-Subnetwork extraction and search
+Subnetwork extraction and search:
 \itemize{
   \item \code{\link{get_subnets}} Enumerate all subnetworks of limited size
   \item \code{\link{extend_subnets}} Extend subnetworks from smaller subnetworks

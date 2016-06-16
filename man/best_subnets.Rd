@@ -25,7 +25,7 @@ A list with the following two components:
   \item{obj.values}{The list of objective values of corresponding subnetworks}
 }
 \description{
-Search best subnetworks that maximize given objective functions
+Search best subnetworks that maximize given objective functions.
 }
 \details{
 Enumerate and search the best subnetworks that maximize given objective function. If the size of 

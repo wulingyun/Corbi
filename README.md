@@ -6,13 +6,15 @@ Corbi is an R package provided a bundle of basic and fundamental bioinformatics 
 ### How to install? ###
 
 * Stable version: The stable version of Corbi is available in the following websites:
-    + CRAN: R users can directly install Corbi package in the R terminal using the command
-
-    `install.packages("Corbi")`
-
-    + R-Forge: R users can also install Corbi package in the R terminal using the command
-
-    `install.packages("Corbi", repos="http://R-Forge.R-project.org")`
+    + CRAN: https://cran.r-project.org/web/packages/Corbi/
+    
+        R users can directly install Corbi package in the R terminal using the command
+        `install.packages("Corbi")`
+    
+    + R-Forge: http://r-forge.r-project.org/projects/corbi/
+    
+        R users can also install Corbi package in the R terminal using the command
+        `install.packages("Corbi", repos="http://R-Forge.R-project.org")`
 
 * Latest beta version: The latest developmental version of Corbi can be downloaded from GitHub and installed from source.
     + GitHub: https://github.com/wulingyun/Corbi
