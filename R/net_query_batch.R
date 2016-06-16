@@ -24,9 +24,9 @@ net_query_batch <- function(query.nets, target.net, node.sim, query.type=4, delt
   for (query.net in query.nets)
   {
     query <- read_net(query.net)
-    label <- simplify_target(query, target, delta)
-    model <- build_model(query, label, delta)
-    result <- solve_crf(model, query.type)
-    write_result(query, label, model, result, paste(query.net, output, sep="_"))
+    label <- .net_query.simplify_target(query, target, delta)
+    model <- .net_query.build_model(query, label, delta)
+    result <- .net_query.solve_crf(model, query.type)
+    .net_query.write_result(query, label, model, result, paste(query.net, output, sep="_"))
   }
 }

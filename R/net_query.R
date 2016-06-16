@@ -103,31 +103,19 @@ net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 # compute the shortest distance matrix for the target network
 # and simplify the target network
 
-	label <- simplify_target(query, target, delta)
+	label <- .net_query.simplify_target(query, target, delta)
 
 # build and solve CRF model
 
-	model <- build_model(query, label, delta)
-	result <- solve_crf(model, query.type)
+	model <- .net_query.build_model(query, label, delta)
+	result <- .net_query.solve_crf(model, query.type)
 
 # write result to output file
 
-	write_result(query, label, model, result, paste(query.net, output, sep="_"))
+	.net_query.write_result(query, label, model, result, paste(query.net, output, sep="_"))
 }
 
-read_sim <- function(file)
-{
-	sim.text <- utils::read.table(file, as.is=TRUE)
-	sim.node1 <- unique(as.character(sim.text[,1]))
-	sim.node2 <- unique(as.character(sim.text[,2]))
-	sim.size1 <- length(sim.node1)
-	sim.size2 <- length(sim.node2)
-	sim.matrix <- matrix(0, sim.size1, sim.size2, dimnames=list(sim.node1, sim.node2))
-	sim.matrix[cbind(as.character(sim.text[,1]),as.character(sim.text[,2]))] <- sim.text[,3]
-	sim.matrix
-}
-
-simplify_target <- function(query, target, delta)
+.net_query.simplify_target <- function(query, target, delta)
 {
 	net.sim <- matrix(0, query$size, target$size, dimnames=list(query$node, target$node))
 	n1 <- query$node[query$node %in% rownames(target$sim)]
@@ -157,7 +145,7 @@ simplify_target <- function(query, target, delta)
 	list(size=net.size, node=net.node, matrix=net.matrix, sim=net.sim, dist=net.dist)
 }
 
-build_model <- function(query, label, delta)
+.net_query.build_model <- function(query, label, delta)
 {
 	query.size <- query$size
 	query.net <- query$matrix
@@ -208,7 +196,7 @@ decode_heuristic <- function(crf)
 	result
 }
 
-solve_crf <- function(model, query.type)
+.net_query.solve_crf <- function(model, query.type)
 {
 	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode_heuristic, decode.ilp)
 	if (!is.numeric(query.type) || query.type > length(decode.method) || query.type < 1) query.type = 4
@@ -216,7 +204,7 @@ solve_crf <- function(model, query.type)
 	result <- model$state.map[cbind(1:model$n.nodes, result)]
 }
 
-write_result <- function(query, label, model, result, filename="result.txt")
+.net_query.write_result <- function(query, label, model, result, filename="result.txt")
 {
 	query.name <- query$node
 	label.name <- c(label$node, "gap")
