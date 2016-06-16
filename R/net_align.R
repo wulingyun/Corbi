@@ -83,9 +83,9 @@ net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 		# and simplify the target network
 		# build and solve CRF model
 
-		label <- simplify_target(query, target, delta)
-		model <- build_model(query, label, delta)
-		result <- solve_crf(model, query.type)
+		label <- .net_query.simplify_target(query, target, delta)
+		model <- .net_query.build_model(query, label, delta)
+		result <- .net_query.solve_crf(model, query.type)
 	
 		# change the target subnet as query network 
 
@@ -96,9 +96,9 @@ net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 
 	## target part --> query
 
-		label1 <- simplify_target( targetpart, query, delta)
-		model1 <- build_model(targetpart, label1, delta)
-		result1 <- solve_crf(model1, query.type)
+		label1 <- .net_query.simplify_target( targetpart, query, delta)
+		model1 <- .net_query.build_model(targetpart, label1, delta)
+		result1 <- .net_query.solve_crf(model1, query.type)
 
 		# update the common match pairs
 		hitcom <- .net_align.match_com(label,result,label1,result1)
