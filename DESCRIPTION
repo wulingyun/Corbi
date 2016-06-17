@@ -13,6 +13,8 @@ Imports:
     CRF (>= 0.3-10),
     Matrix (>= 1.0-14),
     mpmi (>= 0.41)
+Suggests:
+    MASS, matrixcalc
 License: GPL (>= 2)
 URL: https://github.com/wulingyun/Corbi
 RoxygenNote: 5.0.1
