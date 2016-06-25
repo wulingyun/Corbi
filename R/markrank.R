@@ -1,7 +1,7 @@
 #' @import Matrix
 #' 
 #' @export
-markrank <- function(dataset, label, PPI_adj, alpha, lambda, eps=1e-10, E_value=NULL)
+markrank <- function(dataset, label, PPI_adj, alpha, lambda, eps=1e-10, E_value=NULL, trace=TRUE)
 {
   # INPUT DESCRIPTION: 
   # dataset : The microarray expression matrix of related disease. Each row represents a sample and each column represents a gene.
@@ -37,7 +37,7 @@ markrank <- function(dataset, label, PPI_adj, alpha, lambda, eps=1e-10, E_value=
   A1 <- t(NET1)%*%D1
   print("Discriminative potential network G2 computing...")
   D2 <- Matrix(0, n, n, sparse=TRUE, dimnames=list(colnames(dataset), colnames(dataset)))
-  system.time(NET2 <- .markrank.compute_net2(dataset, label, prints=TRUE))
+  system.time(NET2 <- .markrank.compute_net2(dataset, label, trace=trace))
   diag(D2) <- 1/rowSums(NET2)
   A2 <- t(NET2)%*%D2
   A  <- lambda*A1 + (1-lambda)*A2
@@ -70,26 +70,20 @@ markrank <- function(dataset, label, PPI_adj, alpha, lambda, eps=1e-10, E_value=
 
 #' @import Matrix mpmi
 #' 
-.markrank.compute_net2 <- function(dataset, label, prints=FALSE)
+.markrank.compute_net2 <- function(dataset, label, trace=FALSE)
 {
   l <- ncol(dataset)
-  MI1 <- mminjk(dataset, as.matrix(as.numeric(label)), level = 0L, na.rm = FALSE)
-  MI2 <- Matrix(0,l,l,dimnames=list(colnames(dataset),colnames(dataset)),sparse=TRUE)
-  for (i in 1:l){
-    if (prints == TRUE){
-      if (i%%10 == 0){
-        print(i)
-      }
-    }
-    dataset_tmp <- (dataset[,i:l] + dataset[,i])/sqrt(2)
-    MI2[i:l,i] <- mminjk(as.matrix(dataset_tmp), as.matrix(as.numeric(label)), level = 0L, na.rm = FALSE)
+  label <- as.matrix(as.numeric(label))
+  MI1 <- mminjk(dataset, label, level=0L, na.rm=FALSE)
+  MI2 <- Matrix(0, l, l, dimnames=list(colnames(dataset),colnames(dataset)), sparse=TRUE)
+  for (i in 1:(l-1)){
+    if (trace == TRUE && i%%10 == 0) print(i)
+    dataset_tmp <- (dataset[,(i+1):l, drop=FALSE] + dataset[,i])/sqrt(2)
+    MI2[(i+1):l, i] <- mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
   }
-  MI2 <- MI2 + t(MI2)
-  diag(MI2) <- MI1
-  
-  NET2 <- MI2-as.numeric(MI1)
-  ind <- which(NET2 <= 0)
-  NET2[ind] <- 0
+  NET2 <- MI2 + t(MI2) - as.vector(MI1)
+  NET2[which(NET2 <= 0)] <- 0
+  diag(NET2) <- 0
   NET2 <- Matrix(NET2, sparse=TRUE)
   
   return(NET2)

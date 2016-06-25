@@ -36,8 +36,5 @@ label <- c(rep(0, half), rep(1, half))
 
 result <- markrank(dataset, label, sub_info$adj_matrix, alpha=0.8, lambda=0.2, eps=1e-10)
 s <- sort(result$score, decreasing=TRUE)
-result$score[de_list]														# The score of pre-set differential expression genes.
-setdiff(names(s[1:10]),de_list)												# False discovery genes.
-
-
-
+print(result$score[de_list])				      										# The score of pre-set differential expression genes.
+print(setdiff(names(s[1:10]),de_list))												# False discovery genes.
