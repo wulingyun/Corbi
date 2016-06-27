@@ -5,7 +5,7 @@
 \title{MarkRank}
 \usage{
 markrank(dataset, label, adj_matrix, alpha, lambda, eps = 1e-10,
-  E_value = NULL, trace = TRUE)
+  E_value = NULL, trace = TRUE, d = Inf)
 }
 \arguments{
 \item{dataset}{The microarray expression matrix of related disease. Each row represents
@@ -28,6 +28,9 @@ absolute Pearson correlation coefficient (PCC).}
 
 \item{trace}{Locaical variable indicated whether tracing information on the progress of the iterative
 solution method is produced.}
+
+\item{d}{Threshold for simplifying G_2 computation. Only the gene pairs whose shortest distances in PPI network are 
+less than d participate in G_2 computation. Default is Inf.}
 }
 \value{
 This function will return a list with components:
@@ -35,6 +38,7 @@ This function will return a list with components:
   \item{steps}{The final steps used by iterative method.}
   \item{NET2}{The weighted adjacent matrix of discriminative potential network.}
   \item{initial_pars}{The initial parameter values used in computation.}
+  \item{dis}{The pairwise distance matrix of input network. Null if d=Inf}
 }
 \description{
 Prioritization of network biomarkers for complex diseases
@@ -44,6 +48,10 @@ MarkRank is a network biomarker identification method to prioritize disease gene
 by integrating multi-source information including the biological network, eg. 
 protein-protein interaction (PPI) network, the prior information about related diseases,
 and the discriminative power of cooperative gene combinations.
+
+The random-walk based iteration formula is:
+
+R = alpha*[lambda*A1 + (1-lambda)*A2]*R + (1-alpha)*E_value.
 }
 \references{
 Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, Peter Csermely,

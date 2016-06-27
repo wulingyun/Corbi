@@ -20,7 +20,7 @@ read_net <- function(filename, directed=FALSE, usename=FALSE){
 		}else{
 			net_matrix[net_text] <- 1		
 		}
-		list(size=c(net_size,nrow(net_text)), node=net_node, edge=net_text, adj_matrix=net_matrix)
+		list(size=c(net_size,sum(net_matrix)/2), node=net_node, edge=net_text, adj_matrix=net_matrix)
 	}else{
 		if (class(filename) == "character"){
 			net_text <- as.matrix(read.table(filename, fill=T, as.is=T, col.names=1:max(count.fields(filename))))
