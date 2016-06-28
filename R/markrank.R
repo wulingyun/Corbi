@@ -78,7 +78,7 @@ markrank <- function(dataset, label, adj_matrix, alpha, lambda, eps=1e-10, E_val
   }else{
     dis <- NULL
   }
-  print("Discriminative potential network G_2 computing...")
+  if (trace) print("Computing discriminative potential network ...")
   D2 <- Matrix(0, n, n, sparse=TRUE, dimnames=list(colnames(dataset), colnames(dataset)))
   system.time(NET2 <- .markrank.compute_net2(dataset, label, dis, d, trace=trace))
   diag(D2) <- 1/rowSums(NET2)

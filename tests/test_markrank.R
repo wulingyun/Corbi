@@ -14,6 +14,7 @@ loadin <- TRUE
 if (loadin == TRUE){
   load('dataset.RData')
   load('de_list.RData')
+  load('answer.RData')
 }else{                                      # Generate a new dataset.
   preset  <- search_net(sub_info, node_size = size, ori_name = TRUE)			# Extract a connected subnetwork from the original network. 	
   de_list <- as.character(unique(as.vector(preset)))
@@ -37,31 +38,33 @@ if (loadin == TRUE){
   
   save(dataset, file='dataset.RData')
   save(de_list, file='de_list.RData')
+  answer <- NULL
 }
 label <- c(rep(0, half), rep(1, half))
 
-
 # Prioritize disease genes using MarkRank.
-load('result.RData')
 adj_matrix <- as.matrix(sub_info$matrix)
 adj_matrix <- adj_matrix[colnames(dataset), colnames(dataset)]
 adj_matrix <- adj_matrix + t(adj_matrix)
-result_tmp <- markrank(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-10,d=Inf)
-if (sum(abs(result_tmp$score - result$score)) > 1e-10){
-  print('Computation error!!')
-}else{
-  print('NO inner error!!')
-}
-s <- sort(result_tmp$score, decreasing=TRUE)
-print('The score of pre-set differential expression genes.')
-print(result_tmp$score[de_list])				      										
-print("False discovery genes are")
-print(setdiff(names(s[1:10]), de_list))												
 
+print(system.time(result1 <- markrank(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-10, trace=F, d=Inf)))
+if (!is.null(answer) && sum(abs(result1$score - answer$result1$score)) > 1e-10){
+  stop('Computation error!!')
+}
+s1 <- sort(result1$score, decreasing=TRUE)
+print('The score of pre-set differential expression genes.')
+print(result1$score[de_list])				      										
+print("False discovery genes are")
+print(setdiff(names(s1[1:10]), de_list))												
 
 # Set different d for simplifying G_2 computation.
 d <- 2
-system.time(result1 <- markrank(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-10, trace=F, d=Inf))
-system.time(result2 <- markrank(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-10, trace=F, d=d))
-matrix(c(result1$score, result2$score), 100, 2, dimnames = list(1:100, c(Inf, d)))
-
+print(system.time(result2 <- markrank(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-10, trace=F, d=d)))
+if (!is.null(answer) && sum(abs(result2$score - answer$result2$score)) > 1e-10){
+  stop('Computation error!!')
+}
+s2 <- sort(result2$score, decreasing=TRUE)
+print('The score of pre-set differential expression genes.')
+print(result2$score[de_list])				      										
+print("False discovery genes are")
+print(setdiff(names(s2[1:10]), de_list))												
