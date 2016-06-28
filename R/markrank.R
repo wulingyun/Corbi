@@ -41,7 +41,6 @@
 #' Manuscript, 2016.
 #' 
 #' @import Matrix
-#' @import igraph
 #' 
 #' @export
 markrank <- function(dataset, label, adj_matrix, alpha, lambda, eps=1e-10, E_value=NULL, trace=TRUE, d=Inf)
@@ -75,17 +74,7 @@ markrank <- function(dataset, label, adj_matrix, alpha, lambda, eps=1e-10, E_val
   A1 <- t(NET1)%*%D1
  
   if (d != Inf){
-    node  <- rownames(adj_matrix)
-	  adj_matrix1 <- adj_matrix
-	  adj_matrix1[lower.tri(adj_matrix)] <- 0
-    index <- which(adj_matrix1 == 1, arr.ind=TRUE)
-    edge  <- matrix(0,nrow(index),2)
-    edge[,1] <- node[index[,1]]
-    edge[,2] <- node[index[,2]]
-    g <- make_empty_graph(directed = FALSE) +  vertices(node)
-    g <- add_edges(g, as.character(as.vector(t(edge))))
-    dis <- distances(g)
-    #com <- components(g)  
+    dis <- get_shortest_distances(adj_matrix)
   }else{
     dis <- NULL
   }
