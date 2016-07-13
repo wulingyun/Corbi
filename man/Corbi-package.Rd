@@ -25,6 +25,11 @@ Subnetwork extraction and search:
   \item \code{\link{extend_subnets}} Extend subnetworks from smaller subnetworks
   \item \code{\link{best_subnets}} Search best subnetworks that maximize given objective function
 }
+
+Biomarker identification:
+\itemize{
+  \item \code{\link{markrank}} Biomarker identification and prioritization by integrating gene expression with biomolecular network
+}
 }
 \references{
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient

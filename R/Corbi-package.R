@@ -19,6 +19,10 @@
 #'   \item \code{\link{best_subnets}} Search best subnetworks that maximize given objective function
 #' }
 #' 
+#' Biomarker identification:
+#' \itemize{
+#'   \item \code{\link{markrank}} Biomarker identification and prioritization by integrating gene expression with biomolecular network
+#' }
 #' 
 #' @name Corbi-package
 #' @aliases Corbi-package Corbi
