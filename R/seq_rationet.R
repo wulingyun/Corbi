@@ -117,6 +117,7 @@ inferByVertexCover_lpSolve <- function(adj.matrix, z.matrix, coverage = 1.0, bin
 
 
 inferByVertexCover <- function(adj.matrix, z.matrix, coverage = 1.0, binary = FALSE) {
+  require(Matrix)
   require(Rglpk)
   
   # LP variables:
@@ -138,23 +139,21 @@ inferByVertexCover <- function(adj.matrix, z.matrix, coverage = 1.0, binary = FA
     obj_fun <- c(rep(1, n_nodes * 2), rep(0, n_edges))
     
     # 1. coefficient matrix of X, Y, Z for Xi + Yi <= 1, for any node i in V(G)
-    coeff1 <- matrix(0, n_nodes, n_variables)
-    coeff1[cbind(1:n_nodes, 1:n_nodes)] <- 1
-    coeff1[cbind(1:n_nodes, (n_nodes+1):(n_nodes*2))] <- 1
-    
+    vi <- rep(seq(n_nodes), 2)
+    vj <- seq(n_nodes*2)
+    vx <- rep(1, n_nodes*2)
+
     # 2. coefficient matrix of X, Y, Z for Xi + Yj >= Zij, for any edge (i, j) in E(G)
-    coeff2 <- matrix(0, n_edges, n_variables)
-    for (e in 1:n_edges) {
-      coeff2[e, edges[e,1]] <- 1
-      coeff2[e, n_nodes+edges[e,2]] <- 1
-      coeff2[e, n_nodes*2+e] <- -1
-    }
-    
-    # 3. coefficient vector of X, Y, Z for sum(Z) >= k                         #  k is edge.num.covered
-    coeff3 <- matrix(0, 1, n_variables)
-    coeff3[1, (n_nodes*2+1):n_variables] <- 1
-    
-    constraint_mat <- rbind(coeff1, coeff2, coeff3)
+    vi <- c(vi, rep(seq(n_edges), 3)+n_nodes)
+    vj <- c(vj, edges[,1], edges[,2]+n_nodes, seq(n_edges)+n_nodes*2)
+    vx <- c(vx, rep(1, n_edges*2), rep(-1, n_edges))
+
+    # 3. coefficient vector of X, Y, Z for sum(Z) >= k
+    vi <- c(vi, rep(n_nodes+n_edges+1, n_edges))
+    vj <- c(vj, seq(n_edges)+n_nodes*2)
+    vx <- c(vx, rep(1, n_edges))
+
+    constraint_mat <- sparseMatrix(vi, vj, x = vx, dims = c(n_nodes+n_edges+1, n_variables))
     constraint_rhs <- c(rep(1, n_nodes), rep(0, n_edges), ceiling(n_edges*coverage))
     constraint_dir <- c(rep("<=", n_nodes), rep(">=", n_edges), ">=")
     
