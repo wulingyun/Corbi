@@ -27,7 +27,7 @@
 #' solution method is produced.
 #' @param d Threshold for simplifying G_2 computation. Only the gene pairs whose shortest distances in PPI network are 
 #' less than d participate in G_2 computation. Default is Inf.
-#'
+#' @param NET2 A given computed G_2 for tuning parameter.
 #' 
 #' @return This function will return a list with components:
 #'   \item{score}{The vector of final MarkRank scores for each gene.}
@@ -37,13 +37,13 @@
 #'   \item{dis}{The pairwise distance matrix of input network. Null if d=Inf}
 #' 
 #' @references Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, Peter Csermely,
-#' Ling-Yun Wu. Prioritization of network biomarkers for complex diseases via MarkRank.
-#' Manuscript, 2016.
+#' Ling-Yun Wu. Discovering cooperative biomarkers for heterogeneous complex disease diagnoses.
+#' Manuscript, 2017.
 #' 
 #' @import Matrix
 #' 
 #' @export
-markrank <- function(dataset, label, adj_matrix, alpha, lambda, eps=1e-10, E_value=NULL, trace=TRUE, d=Inf)
+markrank <- function(dataset, label, adj_matrix, alpha, lambda, eps=1e-10, E_value=NULL, trace=TRUE, d=Inf, NET2=NULL)
 {
   
   m <- nrow(dataset)											# Sample number.
@@ -79,8 +79,10 @@ markrank <- function(dataset, label, adj_matrix, alpha, lambda, eps=1e-10, E_val
     dis <- NULL
   }
   if (trace) print("Computing discriminative potential network ...")
+  if (class(NET2) == "NULL"){
+  	system.time(NET2 <- .markrank.compute_net2(dataset, label, dis, d, trace=trace))
+  }
   D2 <- Matrix(0, n, n, sparse=TRUE, dimnames=list(colnames(dataset), colnames(dataset)))
-  system.time(NET2 <- .markrank.compute_net2(dataset, label, dis, d, trace=trace))
   diag(D2) <- 1/rowSums(NET2)
   A2 <- t(NET2)%*%D2
   A  <- lambda*A1 + (1-lambda)*A2
