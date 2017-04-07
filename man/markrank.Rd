@@ -4,8 +4,9 @@
 \alias{markrank}
 \title{MarkRank}
 \usage{
-markrank(dataset, label, adj_matrix, alpha, lambda, eps = 1e-10,
-  E_value = NULL, trace = TRUE, d = Inf)
+markrank(dataset, label, adj_matrix, alpha = 0.8, lambda = 0.2,
+  eps = 1e-10, E_value = NULL, trace = TRUE, d = Inf,
+  Given_NET2 = NULL)
 }
 \arguments{
 \item{dataset}{The microarray expression matrix of related disease. Each row represents
@@ -17,45 +18,83 @@ accord with the sample number in dataset.}
 \item{adj_matrix}{The 0-1 binary adjacent matrix of a connected biological network. 
 Here the node set should be the same order as the gene set in expression matrix.}
 
-\item{alpha}{The convex combination coefficient of network effect and prior information vector E.}
+\item{alpha}{The convex combination coefficient of network effect and prior information vector \code{E_value}.
+The range of alpha is in \code{[0,1]}. A larger alpha will lay more emphasis on the 
+network information. The default value is 0.8.}
 
-\item{lambda}{The convex combination coefficient of two network effects.}
+\item{lambda}{In the random walk-based iteration, matrix A1 reflects the stucture information of the 
+biological network, whereas matrix A2 reflects the cooperative effect of gene combinations.
+Parameter lambda is the convex combination coefficient of two network effects. The range of lambda is
+in \code{[0,1]}. A larger lambda will lay more emphasis on the A1. The default value is 0.2.}
 
-\item{eps}{The stop criteria for the iterative solution method.}
+\item{eps}{The stop criteria for the iterative solution method. The default value is 1e-10.}
 
-\item{E_value}{A vector containing the prior information about the importance of nodes. Default is 
+\item{E_value}{A vector containing the prior information about the importance of nodes. Default is the 
 absolute Pearson correlation coefficient (PCC).}
 
-\item{trace}{Locaical variable indicated whether tracing information on the progress of the iterative
-solution method is produced.}
+\item{trace}{Locaical variable indicated whether tracing information on the progress of the gene cooperation
+network construction is produced.}
 
-\item{d}{Threshold for simplifying G_2 computation. Only the gene pairs whose shortest distances in PPI network are 
-less than d participate in G_2 computation. Default is Inf.}
+\item{d}{Threshold for simplifying the G_2 computation. Only the gene pairs whose shortest distances in PPI network are 
+less than d participate in the G_2 computation. The default value is Inf.}
+
+\item{Given_NET2}{Whether a computed cooperation network is given for tuning parameter. See Details
+for a more specific description.}
 }
 \value{
-This function will return a list with components:
+This function will return a list with the following components:
   \item{score}{The vector of final MarkRank scores for each gene.}
-  \item{steps}{The final steps used by iterative method.}
-  \item{NET2}{The weighted adjacent matrix of discriminative potential network.}
-  \item{initial_pars}{The initial parameter values used in computation.}
-  \item{dis}{The pairwise distance matrix of input network. Null if d=Inf}
+  \item{steps}{The final iteration steps in random walk based scoring procedure.}
+  \item{NET2}{The weighted adjacent matrix of gene cooperation network.}
+  \item{initial_pars}{The initial/input parameter values used in MarkRank.}
+  \item{dis}{The pairwise distance matrix of input network. This variable will be \code{Null} if input d=Inf.}
 }
 \description{
-Prioritization of network biomarkers for complex diseases
+MarkRank is a novel proposed network-based model, which can identify the cooperative 
+biomarkers for heterogeneous complex disease diagnoses.
 }
 \details{
-MarkRank is a network biomarker identification method to prioritize disease genes 
-by integrating multi-source information including the biological network, eg. 
+MarkRank is a network-based biomarker identification method to prioritize disease genes 
+by integrating multi-source information including the biological network, e.g 
 protein-protein interaction (PPI) network, the prior information about related diseases,
-and the discriminative power of cooperative gene combinations.
+and the discriminative power of cooperative gene combinations. MarkRank shows that
+explicit modeling of gene cooperative effects can greatly improve biomarker identification
+for complex disease, especially for diseases with high heterogeneity.
 
-The random-walk based iteration formula is:
+MarkRank algorithm contains mainly two steps: 1) The construction of gene cooperation network G_2 
+and 2) a random walk based iteration procedure. The following descriptions will help the users to
+using \code{markrank} more convenient:
 
-R = alpha*[lambda*A1 + (1-lambda)*A2]*R + (1-alpha)*E_value.
+1) As for the construction of the gene cooperation network, we  suggest the user to set
+\code{trace=TRUE} to output the G_2 computation process. The G_2 construction step finished
+if the output number is identical to the gene number of the input expression matrix. The parameter \code{d}
+introduced the structure information of used biological network to facilitate the construction
+of G_2, only the gene pairs whose shortest distances in network are less than \code{d} participate
+the G_2 computation. We suggest \code{d=Inf}, the default value, to fully use the information of expression
+matrix. If the user given a preset \code{d}, the distance matrix of input network \code{dis} 
+will be returned.
+
+2) MarkRank uses a random-walk based iteration procedure to score each gene. The detailed formula is:
+
+\code{score} = \code{alpha}*[\code{lambda}*A1 + (1-\code{lambda})*A2]*\code{score} + (1-\code{alpha})*\code{E_value}.
+
+The users could set an appropriate parameter settings in their pracitical application.
+Our suggested value is \code{alpha}=0.8 and \code{lambda}=0.2. The model input parameter combinations and iteration steps will
+be returned in output components \code{initial_pars} and \code{steps}, respectively. Because the iteration step is separate with
+the cooperation network construction, the user can use the parameter \code{Given_NET2} to tune
+the model parameters. In detail, the user could set
+
+\code{Given_NET2 = result$NET2}
+
+in \code{markrank} input to avoid the repeated computation of G_2, where the object \code{result}
+is the returned variable of \code{markrank} function.
+
+3) The final MarkRank score for each gene is in output \code{score}. The users could sort
+this result and use the top ranked genes for further analysis.
 }
 \references{
 Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, Peter Csermely,
-Ling-Yun Wu. Prioritization of network biomarkers for complex diseases via MarkRank.
-Manuscript, 2016.
+Ling-Yun Wu. Discovering cooperative biomarkers for heterogeneous complex disease diagnoses.
+Manuscript, 2017.
 }
 
