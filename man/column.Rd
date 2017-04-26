@@ -21,4 +21,3 @@ Extract a specified column from a sparse matrix rapidly
 This function implements faster column extraction algorithm for the 
 \code{\link[=CsparseMatrix-class]{CsparseMatrix}} class in the package \pkg{Matrix}.
 }
-

@@ -29,4 +29,3 @@ distribution by iteratively calling hypergeometric random variable generator
 \seealso{
 \code{\link{rhyper}}
 }
-

@@ -2,8 +2,8 @@
 % Please edit documentation in R/Corbi-package.R
 \docType{package}
 \name{Corbi-package}
-\alias{Corbi}
 \alias{Corbi-package}
+\alias{Corbi}
 \title{Corbi - Collection of Rudimentary Bioinformatics Tools}
 \description{
 This pakcage provides a bundle of basic and fundamental bioinformatics tools.
@@ -41,4 +41,3 @@ R package for biological network alignment and querying. BMC Systems Biology,
 7(Suppl 2):S6, 2013.
 }
 \keyword{package}
-

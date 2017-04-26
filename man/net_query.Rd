@@ -2,6 +2,7 @@
 % Please edit documentation in R/net_query.R, R/net_query_batch.R
 \name{net_query}
 \alias{net_query}
+\alias{net_query}
 \alias{net_query_batch}
 \title{Network querying method based on conditional random fields}
 \usage{
@@ -107,4 +108,3 @@ Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
 Network Querying Method Based on Conditional Random Fields. Bioinformatics,
 27(22):3173-3178, 2011.
 }
-

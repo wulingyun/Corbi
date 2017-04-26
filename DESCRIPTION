@@ -1,5 +1,5 @@
 Package: Corbi
-Version: 0.4-1
+Version: 0.4-2
 Title: Collection of Rudimentary Bioinformatics Tools
 Description: Provides a bundle of basic and fundamental bioinformatics tools,
     such as network querying and alignment, subnetwork extraction and search,
@@ -15,4 +15,4 @@ Suggests: MASS, matrixcalc
 License: GPL (>= 2)
 BugReports: https://github.com/wulingyun/Corbi/issues
 URL: https://github.com/wulingyun/Corbi
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
