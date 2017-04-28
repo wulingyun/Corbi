@@ -22,3 +22,4 @@ names of two end points of one edge in the network.
 \seealso{
 \code{\link{read_net}}
 }
+

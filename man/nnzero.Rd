@@ -24,3 +24,4 @@ This function implements faster calculation algorithm for the
 \code{\link[=CsparseMatrix-class]{CsparseMatrix}} and \code{\link[=RsparseMatrix-class]{RsparseMatrix}}
 class in the package \pkg{Matrix}.
 }
+

@@ -35,3 +35,4 @@ subnets <- get_subnets(net, 3)
 subnets[[4]] <- extend_subnets(subnets[[3]], subnets[[2]], 4)
 
 }
+

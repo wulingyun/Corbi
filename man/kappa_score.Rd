@@ -20,3 +20,4 @@ Calculate Cohen's kappa score for two vectors.
 \details{
 This function calculate Cohen's kappa score for two logical vectors.
 }
+

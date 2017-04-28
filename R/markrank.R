@@ -115,7 +115,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
     dis <- NULL
   }
   if (trace) print("Computing discriminative potential network ...")
-  if (class(NET2) == "NULL"){
+  if (class(Given_NET2) == "NULL"){
   	system.time(NET2 <- .markrank.compute_net2(dataset, label, dis, d, trace=trace))
   }
   D2 <- Matrix(0, n, n, sparse=TRUE, dimnames=list(colnames(dataset), colnames(dataset)))
