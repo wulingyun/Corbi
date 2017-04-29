@@ -26,4 +26,3 @@ Calculate all pairs of shortest distances of unweighted network
 This function calculates all pairs of shortest distances of unweighted network
 by using breadth-first-search (BFS) algorithm.
 }
-

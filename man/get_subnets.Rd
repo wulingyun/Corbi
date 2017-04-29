@@ -27,4 +27,3 @@ net <- net | t(net)
 subnets <- get_subnets(net, 3)
 
 }
-

@@ -97,4 +97,3 @@ Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, Peter Csermely,
 Ling-Yun Wu. Discovering cooperative biomarkers for heterogeneous complex disease diagnoses.
 Manuscript, 2017.
 }
-

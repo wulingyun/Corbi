@@ -45,4 +45,3 @@ result <- best_subnets(func, net, 5)
 \seealso{
 get_subnets, extend_subnets
 }
-

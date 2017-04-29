@@ -9,16 +9,11 @@ Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "hq04405114@gmail.com"), person("Duanchen", "Sun", role = c("aut"), email =
     "dcsun@amss.ac.cn"))
 ByteCompile: TRUE
-Depends:
-    R (>= 3.0.2)
-Imports:
-    CRF,
-    Matrix,
-    mpmi
-Suggests:
-    MASS,
-    matrixcalc
+Depends: R (>= 3.0.2)
+Imports: CRF, Matrix, mpmi
+Suggests: MASS, matrixcalc, knitr, rmarkdown
+VignetteBuilder: knitr
 License: GPL (>= 2)
 BugReports: https://github.com/wulingyun/Corbi/issues
 URL: https://github.com/wulingyun/Corbi
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
