@@ -21,4 +21,6 @@ extern "C" {
   
   SEXP BS_GetSubnets(SEXP _Edges, SEXP _nNodes, SEXP _maxSize);
   SEXP BS_ExtendSubnets(SEXP _Sub1, SEXP _Sub2, SEXP _size);
+  
+  SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge);
 }

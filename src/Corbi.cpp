@@ -8,6 +8,7 @@ const R_CallMethodDef callMethods[] = {
   {"NQ_ShortestDistances", (DL_FUNC) &NQ_ShortestDistances, 3},
   {"BS_GetSubnets", (DL_FUNC) &BS_GetSubnets, 3},
   {"BS_ExtendSubnets", (DL_FUNC) &BS_ExtendSubnets, 3},
+  {"ND_PvalueNetDEG", (DL_FUNC) &ND_PvalueNetDEG, 3},
   {NULL, NULL, 0}
 };
 
