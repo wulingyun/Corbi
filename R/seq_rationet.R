@@ -1,3 +1,4 @@
+#' @export
 getRatioDistribution <- function(expr) {
   n <- dim(expr)[1]
   ratio_mean <- matrix(0, n, n)
@@ -15,6 +16,7 @@ getRatioDistribution <- function(expr) {
 }
       
 
+#' @export
 getRatioNet <- function(ratio.dist, expr, cutoff = 1.0)
 {
   n <- length(expr)
@@ -202,6 +204,7 @@ calcVertexCoverScore <- function(x, y, edges, z.matrix, binary) {
 }
 
 
+#' @export
 inferByRankComp <- function (expr.ctrl, expr.case, cutoff = 0.99) {
   n_genes <- dim(expr.ctrl)[1]
   n_ctrls <- dim(expr.ctrl)[2]

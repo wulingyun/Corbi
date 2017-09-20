@@ -6,15 +6,14 @@ netDEG <- function(adj.matrix) {
   in.degree <- colSums(adj.matrix)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
-  up.score <- ifelse(score > 0, score, 0)
-  down.score <- ifelse(score < 0, -score, 0)
-  net.degree <- abs(score)
-  total.degree <- in.degree + out.degree
-  
-  p.edge <- n.edge/choose(n.gene, 2)
-  pvalue <- .Call(ND_PvalueNetDEG, net.degree, n.gene, p.edge)
 
-  return(list(pvalue=pvalue, score=net.degree, up.score=up.score, down.score=down.score))
+  p.edge <- n.edge/choose(n.gene, 2)
+  pvalue <- .Call(ND_PvalueNetDEG, abs(score), n.gene, p.edge)
+  up.pvalue <- ifelse(score > 0, pvalue, 1-pvalue)
+  down.pvalue <- ifelse(score < 0, pvalue, 1-pvalue)
+  pvalue <- 2.0 * pvalue
+
+  return(list(score=score, pvalue=pvalue, up.pvalue=up.pvalue, down.pvalue=down.pvalue))
 }
 
 

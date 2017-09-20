@@ -21,10 +21,10 @@ SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge)
   {
     int kd = floor(0.5*k) + 1;
     fast_dbinom_d[k] = (double *) R_alloc(kd, sizeof(double));
-    fast_dbinom_d[k][0] = 2.0 * dbinom(0, k, 0.5, 0);
+    fast_dbinom_d[k][0] = dbinom(0, k, 0.5, 0);
     for (int i = 1; i < kd; i++)
     {
-      fast_dbinom_d[k][i] = fast_dbinom_d[k][i-1] + 2.0 * dbinom(i, k, 0.5, 0);
+      fast_dbinom_d[k][i] = fast_dbinom_d[k][i-1] + dbinom(i, k, 0.5, 0);
     }
   }
 
@@ -39,7 +39,7 @@ SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge)
     for (int k = d; k < nGenes; k++)
     {
       int j = (int) floor(0.5*(k-d));
-      P[i] += NetDegree[i] > 0 ? fast_dbinom_k[k] * fast_dbinom_d[k][j] : fast_dbinom_k[k];
+      P[i] += NetDegree[i] > 0 ? fast_dbinom_k[k] * fast_dbinom_d[k][j] : fast_dbinom_k[k] * 0.5;
     }
   }
 
