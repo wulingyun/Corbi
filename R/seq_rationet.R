@@ -1,18 +1,18 @@
 #' @export
 getRatioDistribution <- function(expr) {
   n <- dim(expr)[1]
-  ratio_mean <- matrix(0, n, n)
-  ratio_sd <- matrix(0, n, n)
+  ratio_median <- matrix(0, n, n)
+  ratio_mad <- matrix(0, n, n)
   for (i in 1:(n-1)) {
     for (j in (i+1):n) {
       r <- (expr[i,] - expr[j,]) / (expr[i,] + expr[j,])
-      ratio_mean[i,j] <- mean(r, na.rm = T)
-      ratio_sd[i,j] <- sd(r, na.rm = T)
+      ratio_median[i,j] <- median(r, na.rm = T)
+      ratio_mad[i,j] <- median(abs(r - ratio_median[i,j]), na.rm = T)
     }
   }
-  ratio_mean <- ratio_mean - t(ratio_mean)
-  ratio_sd <- ratio_sd - t(ratio_sd)
-  return(list(mean = ratio_mean, sd = ratio_sd))
+  ratio_median <- ratio_median - t(ratio_median)
+  ratio_mad <- ratio_mad - t(ratio_mad)
+  return(list(median = ratio_median, mad = ratio_mad))
 }
       
 
@@ -24,7 +24,7 @@ getRatioNet <- function(ratio.dist, expr, cutoff = 1.0)
   for (i in 1:(n-1)) {
     for (j in (i+1):n) {
       r <- (expr[i] - expr[j]) / (expr[i] + expr[j])
-      z <- (r - ratio.dist$mean[i,j]) / ratio.dist$sd[i,j]
+      z <- (r - ratio.dist$median[i,j]) / ratio.dist$mad[i,j]
       if (!is.na(z)) {
         if (z > 0) z_matrix[i,j] <- z
         else z_matrix[j,i] <- -z
