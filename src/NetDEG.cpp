@@ -46,3 +46,65 @@ SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge)
   UNPROTECT(2);
   return(_P);
 }
+
+SEXP ND_RatioDistribution(SEXP _ExprVal)
+{
+  PROTECT(_ExprVal = AS_NUMERIC(_ExprVal));
+  double *ExprVal = NUMERIC_POINTER(_ExprVal);
+  int *dim = INTEGER_POINTER(AS_INTEGER(GET_DIM(_ExprVal)));
+  int nGenes = dim[0];
+  int nSamples = dim[1];
+
+  SEXP _Median;
+  PROTECT(_Median = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_Median, nGenes, nGenes);
+  double *Median = NUMERIC_POINTER(_Median);
+
+  SEXP _MAD;
+  PROTECT(_MAD = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_MAD, nGenes, nGenes);
+  double *MAD = NUMERIC_POINTER(_MAD);
+
+  for (int i = 0; i < nGenes * nGenes; i++)
+  {
+    Median[i] = 0;
+    MAD[i] = 0;
+  }
+
+  double *r = (double *) R_alloc(nSamples, sizeof(double));
+  double *e, m;
+  int n;
+  for (int i = 0; i < nGenes-1; i++)
+  {
+    for (int j = i+1; j < nGenes; j++)
+    {
+      e = ExprVal;
+      n = 0;
+      for (int k = 0; k < nSamples; k++)
+      {
+        if (!ISNA(e[i]) && !ISNA(e[j]) && !ISNAN(e[i]) && !ISNAN(e[j]))
+          r[n++] = (e[i] - e[j]) / (e[i] + e[j]);
+        e += nGenes;
+      }
+
+      m = median(r, n);
+      Median[i+nGenes*j] = m;
+      Median[j+nGenes*i] = -m;
+
+      for (int k = 0; k < n; k++)
+        r[k] = fabs(r[k] - m);
+
+      m = median(r, n);
+      MAD[i+nGenes*j] = m;
+      MAD[j+nGenes*i] = -m;
+    }
+  }
+
+  SEXP _ratio;
+  PROTECT(_ratio = NEW_LIST(2));
+  SetListElement(_ratio, 0, "median", _Median);
+  SetListElement(_ratio, 1, "mad", _MAD);
+
+  UNPROTECT(4);
+  return(_ratio);
+}

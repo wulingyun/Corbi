@@ -1,5 +1,25 @@
 #include "Corbi.h"
 
+/* median */
+
+int median(int *v, int n)
+{
+  R_isort(v, n);
+  if (n % 2 == 1)
+    return v[n/2+1];
+  else
+    return (v[n/2] + v[n/2+1])/2;
+}
+
+double median(double *v, int n)
+{
+  R_rsort(v, n);
+  if (n % 2 == 1)
+    return v[n/2];
+  else
+    return (v[n/2-1] + v[n/2])/2;
+}
+
 /* get the list element named tag, or return NULL */
 
 SEXP GetListElement(SEXP list, const char *tag)

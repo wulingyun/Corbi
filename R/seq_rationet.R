@@ -1,22 +1,4 @@
 #' @export
-getRatioDistribution <- function(expr) {
-  n <- dim(expr)[1]
-  ratio_median <- matrix(0, n, n)
-  ratio_mad <- matrix(0, n, n)
-  for (i in 1:(n-1)) {
-    for (j in (i+1):n) {
-      r <- (expr[i,] - expr[j,]) / (expr[i,] + expr[j,])
-      ratio_median[i,j] <- median(r, na.rm = T)
-      ratio_mad[i,j] <- median(abs(r - ratio_median[i,j]), na.rm = T)
-    }
-  }
-  ratio_median <- ratio_median - t(ratio_median)
-  ratio_mad <- ratio_mad - t(ratio_mad)
-  return(list(median = ratio_median, mad = ratio_mad))
-}
-      
-
-#' @export
 getRatioNet <- function(ratio.dist, expr, cutoff = 1.0)
 {
   n <- length(expr)

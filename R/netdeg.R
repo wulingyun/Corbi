@@ -18,6 +18,12 @@ netDEG <- function(adj.matrix) {
 
 
 #' @export
+getRatioDistribution <- function(expr) {
+  .Call(ND_RatioDistribution, expr)
+}
+
+
+#' @export
 random_net <- function(size, p.edge, sparse = TRUE) {
   max.edge <- choose(size, 2)
   edge.id <- which(runif(max.edge) <= p.edge)

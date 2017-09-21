@@ -15,6 +15,11 @@ inline const T& max(const T& a, const T& b)
 	return a > b ? a : b;
 }
 
+/* median */
+
+int median(int *v, int n);
+double median(double *v, int n);
+
 /* initialize the list */
 
 template <class T>
