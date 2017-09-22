@@ -126,7 +126,7 @@ SEXP ND_RatioNet(SEXP _RatioMedian, SEXP _RatioMAD, SEXP _ExprVal)
   SetDim2(_Z, nGenes, nGenes);
   double *Z = NUMERIC_POINTER(_Z);
 
-  for (int i = 0; i < nGenes; i++)
+  for (int i = 0; i < nGenes*nGenes; i++)
     Z[i] = 0;
   
   double r;
