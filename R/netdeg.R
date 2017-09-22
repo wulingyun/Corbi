@@ -24,6 +24,15 @@ getRatioDistribution <- function(expr) {
 
 
 #' @export
+getRatioNet <- function(ratio.dist, expr, cutoff = 1.0)
+{
+  z_matrix <- .Call(ND_RatioNet, ratio.dist$median, ratio.dist$mad, expr)
+  adj_matrix <- ifelse(z_matrix > cutoff, 1, 0)
+  return(list(adj = adj_matrix, z = z_matrix))
+}
+
+
+#' @export
 random_net <- function(size, p.edge, sparse = TRUE) {
   max.edge <- choose(size, 2)
   edge.id <- which(runif(max.edge) <= p.edge)

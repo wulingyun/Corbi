@@ -1,23 +1,3 @@
-#' @export
-getRatioNet <- function(ratio.dist, expr, cutoff = 1.0)
-{
-  n <- length(expr)
-  z_matrix <- matrix(0, n, n)
-  for (i in 1:(n-1)) {
-    for (j in (i+1):n) {
-      r <- (expr[i] - expr[j]) / (expr[i] + expr[j])
-      z <- (r - ratio.dist$median[i,j]) / ratio.dist$mad[i,j]
-      if (!is.na(z)) {
-        if (z > 0) z_matrix[i,j] <- z
-        else z_matrix[j,i] <- -z
-      }
-    }
-  }
-  adj_matrix <- ifelse(z_matrix > cutoff, 1, 0)
-  return(list(adj = adj_matrix, z = z_matrix))
-}
-
-
 
 inferByDegree <- function(adj.matrix) {
   in_degree <- colSums(adj.matrix)

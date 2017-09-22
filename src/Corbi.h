@@ -24,4 +24,5 @@ extern "C" {
   
   SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge);
   SEXP ND_RatioDistribution(SEXP _ExprVal);
+  SEXP ND_RatioNet(SEXP _RatioMedian, SEXP _RatioMAD, SEXP _ExprVal);
 }

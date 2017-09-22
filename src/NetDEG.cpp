@@ -108,3 +108,46 @@ SEXP ND_RatioDistribution(SEXP _ExprVal)
   UNPROTECT(4);
   return(_ratio);
 }
+
+SEXP ND_RatioNet(SEXP _RatioMedian, SEXP _RatioMAD, SEXP _ExprVal)
+{
+  PROTECT(_RatioMedian = AS_NUMERIC(_RatioMedian));
+  double *RatioMedian = NUMERIC_POINTER(_RatioMedian);
+  int nGenes = INTEGER_POINTER(AS_INTEGER(GET_DIM(_RatioMedian)))[0];
+
+  PROTECT(_RatioMAD = AS_NUMERIC(_RatioMAD));
+  double *RatioMAD = NUMERIC_POINTER(_RatioMAD);
+  
+  PROTECT(_ExprVal = AS_NUMERIC(_ExprVal));
+  double *ExprVal = NUMERIC_POINTER(_ExprVal);
+
+  SEXP _Z;
+  PROTECT(_Z = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_Z, nGenes, nGenes);
+  double *Z = NUMERIC_POINTER(_Z);
+
+  for (int i = 0; i < nGenes; i++)
+    Z[i] = 0;
+  
+  double r;
+  for (int i = 0; i < nGenes-1; i++)
+  {
+    for (int j = i+1; j < nGenes; j++)
+    {
+      if (!ISNA(ExprVal[i]) && !ISNA(ExprVal[j]) && !ISNAN(ExprVal[i]) && !ISNAN(ExprVal[j]))
+      {
+        r = (ExprVal[i] - ExprVal[j]) / (ExprVal[i] + ExprVal[j]);
+        r = (r - RatioMedian[i+nGenes*j]) / RatioMAD[i+nGenes*j];
+        
+        if (!ISNAN(r))
+        {
+          if (r > 0) Z[i+nGenes*j] = r;
+          else Z[j+nGenes*i] = -r;
+        }
+      }
+    }
+  }
+  
+  UNPROTECT(4);
+  return(_Z);
+}
