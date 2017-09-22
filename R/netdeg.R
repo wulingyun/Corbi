@@ -1,13 +1,13 @@
 
 #' @export
-netDEG <- function(adj.matrix) {
+netDEG <- function(adj.matrix, z.cutoff = 1.0) {
   n.gene <- nrow(adj.matrix)
   n.edge <- sum(adj.matrix)
   in.degree <- colSums(adj.matrix)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
 
-  p.edge <- n.edge/choose(n.gene, 2)
+  p.edge <- 2 * pnorm(z.cutoff, lower.tail = FALSE)
   pvalue <- .Call(ND_PvalueNetDEG, abs(score), n.gene, p.edge)
   up.pvalue <- ifelse(score > 0, pvalue, 1-pvalue)
   down.pvalue <- ifelse(score < 0, pvalue, 1-pvalue)
