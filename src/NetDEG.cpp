@@ -94,9 +94,9 @@ SEXP ND_RatioDistribution(SEXP _ExprVal)
       for (int k = 0; k < n; k++)
         r[k] = fabs(r[k] - m);
 
-      m = median(r, n);
+      m = median(r, n) * 1.4826;
       MAD[i+nGenes*j] = m;
-      MAD[j+nGenes*i] = -m;
+      MAD[j+nGenes*i] = m;
     }
   }
 
