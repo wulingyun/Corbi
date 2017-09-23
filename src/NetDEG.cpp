@@ -83,7 +83,8 @@ SEXP ND_RatioDistribution(SEXP _ExprVal)
       for (int k = 0; k < nSamples; k++)
       {
         if (!ISNA(e[i]) && !ISNA(e[j]) && !ISNAN(e[i]) && !ISNAN(e[j]))
-          r[n++] = (e[i] - e[j]) / (e[i] + e[j]);
+          r[n++] = log(e[i]) - log(e[j]);
+          // r[n++] = (e[i] - e[j]) / (e[i] + e[j]);
         e += nGenes;
       }
 
@@ -136,7 +137,8 @@ SEXP ND_RatioNet(SEXP _RatioMedian, SEXP _RatioMAD, SEXP _ExprVal)
     {
       if (!ISNA(ExprVal[i]) && !ISNA(ExprVal[j]) && !ISNAN(ExprVal[i]) && !ISNAN(ExprVal[j]))
       {
-        r = (ExprVal[i] - ExprVal[j]) / (ExprVal[i] + ExprVal[j]);
+        r = log(ExprVal[i]) - log(ExprVal[j]);
+        // r = (ExprVal[i] - ExprVal[j]) / (ExprVal[i] + ExprVal[j]);
         r = (r - RatioMedian[i+nGenes*j]) / RatioMAD[i+nGenes*j];
         
         if (!ISNAN(r))

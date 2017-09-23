@@ -1,37 +1,70 @@
 
-makeDiffExpSeqCount <- function(n.genes, n.samples.A, n.samples.B, fold.change = 2, deg.rate = 0.3, deg.homo = 1, dispersion = 0.2, size.factor.sd = 0.1)
+#' @export
+make_DEG_Pattern <- function(n.genes, n.samples, fold.change = 2, gene.rate = 0.3, sample.rate = 1.0, active.rate = 1.0, up.rate = 0.5)
+{
+  active.gene <- runif(n.genes) <= gene.rate
+  active.sample <- runif(n.samples) <= sample.rate
+  if (sum(active.gene) < 1) active.gene[sample.int(n.genes, 1)] <- TRUE
+  if (sum(active.sample) < 1) active.sample[sample.int(n.samples, 1)] <- TRUE
+  fc.sub <- matrix(fold.change, sum(active.gene), sum(active.sample))
+  fc.sub[runif(dim(fc.sub)[1]) > up.rate, ] <- 1/fold.change
+  fc.sub[runif(length(fc.sub)) > active.rate] <- 1
+  fc <- matrix(1, n.genes, n.samples)
+  fc[active.gene, active.sample] <- fc.sub
+  return(list(FC=fc, gene=active.gene, sample=active.sample))
+}
+
+
+#' @export
+make_DEG_Data <- function(n.genes, n.samples.A, n.samples.B, dispersion = 0.2, size.factor.sd = 0.1, ...)
 {
 # simulate DEG and heterogeneity
+  deg <- make_DEG_Pattern(n.genes, n.samples.B, ...)
+# simulate expression mean
   mu0 <- rexp(n.genes, rate = 1/250)
-  deg <- runif(n.genes) <= deg.rate
-  fc <- matrix(1, n.genes, n.samples.B)
-  fc[deg, ] <- fold.change
-  fc[runif(length(fc)) > deg.homo] <- 1
 # simulate group A
   sfA <- exp(rnorm(n.samples.A, sd = size.factor.sd))
   countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
 # simulate group B
   sfB <- exp(rnorm(n.samples.B, sd = size.factor.sd))
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * fc, size = 1/dispersion), nrow = n.genes)
-  return(list(DEG = deg, FC = fc, countsA = countsA, countsB = countsB))
+  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
+  return(list(DEG=deg, countsA=countsA, countsB=countsB))
 }
 
 
-makeDiffExpSeqCount2 <- function(n.genes, n.samples.A, n.samples.B, fold.change = 2, deg.rate = 0.3, deg.homo = 1, exp.mean = 8, exp.sd = 2, size.factor.sd = 0.1)
+#' @export
+make_DEG_Data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, size.factor.sd = 0.1, ...)
 {
+# simulate DEG and heterogeneity
+  deg <- make_DEG_Pattern(n.genes, n.samples.B, ...)
 # simulate expression mean and dispersion
   mu0 <- 2^rnorm(n.genes, exp.mean, exp.sd)
   dispersion <- 4/mu0 + 0.1
-# simulate DEG and heterogeneity
-  deg <- runif(n.genes) <= deg.rate
-  fc <- matrix(1, n.genes, n.samples.B)
-  fc[deg, ] <- fold.change
-  fc[runif(length(fc)) > deg.homo] <- 1
 # simulate group A
   sfA <- 2^rnorm(n.samples.A, sd = size.factor.sd)
   countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
 # simulate group B
   sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * fc, size = 1/dispersion), nrow = n.genes)
-  return(list(DEG = deg, FC = fc, countsA = countsA, countsB = countsB))
+  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
+  return(list(DEG=deg, countsA=countsA, countsB=countsB))
+}
+
+
+#' @export
+make_DEG_Data3 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, alpha = 0.2, size.factor.sd = 0.1, ...)
+{
+  # simulate DEG and heterogeneity
+  deg <- make_DEG_Pattern(n.genes, n.samples.B, ...)
+  # simulate expression mean and dispersion
+  mu0 <- 2^rnorm(n.genes, exp.mean, exp.sd)
+  sd0 <- alpha * mu0
+  # simulate group A
+  sfA <- 2^rnorm(n.samples.A, sd = size.factor.sd)
+  countsA <- matrix(rnorm(n.genes * n.samples.A, mean = mu0 %*% t(sfA), sd = sd0), nrow = n.genes)
+  # simulate group B
+  sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
+  countsB <- matrix(rnorm(n.genes * n.samples.B, mean = mu0 %*% t(sfB) * deg$FC, sd = sd0 * deg$FC), nrow = n.genes)
+  countsA[countsA < 0] <- 0
+  countsB[countsB < 0] <- 0
+  return(list(DEG=deg, countsA=countsA, countsB=countsB))
 }
