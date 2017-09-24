@@ -6,12 +6,15 @@ make_DEG_pattern <- function(n.genes, n.samples, fold.change = 2, gene.rate = 0.
   active.sample <- runif(n.samples) <= sample.rate
   if (sum(active.gene) < 1) active.gene[sample.int(n.genes, 1)] <- TRUE
   if (sum(active.sample) < 1) active.sample[sample.int(n.samples, 1)] <- TRUE
+  up.gene <- logical(n.genes)
+  up.gene[active.gene] <- runif(sum(active.gene)) <= up.rate
+  down.gene <- active.gene & !up.gene
   fc.sub <- matrix(fold.change, sum(active.gene), sum(active.sample))
-  fc.sub[runif(dim(fc.sub)[1]) > up.rate, ] <- 1/fold.change
+  fc.sub[down.gene[active.gene], ] <- 1/fold.change
   fc.sub[runif(length(fc.sub)) > active.rate] <- 1
   fc <- matrix(1, n.genes, n.samples)
   fc[active.gene, active.sample] <- fc.sub
-  return(list(FC=fc, gene=active.gene, sample=active.sample))
+  return(list(FC=fc, gene=up.gene-down.gene, sample=as.integer(active.sample)))
 }
 
 
