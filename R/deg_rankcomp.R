@@ -27,9 +27,9 @@ rankcomp <- function (expr.ctrl, expr.case, cutoff = 0.99) {
     sp_counts <- cbind(n_up, n_up-n_up_rev+n_down_rev, n_down, n_down-n_down_rev+n_up_rev)
     p_value <- apply(sp_counts, 1, function(x) fisher.test(matrix(x, 2, 2))$p.value)
     
-    up_score[k,] <- 1 - p_value
+    up_score[k,] <- -log(p_value)
     up_score[k, n_up_rev > n_down_rev] <- 0
-    down_score[k,] <- 1 - p_value
+    down_score[k,] <- -log(p_value)
     down_score[k, n_up_rev < n_down_rev] <- 0
   }
   return(list(up = up_score, down = down_score))
