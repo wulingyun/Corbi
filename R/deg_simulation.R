@@ -50,7 +50,7 @@ make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, dispersion = 0.2, 
   countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
 # simulate group B
   sfB <- exp(rnorm(n.samples.B, sd = size.factor.sd))
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
+  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion * deg$FC), nrow = n.genes)
   return(list(DEG=deg, countsA=countsA, countsB=countsB))
 }
 
@@ -62,12 +62,13 @@ make_DEG_data3 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.
   deg <- make_DEG_pattern(n.genes, n.samples.B, ...)
 # simulate expression mean and dispersion
   mu0 <- 2^rnorm(n.genes, exp.mean, exp.sd)
-  dispersion <- 4/mu0 + 0.1
 # simulate group A
   sfA <- 2^rnorm(n.samples.A, sd = size.factor.sd)
-  countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
+  dispersionA <- 4/mu0 + 0.1
+  countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersionA), nrow = n.genes)
 # simulate group B
   sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
+  dispersionB <- 4/(mu0 * deg$FC) + 0.1
+  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersionB), nrow = n.genes)
   return(list(DEG=deg, countsA=countsA, countsB=countsB))
 }
