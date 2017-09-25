@@ -39,36 +39,17 @@ make_DEG_data <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.s
 
 
 #' @export
-make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, dispersion = 0.2, size.factor.sd = 0.1, ...)
+make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, dispersion = 0.04, size.factor.sd = 0.1, ...)
 {
 # simulate DEG and heterogeneity
   deg <- make_DEG_pattern(n.genes, n.samples.B, ...)
 # simulate expression mean
-  mu0 <- rexp(n.genes, rate = 1/250)
-# simulate group A
-  sfA <- exp(rnorm(n.samples.A, sd = size.factor.sd))
-  countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
-# simulate group B
-  sfB <- exp(rnorm(n.samples.B, sd = size.factor.sd))
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion * deg$FC), nrow = n.genes)
-  return(list(DEG=deg, countsA=countsA, countsB=countsB))
-}
-
-
-#' @export
-make_DEG_data3 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, size.factor.sd = 0.1, ...)
-{
-# simulate DEG and heterogeneity
-  deg <- make_DEG_pattern(n.genes, n.samples.B, ...)
-# simulate expression mean and dispersion
   mu0 <- 2^rnorm(n.genes, exp.mean, exp.sd)
 # simulate group A
   sfA <- 2^rnorm(n.samples.A, sd = size.factor.sd)
-  dispersionA <- 4/mu0 + 0.1
-  countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersionA), nrow = n.genes)
+  countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
 # simulate group B
   sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
-  dispersionB <- 4/(mu0 * deg$FC) + 0.1
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersionB), nrow = n.genes)
+  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
   return(list(DEG=deg, countsA=countsA, countsB=countsB))
 }
