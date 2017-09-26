@@ -47,7 +47,7 @@ SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge)
   return(_P);
 }
 
-SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _P)
+SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _pEdge)
 {
   PROTECT(_ExprVal = AS_NUMERIC(_ExprVal));
   double *ExprVal = NUMERIC_POINTER(_ExprVal);
@@ -55,8 +55,12 @@ SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _P)
   int nGenes = dim[0];
   int nSamples = dim[1];
 
-  PROTECT(_P = AS_NUMERIC(_P));
-  double P = NUMERIC_POINTER(_P)[0];
+  PROTECT(_pEdge = AS_NUMERIC(_pEdge));
+  double pEdge = NUMERIC_POINTER(_pEdge)[0];
+  
+  if (pEdge > 1) pEdge = 1;
+  if (pEdge < 0) pEdge = 0;
+  double p = pEdge / 2;
   
   SEXP _LB;
   PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
@@ -91,11 +95,11 @@ SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _P)
         e += nGenes;
       }
 
-      m = quantile(r, n, P, false);
+      m = quantile(r, n, p, false);
       LB[i+nGenes*j] = m;
       LB[j+nGenes*i] = -m;
 
-      m = quantile(r, n, 1-P, true);
+      m = quantile(r, n, 1-p, true);
       UB[i+nGenes*j] = m;
       UB[j+nGenes*i] = -m;
     }
@@ -105,7 +109,8 @@ SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _P)
   PROTECT(_ratio = NEW_LIST(2));
   SetListElement(_ratio, 0, "LB", _LB);
   SetListElement(_ratio, 1, "UB", _UB);
-
+  SetListElement(_ratio, 2, "p.edge", _pEdge);
+  
   UNPROTECT(5);
   return(_ratio);
 }
