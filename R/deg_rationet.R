@@ -18,7 +18,7 @@ netDEG <- function(adj.matrix, p.edge = NULL) {
 
 
 #' @export
-getRatioDistribution <- function(expr, p = 0.1)
+getRatioDistribution <- function(expr, p = 0.05)
   .Call(ND_RatioDistribution, expr, p)
 
 
