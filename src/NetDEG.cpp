@@ -47,7 +47,7 @@ SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge)
   return(_P);
 }
 
-SEXP ND_RatioDistribution(SEXP _ExprVal)
+SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _P)
 {
   PROTECT(_ExprVal = AS_NUMERIC(_ExprVal));
   double *ExprVal = NUMERIC_POINTER(_ExprVal);
@@ -55,20 +55,23 @@ SEXP ND_RatioDistribution(SEXP _ExprVal)
   int nGenes = dim[0];
   int nSamples = dim[1];
 
-  SEXP _Median;
-  PROTECT(_Median = NEW_NUMERIC(nGenes * nGenes));
-  SetDim2(_Median, nGenes, nGenes);
-  double *Median = NUMERIC_POINTER(_Median);
-
-  SEXP _MAD;
-  PROTECT(_MAD = NEW_NUMERIC(nGenes * nGenes));
-  SetDim2(_MAD, nGenes, nGenes);
-  double *MAD = NUMERIC_POINTER(_MAD);
+  PROTECT(_P = AS_NUMERIC(_P));
+  double P = NUMERIC_POINTER(_P)[0];
+  
+  SEXP _LB;
+  PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_LB, nGenes, nGenes);
+  double *LB = NUMERIC_POINTER(_LB);
+  
+  SEXP _UB;
+  PROTECT(_UB = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_UB, nGenes, nGenes);
+  double *UB = NUMERIC_POINTER(_UB);
 
   for (int i = 0; i < nGenes * nGenes; i++)
   {
-    Median[i] = 0;
-    MAD[i] = 0;
+    UB[i] = 0;
+    LB[i] = 0;
   }
 
   double *r = (double *) R_alloc(nSamples, sizeof(double));
@@ -88,47 +91,44 @@ SEXP ND_RatioDistribution(SEXP _ExprVal)
         e += nGenes;
       }
 
-      m = median(r, n);
-      Median[i+nGenes*j] = m;
-      Median[j+nGenes*i] = -m;
+      m = quantile(r, n, P, false);
+      LB[i+nGenes*j] = m;
+      LB[j+nGenes*i] = -m;
 
-      for (int k = 0; k < n; k++)
-        r[k] = fabs(r[k] - m);
-
-      m = median(r, n) * 1.4826;
-      MAD[i+nGenes*j] = m;
-      MAD[j+nGenes*i] = m;
+      m = quantile(r, n, 1-P, true);
+      UB[i+nGenes*j] = m;
+      UB[j+nGenes*i] = -m;
     }
   }
 
   SEXP _ratio;
   PROTECT(_ratio = NEW_LIST(2));
-  SetListElement(_ratio, 0, "median", _Median);
-  SetListElement(_ratio, 1, "mad", _MAD);
+  SetListElement(_ratio, 0, "LB", _LB);
+  SetListElement(_ratio, 1, "UB", _UB);
 
-  UNPROTECT(4);
+  UNPROTECT(5);
   return(_ratio);
 }
 
-SEXP ND_RatioNet(SEXP _RatioMedian, SEXP _RatioMAD, SEXP _ExprVal)
+SEXP ND_RatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _ExprVal)
 {
-  PROTECT(_RatioMedian = AS_NUMERIC(_RatioMedian));
-  double *RatioMedian = NUMERIC_POINTER(_RatioMedian);
-  int nGenes = INTEGER_POINTER(AS_INTEGER(GET_DIM(_RatioMedian)))[0];
+  PROTECT(_RatioLB = AS_NUMERIC(_RatioLB));
+  double *RatioLB = NUMERIC_POINTER(_RatioLB);
+  int nGenes = INTEGER_POINTER(AS_INTEGER(GET_DIM(_RatioLB)))[0];
 
-  PROTECT(_RatioMAD = AS_NUMERIC(_RatioMAD));
-  double *RatioMAD = NUMERIC_POINTER(_RatioMAD);
+  PROTECT(_RatioUB = AS_NUMERIC(_RatioUB));
+  double *RatioUB = NUMERIC_POINTER(_RatioUB);
   
   PROTECT(_ExprVal = AS_NUMERIC(_ExprVal));
   double *ExprVal = NUMERIC_POINTER(_ExprVal);
 
-  SEXP _Z;
-  PROTECT(_Z = NEW_NUMERIC(nGenes * nGenes));
-  SetDim2(_Z, nGenes, nGenes);
-  double *Z = NUMERIC_POINTER(_Z);
+  SEXP _M;
+  PROTECT(_M = NEW_INTEGER(nGenes * nGenes));
+  SetDim2(_M, nGenes, nGenes);
+  int *M = INTEGER_POINTER(_M);
 
   for (int i = 0; i < nGenes*nGenes; i++)
-    Z[i] = 0;
+    M[i] = 0;
   
   double r;
   for (int i = 0; i < nGenes-1; i++)
@@ -139,17 +139,16 @@ SEXP ND_RatioNet(SEXP _RatioMedian, SEXP _RatioMAD, SEXP _ExprVal)
       {
         r = log(ExprVal[i]) - log(ExprVal[j]);
         // r = (ExprVal[i] - ExprVal[j]) / (ExprVal[i] + ExprVal[j]);
-        r = (r - RatioMedian[i+nGenes*j]) / RatioMAD[i+nGenes*j];
         
         if (!ISNAN(r))
         {
-          if (r > 0) Z[i+nGenes*j] = r;
-          else Z[j+nGenes*i] = -r;
+          if (r > RatioUB[i+nGenes*j]) M[i+nGenes*j] = 1;
+          else if (r < RatioLB[i+nGenes*j]) M[j+nGenes*i] = 1;
         }
       }
     }
   }
   
   UNPROTECT(4);
-  return(_Z);
+  return(_M);
 }

@@ -1,14 +1,13 @@
 
 #' @export
-netDEG <- function(adj.matrix, z.cutoff = NULL) {
+netDEG <- function(adj.matrix, p.edge = NULL) {
   n.gene <- nrow(adj.matrix)
   n.edge <- sum(adj.matrix)
   in.degree <- colSums(adj.matrix)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
 
-  if (is.null(z.cutoff)) p.edge <- n.edge / choose(n.gene, 2)
-  else p.edge <- 2 * pnorm(z.cutoff, lower.tail = FALSE)
+  if (is.null(p.edge)) p.edge <- n.edge / choose(n.gene, 2)
   pvalue <- .Call(ND_PvalueNetDEG, abs(score), n.gene, p.edge)
   up.pvalue <- ifelse(score > 0, pvalue, 1-pvalue)
   down.pvalue <- ifelse(score < 0, pvalue, 1-pvalue)
@@ -19,18 +18,13 @@ netDEG <- function(adj.matrix, z.cutoff = NULL) {
 
 
 #' @export
-getRatioDistribution <- function(expr) {
-  .Call(ND_RatioDistribution, expr)
-}
+getRatioDistribution <- function(expr, p = 0.1)
+  .Call(ND_RatioDistribution, expr, p)
 
 
 #' @export
-getRatioNet <- function(ratio.dist, expr, cutoff = 1.0)
-{
-  z_matrix <- .Call(ND_RatioNet, ratio.dist$median, ratio.dist$mad, expr)
-  adj_matrix <- ifelse(z_matrix > cutoff, 1, 0)
-  return(list(adj = adj_matrix, z = z_matrix))
-}
+getRatioNet <- function(ratio.dist, expr)
+  .Call(ND_RatioNet, ratio.dist$LB, ratio.dist$UB, expr)
 
 
 #' @export

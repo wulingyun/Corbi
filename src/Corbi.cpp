@@ -9,7 +9,7 @@ const R_CallMethodDef callMethods[] = {
   {"BS_GetSubnets", (DL_FUNC) &BS_GetSubnets, 3},
   {"BS_ExtendSubnets", (DL_FUNC) &BS_ExtendSubnets, 3},
   {"ND_PvalueNetDEG", (DL_FUNC) &ND_PvalueNetDEG, 3},
-  {"ND_RatioDistribution", (DL_FUNC) &ND_RatioDistribution, 1},
+  {"ND_RatioDistribution", (DL_FUNC) &ND_RatioDistribution, 2},
   {"ND_RatioNet", (DL_FUNC) &ND_RatioNet, 3},
   {NULL, NULL, 0}
 };
