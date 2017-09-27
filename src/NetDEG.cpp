@@ -115,7 +115,7 @@ SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _pEdge)
   return(_ratio);
 }
 
-SEXP ND_RatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _ExprVal)
+SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _ExprVal)
 {
   PROTECT(_RatioLB = AS_NUMERIC(_RatioLB));
   double *RatioLB = NUMERIC_POINTER(_RatioLB);

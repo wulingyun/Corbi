@@ -1,13 +1,21 @@
 
 #' @export
-netDEG <- function(adj.matrix, p.edge = NULL) {
+netDEG <- function(ratio.dist, expr)
+{
+  net <- getDiffRatioNet(ratio.dist, expr)
+  PvalueNetDEG(net, ratio.dist$p.edge)
+}
+
+
+#' @export
+PvalueNetDEG <- function(adj.matrix, p.edge = NULL)
+{
   n.gene <- nrow(adj.matrix)
-  n.edge <- sum(adj.matrix)
   in.degree <- colSums(adj.matrix)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
 
-  if (is.null(p.edge)) p.edge <- n.edge / choose(n.gene, 2)
+  if (is.null(p.edge)) p.edge <- sum(adj.matrix) / choose(n.gene, 2)
   pvalue <- .Call(ND_PvalueNetDEG, abs(score), n.gene, p.edge)
   up.pvalue <- ifelse(score > 0, pvalue, 1-pvalue)
   down.pvalue <- ifelse(score < 0, pvalue, 1-pvalue)
@@ -23,12 +31,13 @@ getRatioDistribution <- function(expr, p.edge = 0.1)
 
 
 #' @export
-getRatioNet <- function(ratio.dist, expr)
-  .Call(ND_RatioNet, ratio.dist$LB, ratio.dist$UB, expr)
+getDiffRatioNet <- function(ratio.dist, expr)
+  .Call(ND_DiffRatioNet, ratio.dist$LB, ratio.dist$UB, expr)
 
 
 #' @export
-random_net <- function(size, p.edge, sparse = TRUE) {
+random_net <- function(size, p.edge, sparse = TRUE)
+{
   max.edge <- choose(size, 2)
   edge.id <- which(runif(max.edge) <= p.edge)
   edge.dir <- runif(length(edge.id)) <= 0.5
