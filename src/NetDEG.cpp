@@ -106,7 +106,7 @@ SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _pEdge)
   }
 
   SEXP _ratio;
-  PROTECT(_ratio = NEW_LIST(2));
+  PROTECT(_ratio = NEW_LIST(3));
   SetListElement(_ratio, 0, "LB", _LB);
   SetListElement(_ratio, 1, "UB", _UB);
   SetListElement(_ratio, 2, "p.edge", _pEdge);
