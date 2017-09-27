@@ -39,7 +39,7 @@ make_DEG_data <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.s
 
 
 #' @export
-make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, dispersion = 0.2, size.factor.sd = 0.1, ...)
+make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, dispersion = NULL, size.factor.sd = 0.1, ...)
 {
 # simulate DEG and heterogeneity
   deg <- make_DEG_pattern(n.genes, n.samples.B, ...)
