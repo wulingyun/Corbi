@@ -97,11 +97,11 @@ SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _pEdge)
 
       m = quantile(r, n, p, false);
       LB[i+nGenes*j] = m;
-      LB[j+nGenes*i] = -m;
+      UB[j+nGenes*i] = -m;
 
       m = quantile(r, n, 1-p, true);
       UB[i+nGenes*j] = m;
-      UB[j+nGenes*i] = -m;
+      LB[j+nGenes*i] = -m;
     }
   }
 

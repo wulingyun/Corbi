@@ -16,10 +16,13 @@ PvalueNetDEG <- function(adj.matrix, p.edge = NULL)
   score <- out.degree - in.degree
 
   if (is.null(p.edge)) p.edge <- sum(adj.matrix) / choose(n.gene, 2)
-  pvalue <- .Call(ND_PvalueNetDEG, abs(score), n.gene, p.edge)
-  up.pvalue <- ifelse(score > 0, pvalue, 1-pvalue)
-  down.pvalue <- ifelse(score < 0, pvalue, 1-pvalue)
-  pvalue <- 2.0 * pvalue
+
+  coefs <- list(alpha=c(0.5049524, 0.5049657), norm2=c(1.0, 200.0, 16.663143, 1.110288))
+  z <- poly(p.edge, degree = 2, coefs = coefs)
+  sd <- (0.4087 + 2.0832*z[,1] - 0.5833*z[,2]) * n.gene
+  up.pvalue <- pnorm(-score, mean = 0, sd = sd, lower.tail = TRUE)
+  down.pvalue <- pnorm(score, mean = 0, sd = sd, lower.tail = TRUE)
+  pvalue <- pmin(up.pvalue, down.pvalue) * 2
 
   return(list(score=score, pvalue=pvalue, up.pvalue=up.pvalue, down.pvalue=down.pvalue))
 }
