@@ -15,14 +15,16 @@ PvalueNetDEG <- function(adj.matrix, p.edge = NULL)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
 
-  if (is.null(p.edge)) p.edge <- sum(adj.matrix) / choose(n.gene, 2)
+  if (is.null(p.edge) || p.edge > 1 || p.edge < 0) p.edge <- sum(adj.matrix) / choose(n.gene, 2)
 
-  coefs <- list(alpha=c(0.5049524, 0.5049657), norm2=c(1.0, 200.0, 16.663143, 1.110288))
+  coefs <- list(alpha=c(0.5049521, 0.5049637), norm2=c(1.0, 200.0, 16.663042, 1.110281))
   z <- poly(p.edge, degree = 2, coefs = coefs)
-  sd <- (0.4087 + 2.0832*z[,1] - 0.5833*z[,2]) * n.gene
-  up.pvalue <- pnorm(-score, mean = 0, sd = sd, lower.tail = TRUE)
-  down.pvalue <- pnorm(score, mean = 0, sd = sd, lower.tail = TRUE)
-  pvalue <- pmin(up.pvalue, down.pvalue) * 2
+  size <- 1.405680 + 5.215590*z[,1] - 1.635208*z[,2]
+  mu <- (0.3341467 + 2.0225427*z[,1] - 0.5185333*z[,2]) * n.gene
+  pvalue <- pnbinom(abs(score), size = size, mu = mu, lower.tail = FALSE)
+  oneside.pvalue <- 0.5 * pvalue
+  up.pvalue <- ifelse(score > 0, oneside.pvalue, 1-oneside.pvalue)
+  down.pvalue <- ifelse(score < 0, oneside.pvalue, 1-oneside.pvalue)
 
   return(list(score=score, pvalue=pvalue, up.pvalue=up.pvalue, down.pvalue=down.pvalue))
 }
