@@ -21,6 +21,7 @@ PvalueNetDEG <- function(adj.matrix, p.edge = NULL)
   z <- poly(p.edge, degree = 2, coefs = coefs)
   size <- 1.405680 + 5.215590*z[,1] - 1.635208*z[,2]
   mu <- (0.3341467 + 2.0225427*z[,1] - 0.5185333*z[,2]) * n.gene
+  if (mu < 0) mu <- 0
   pvalue <- pnbinom(abs(score), size = size, mu = mu, lower.tail = FALSE)
   oneside.pvalue <- 0.5 * pvalue
   up.pvalue <- ifelse(score > 0, oneside.pvalue, 1-oneside.pvalue)
