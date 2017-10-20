@@ -3,37 +3,44 @@
 netDEG <- function(ratio.dist, expr)
 {
   net <- getDiffRatioNet(ratio.dist, expr)
-  PvalueNetDEG(net, ratio.dist$p.edge)
+  PvalueNetDEG(net, ratio.dist)
 }
 
 
 #' @export
-PvalueNetDEG <- function(adj.matrix, p.edge = NULL)
+PvalueNetDEG <- function(adj.matrix, ratio.dist)
 {
   n.gene <- nrow(adj.matrix)
   in.degree <- colSums(adj.matrix)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
-
-  if (is.null(p.edge) || p.edge > 1 || p.edge < 0) p.edge <- sum(adj.matrix) / choose(n.gene, 2)
-
-  coefs <- list(alpha=c(0.5049521, 0.5049637), norm2=c(1.0, 200.0, 16.663042, 1.110281))
-  z <- poly(p.edge, degree = 2, coefs = coefs)
-  size <- 1.405680 + 5.215590*z[,1] - 1.635208*z[,2]
-  mu <- (0.3341467 + 2.0225427*z[,1] - 0.5185333*z[,2]) * n.gene
-  if (mu < 0) mu <- 0
-  pvalue <- pnbinom(abs(score), size = size, mu = mu, lower.tail = FALSE)
-  oneside.pvalue <- 0.5 * pvalue
-  up.pvalue <- ifelse(score > 0, oneside.pvalue, 1-oneside.pvalue)
-  down.pvalue <- ifelse(score < 0, oneside.pvalue, 1-oneside.pvalue)
-
+  up.gene <- score >= 0
+  down.gene <- score <= 0
+  up.pvalue <- down.pvalue <- rep(1, n.gene)
+  up.pvalue[up.gene] <- ratio.dist$rate['up'] * pnbinom(score[up.gene], size = ratio.dist$up['size'], mu = ratio.dist$up['mu'], lower.tail = FALSE)
+  down.pvalue[down.gene] <- ratio.dist$rate['down'] * pnbinom(-score[down.gene], size = ratio.dist$down['size'], mu = ratio.dist$down['mu'], lower.tail = FALSE)
+  up.pvalue[!up.gene] <- 1 - down.pvalue[!up.gene]
+  down.pvalue[!down.gene] <- 1 - up.pvalue[!down.gene]
+  pvalue <- 2 * pmin(up.pvalue, down.pvalue)
   return(list(score=score, pvalue=pvalue, up.pvalue=up.pvalue, down.pvalue=down.pvalue))
 }
 
 
+#' @import MASS
+#'
 #' @export
 getRatioDistribution <- function(expr, p.edge = 0.1)
-  .Call(ND_RatioDistribution, expr, p.edge)
+{
+  dist <- .Call(ND_RatioDistribution, expr, p.edge)
+  net <- lapply(1:dim(expr)[2], function(i) getDiffRatioNet(dist, expr[,i]))
+  diff <- as.vector(sapply(net, rowSums) - sapply(net, colSums))
+  diff.up <- diff[diff >= 0]
+  diff.down <- -diff[diff <= 0]
+  dist$up <- fitdistr(diff.up, "negative binomial")$estimate
+  dist$down <- fitdistr(diff.down, "negative binomial")$estimate
+  dist$rate <- c(up = length(diff.up)/length(diff), down = length(diff.down)/length(diff))
+  dist
+}
 
 
 #' @export
