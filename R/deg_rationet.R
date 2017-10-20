@@ -14,13 +14,14 @@ PvalueNetDEG <- function(adj.matrix, ratio.dist)
   in.degree <- colSums(adj.matrix)
   out.degree <- rowSums(adj.matrix)
   score <- out.degree - in.degree
-  up.gene <- score >= 0
-  down.gene <- score <= 0
-  up.pvalue <- down.pvalue <- rep(1, n.gene)
+  up.gene <- score > 0
+  down.gene <- score < 0
+  up.pvalue <- rep(ratio.dist$rate['up'], n.gene)
+  down.pvalue <- rep(ratio.dist$rate['down'], n.gene)
   up.pvalue[up.gene] <- ratio.dist$rate['up'] * pnbinom(score[up.gene], size = ratio.dist$up['size'], mu = ratio.dist$up['mu'], lower.tail = FALSE)
   down.pvalue[down.gene] <- ratio.dist$rate['down'] * pnbinom(-score[down.gene], size = ratio.dist$down['size'], mu = ratio.dist$down['mu'], lower.tail = FALSE)
-  up.pvalue[!up.gene] <- 1 - down.pvalue[!up.gene]
-  down.pvalue[!down.gene] <- 1 - up.pvalue[!down.gene]
+  up.pvalue[down.gene] <- 1 - down.pvalue[down.gene]
+  down.pvalue[up.gene] <- 1 - up.pvalue[up.gene]
   pvalue <- 2 * pmin(up.pvalue, down.pvalue)
   return(list(score=score, pvalue=pvalue, up.pvalue=up.pvalue, down.pvalue=down.pvalue))
 }
@@ -39,6 +40,7 @@ getRatioDistribution <- function(expr, p.edge = 0.1)
   dist$up <- fitdistr(diff.up, "negative binomial")$estimate
   dist$down <- fitdistr(diff.down, "negative binomial")$estimate
   dist$rate <- c(up = length(diff.up)/length(diff), down = length(diff.down)/length(diff))
+  dist$rate <- dist$rate / sum(dist$rate)
   dist
 }
 
