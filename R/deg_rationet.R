@@ -37,8 +37,8 @@ getRatioDistribution <- function(expr, p.edge = 0.1)
   diff <- as.vector(sapply(net, rowSums) - sapply(net, colSums))
   diff.up <- diff[diff >= 0]
   diff.down <- -diff[diff <= 0]
-  dist$up <- fitdistr(diff.up, "negative binomial")$estimate
-  dist$down <- fitdistr(diff.down, "negative binomial")$estimate
+  dist$up <- fitdistr(diff.up, "negative binomial", lower = c(0, 0))$estimate
+  dist$down <- fitdistr(diff.down, "negative binomial", lower = c(0, 0))$estimate
   dist$rate <- c(up = length(diff.up)/length(diff), down = length(diff.down)/length(diff))
   dist$rate <- dist$rate / sum(dist$rate)
   dist
