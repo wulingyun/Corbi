@@ -10,20 +10,13 @@ netDEG <- function(ratio.dist, expr)
 #' @export
 PvalueNetDEG <- function(adj.matrix, ratio.dist)
 {
-  n.gene <- nrow(adj.matrix)
-  in.degree <- colSums(adj.matrix)
-  out.degree <- rowSums(adj.matrix)
-  score <- out.degree - in.degree
-  up.gene <- score > 0
-  down.gene <- score < 0
-  up.pvalue <- rep(ratio.dist$rate['up'], n.gene)
-  down.pvalue <- rep(ratio.dist$rate['down'], n.gene)
-  up.pvalue[up.gene] <- ratio.dist$rate['up'] * pnbinom(score[up.gene], size = ratio.dist$up['size'], mu = ratio.dist$up['mu'], lower.tail = FALSE)
-  down.pvalue[down.gene] <- ratio.dist$rate['down'] * pnbinom(-score[down.gene], size = ratio.dist$down['size'], mu = ratio.dist$down['mu'], lower.tail = FALSE)
-  up.pvalue[down.gene] <- 1 - down.pvalue[down.gene]
-  down.pvalue[up.gene] <- 1 - up.pvalue[up.gene]
-  pvalue <- 2 * pmin(up.pvalue, down.pvalue)
-  return(list(score=score, pvalue=pvalue, up.pvalue=up.pvalue, down.pvalue=down.pvalue))
+  score <- getAdjustedDiff(adj.matrix)
+  pvalue <- pnbinom(abs(score), size = ratio.dist$NB['size'], mu = ratio.dist$NB['mu'], lower.tail = FALSE)
+  p = pvalue * 0.5
+  up = ifelse(score > 0, p, 1-p)
+  down = ifelse(score < 0, p, 1-p)
+
+  return(list(up = up, down = down, pvalue = pvalue))
 }
 
 
@@ -33,21 +26,29 @@ PvalueNetDEG <- function(adj.matrix, ratio.dist)
 getRatioDistribution <- function(expr, p.edge = 0.1)
 {
   dist <- .Call(ND_RatioDistribution, expr, p.edge)
-  net <- lapply(1:dim(expr)[2], function(i) getDiffRatioNet(dist, expr[,i]))
-  diff <- as.vector(sapply(net, rowSums) - sapply(net, colSums))
-  diff.up <- diff[diff >= 0]
-  diff.down <- -diff[diff <= 0]
-  dist$up <- fitdistr(diff.up, "negative binomial", lower = c(0, 0))$estimate
-  dist$down <- fitdistr(diff.down, "negative binomial", lower = c(0, 0))$estimate
-  dist$rate <- c(up = length(diff.up)/length(diff), down = length(diff.down)/length(diff))
-  dist$rate <- dist$rate / sum(dist$rate)
+  diff <- as.vector(sapply(1:dim(expr)[2], function(i) getAdjustedDiff(getDiffRatioNet(dist, expr[,i]))))
+  dist$NB <- fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
 
 
 #' @export
 getDiffRatioNet <- function(ratio.dist, expr)
+{
   .Call(ND_DiffRatioNet, ratio.dist$LB, ratio.dist$UB, expr)
+}
+
+
+#' @export
+getAdjustedDiff <- function(net, p = 0.5)
+{
+  n.gene <- dim(net)[1]
+  d.out <- rowSums(net)
+  d.in <- colSums(net)
+  d.sum <- d.out + d.in
+  d.diff <- d.out - d.in
+  d.diff - ceiling(median(d.diff[d.sum <= length(d.sum)*p]))
+}
 
 
 #' @export
