@@ -47,7 +47,7 @@ getAdjustedDiff <- function(net, p = 0.5)
   d.in <- colSums(net)
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
-  d.diff - ceiling(median(d.diff[d.sum <= length(d.sum)*p]))
+  d.diff - ceiling(median(d.diff[d.sum <= quantile(d.sum, p)]))
 }
 
 
