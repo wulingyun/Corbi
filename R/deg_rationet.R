@@ -20,14 +20,14 @@ PvalueNetDEG <- function(adj.matrix, ratio.dist)
 }
 
 
-#' @import MASS
+#'
 #'
 #' @export
 getRatioDistribution <- function(expr, p.edge = 0.1)
 {
   dist <- .Call(ND_RatioDistribution, expr, p.edge)
   diff <- as.vector(sapply(1:dim(expr)[2], function(i) getAdjustedDiff(getDiffRatioNet(dist, expr[,i]))))
-  dist$NB <- fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
+  dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
 
@@ -50,7 +50,8 @@ getAdjustedDiff <- function(net, p = 0.5)
   d.diff - ceiling(median(d.diff[d.sum <= quantile(d.sum, p)]))
 }
 
-
+#' @import Matrix
+#
 #' @export
 random_net <- function(size, p.edge, sparse = TRUE)
 {
