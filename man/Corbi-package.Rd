@@ -9,7 +9,7 @@
 This pakcage provides a bundle of basic and fundamental bioinformatics tools.
 }
 \details{
-These bioinformatics tools are developed by \href{http://wulab.aporc.org}{WuLab} at Academy of Mathematics
+These bioinformatics tools are developed by \href{http://wulab.ac.cn}{WuLab} at Academy of Mathematics
 and Systems Science, Chinese Academy of Sciences.
 
 Network querying and alignment:
@@ -30,6 +30,11 @@ Biomarker identification:
 \itemize{
   \item \code{\link{markrank}} Biomarker identification and prioritization by integrating gene expression with biomolecular network
 }
+
+Differential expressed gene identification:
+\itemize{
+  \item \code{\link{netDEG}} Differential expressed gene identification by individual networks
+}
 }
 \references{
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. An Efficient
@@ -39,5 +44,10 @@ Network Querying Method Based on Conditional Random Fields. Bioinformatics,
 Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
 R package for biological network alignment and querying. BMC Systems Biology,
 7(Suppl 2):S6, 2013.
+
+Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, 
+Peter Csermely, and Ling-Yun Wu. Discovering cooperative biomarkers for 
+heterogeneous complex disease diagnoses. Briefings in Bioinformatics, 
+bbx090, 2017.
 }
 \keyword{package}
