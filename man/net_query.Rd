@@ -2,12 +2,12 @@
 % Please edit documentation in R/net_query.R, R/net_query_batch.R
 \name{net_query}
 \alias{net_query}
-\alias{net_query}
 \alias{net_query_batch}
 \title{Network querying method based on conditional random fields}
 \usage{
-net_query(query.net, target.net, node.sim, query.type = 4, delta.d = 1e-10,
-  delta.c = 0.5, delta.e = 1, delta.s = 1, output = "result.txt")
+net_query(query.net, target.net, node.sim, query.type = 4,
+  delta.d = 1e-10, delta.c = 0.5, delta.e = 1, delta.s = 1,
+  output = "result.txt")
 
 net_query_batch(query.nets, target.net, node.sim, query.type = 4,
   delta.d = 1e-10, delta.c = 0.5, delta.e = 1, delta.s = 1,
