@@ -1,44 +1,82 @@
-
+#' netDEG: Differentially expressed gene identification method
+#' 
+#' @import metap
+#' 
 #' @export
-netDEG <- function(ref.ratio.dist, expr)
+netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
 {
-  PvalueNetDEG(ref.ratio.dist, getDiffRatioNet(ref.ratio.dist, expr))
+  if (!log.expr) {
+    ref.expr.matrix <- log(ref.expr.matrix)
+    expr.matrix <- log(expr.matrix)
+  }
+  n <- dim(expr.matrix)[1]
+  m <- dim(expr.matrix)[2]
+  ref.ratio.dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T)
+  p <- lapply(1:m, function(i) netDEG_pvalue(ref.ratio.dist, expr.matrix[,i], log.expr = T))
+
+  up <- sapply(p, function(i) i$up)
+  down <- sapply(p, function(i) i$down)
+  twoside <- sapply(p, function(i) i$twoside)
+  dimnames(up) <- dimnames(down) <- dimnames(twoside) <- dimnames(expr.matrix)
+
+  g.up <- sapply(1:n, function(i) sumlog(up[i,])$p)
+  g.down <- sapply(1:n, function(i) sumlog(down[i,])$p)
+  g.twoside <- sapply(1:n, function(i) sumlog(twoside[i,])$p)
+  names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
+
+  s.up <- sapply(1:m, function(i) sumlog(up[,i])$p)
+  s.down <- sapply(1:m, function(i) sumlog(down[,i])$p)
+  s.twoside <- sapply(1:m, function(i) sumlog(twoside[,i])$p)
+  names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
+
+  return(list(up = up, down = down, twoside = twoside,
+              gene = list(up = g.up, down = g.down, twoside = g.twoside),
+              sample = list(up = s.up, down = s.down, twoside = s.twoside)))
 }
 
-
+#' Calculate netDEG statistics and p-values
+#'
+#' @importFrom stats pnbinom
+#' 
 #' @export
-PvalueNetDEG <- function(ref.ratio.dist, net)
+netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
-  score <- .netDEG.getAdjustedDiff(net)
+  net <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr)
+  score <- get_adjusted_deg_diff(net)
   pvalue <- pnbinom(abs(score), size = ref.ratio.dist$NB['size'], mu = ref.ratio.dist$NB['mu'], lower.tail = FALSE)
   p = pvalue * 0.5
   up = ifelse(score > 0, p, 1-p)
   down = ifelse(score < 0, p, 1-p)
-
-  return(list(up = up, down = down, pvalue = pvalue))
+  return(list(up = up, down = down, twoside = pvalue))
 }
 
 
-#'
-#'
+#' Calculate expression ratio distribution
+#' 
 #' @export
-getRatioDistribution <- function(ref.expr.matrix, p.edge = 0.1)
+get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE)
 {
+  if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
-  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) .netDEG.getAdjustedDiff(getDiffRatioNet(dist, ref.expr.matrix[,i]))))
+  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_adjusted_deg_diff(get_diff_ratio_net(dist, ref.expr.matrix[,i]))))
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
 
-
+#' Construct differential expression ratio network
+#' 
 #' @export
-getDiffRatioNet <- function(ref.ratio.dist, expr)
+get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
-  .Call(ND_DiffRatioNet, ref.ratio.dist$LB, ref.ratio.dist$UB, expr)
+  if (!log.expr) expr.val <- log(expr.val)
+  .Call(ND_DiffRatioNet, ref.ratio.dist$LB, ref.ratio.dist$UB, expr.val)
 }
 
 
-.netDEG.getAdjustedDiff <- function(net, p = 0.5)
+#' Calculate adjusted degree differences for given network
+#'
+#' @importFrom stats median quantile
+get_adjusted_deg_diff <- function(net, p = 0.5)
 {
   n.gene <- dim(net)[1]
   d.out <- rowSums(net)

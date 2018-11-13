@@ -10,7 +10,7 @@ Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "dcsun@amss.ac.cn"))
 ByteCompile: TRUE
 Depends: R (>= 3.0.2)
-Imports: CRF, Matrix, mpmi
+Imports: CRF, Matrix, mpmi, stats, metap
 Suggests: knitr, rmarkdown, MASS, matrixcalc
 VignetteBuilder: knitr
 License: GPL (>= 2)

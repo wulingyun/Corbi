@@ -23,7 +23,6 @@ extern "C" {
   SEXP BS_GetSubnets(SEXP _Edges, SEXP _nNodes, SEXP _maxSize);
   SEXP BS_ExtendSubnets(SEXP _Sub1, SEXP _Sub2, SEXP _size);
   
-  SEXP ND_PvalueNetDEG(SEXP _NetDegree, SEXP _nGenes, SEXP _pEdge);
-  SEXP ND_RatioDistribution(SEXP _ExprVal, SEXP _pEdge);
-  SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _ExprVal);
+  SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge);
+  SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _LogExprVal);
 }
