@@ -57,6 +57,7 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE)
 {
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
+  ref.expr.matrix[is.infinite(ref.expr.matrix)] <- NA
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
   diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_adjusted_deg_diff(get_diff_ratio_net(dist, ref.expr.matrix[,i]))))
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
@@ -69,6 +70,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
+  expr.val[is.infinite(expr.val)] <- NA
   .Call(ND_DiffRatioNet, ref.ratio.dist$LB, ref.ratio.dist$UB, expr.val)
 }
 
