@@ -59,7 +59,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   ref.expr.matrix[is.infinite(ref.expr.matrix)] <- NA
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
-  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_adjusted_deg_diff(get_diff_ratio_net(dist, ref.expr.matrix[,i]))))
+  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_adjusted_deg_diff(get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T))))
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
@@ -85,5 +85,7 @@ get_adjusted_deg_diff <- function(net, p = 0.5)
   d.in <- colSums(net)
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
-  d.diff - ceiling(median(d.diff[d.sum <= quantile(d.sum, p)]))
+  not.dropout <- d.sum > 0
+  d.diff[not.dropout] <- d.diff[not.dropout] - ceiling(median(d.diff[not.dropout & (d.sum < quantile(d.sum[not.dropout], p))]))
+  d.diff
 }

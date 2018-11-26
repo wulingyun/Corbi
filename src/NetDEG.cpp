@@ -63,7 +63,7 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   SetListElement(_ratio, 0, "LB", _LB);
   SetListElement(_ratio, 1, "p.edge", _pEdge);
   
-  UNPROTECT(5);
+  UNPROTECT(4);
   return(_ratio);
 }
 
@@ -103,6 +103,6 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
     }
   }
   
-  UNPROTECT(4);
+  UNPROTECT(3);
   return(_M);
 }
