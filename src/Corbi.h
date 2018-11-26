@@ -24,5 +24,5 @@ extern "C" {
   SEXP BS_ExtendSubnets(SEXP _Sub1, SEXP _Sub2, SEXP _size);
   
   SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge);
-  SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _LogExprVal);
+  SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal);
 }

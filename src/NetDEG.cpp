@@ -21,14 +21,8 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   SetDim2(_LB, nGenes, nGenes);
   double *LB = NUMERIC_POINTER(_LB);
   
-  SEXP _UB;
-  PROTECT(_UB = NEW_NUMERIC(nGenes * nGenes));
-  SetDim2(_UB, nGenes, nGenes);
-  double *UB = NUMERIC_POINTER(_UB);
-
   for (int i = 0; i < nGenes * nGenes; i++)
   {
-    UB[i] = 0;
     LB[i] = 0;
   }
 
@@ -52,18 +46,14 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
       {
         m = quantile(r, n, p, false);
         LB[i+nGenes*j] = m;
-        UB[j+nGenes*i] = -m;
-        
+
         m = quantile(r, n, 1-p, true);
-        UB[i+nGenes*j] = m;
         LB[j+nGenes*i] = -m;
       }
       else
       {
         LB[i+nGenes*j] = R_NegInf;
         LB[j+nGenes*i] = R_NegInf;
-        UB[j+nGenes*i] = R_PosInf;
-        UB[i+nGenes*j] = R_PosInf;
       }
     }
   }
@@ -71,22 +61,18 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   SEXP _ratio;
   PROTECT(_ratio = NEW_LIST(3));
   SetListElement(_ratio, 0, "LB", _LB);
-  SetListElement(_ratio, 1, "UB", _UB);
-  SetListElement(_ratio, 2, "p.edge", _pEdge);
+  SetListElement(_ratio, 1, "p.edge", _pEdge);
   
   UNPROTECT(5);
   return(_ratio);
 }
 
-SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _LogExprVal)
+SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
 {
   PROTECT(_RatioLB = AS_NUMERIC(_RatioLB));
   double *RatioLB = NUMERIC_POINTER(_RatioLB);
   int nGenes = INTEGER_POINTER(AS_INTEGER(GET_DIM(_RatioLB)))[0];
 
-  PROTECT(_RatioUB = AS_NUMERIC(_RatioUB));
-  double *RatioUB = NUMERIC_POINTER(_RatioUB);
-  
   PROTECT(_LogExprVal = AS_NUMERIC(_LogExprVal));
   double *LogExprVal = NUMERIC_POINTER(_LogExprVal);
 
@@ -106,8 +92,8 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _RatioUB, SEXP _LogExprVal)
       double ei, ej, ub, lb;
       ei = LogExprVal[i];
       ej = LogExprVal[j];
-      ub = RatioUB[i+nGenes*j];
       lb = RatioLB[i+nGenes*j];
+      ub = -RatioLB[j+nGenes*i];
       if (!ISNA(ei) && !ISNA(ej) && !ISNAN(ei) && !ISNAN(ej))
       {
         r = ei - ej;

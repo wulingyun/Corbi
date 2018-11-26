@@ -71,7 +71,7 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
   expr.val[is.infinite(expr.val)] <- NA
-  .Call(ND_DiffRatioNet, ref.ratio.dist$LB, ref.ratio.dist$UB, expr.val)
+  .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
 }
 
 
