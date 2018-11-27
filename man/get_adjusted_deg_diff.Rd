@@ -4,7 +4,7 @@
 \alias{get_adjusted_deg_diff}
 \title{Calculate adjusted degree differences for given network}
 \usage{
-get_adjusted_deg_diff(net, p = 0.5)
+get_adjusted_deg_diff(net, log.expr.val, p = 0.5)
 }
 \description{
 Calculate adjusted degree differences for given network

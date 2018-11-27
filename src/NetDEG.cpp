@@ -37,7 +37,7 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
       n = 0;
       for (int k = 0; k < nSamples; k++)
       {
-        if (!ISNA(e[i]) && !ISNA(e[j]) && !ISNAN(e[i]) && !ISNAN(e[j]))
+        if (R_finite(e[i]) && R_finite(e[j]))
           r[n++] = e[i] - e[j];
         e += nGenes;
       }
@@ -59,7 +59,7 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   }
 
   SEXP _ratio;
-  PROTECT(_ratio = NEW_LIST(3));
+  PROTECT(_ratio = NEW_LIST(2));
   SetListElement(_ratio, 0, "LB", _LB);
   SetListElement(_ratio, 1, "p.edge", _pEdge);
   
@@ -94,11 +94,11 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
       ej = LogExprVal[j];
       lb = RatioLB[i+nGenes*j];
       ub = -RatioLB[j+nGenes*i];
-      if (!ISNA(ei) && !ISNA(ej) && !ISNAN(ei) && !ISNAN(ej))
+      if (R_finite(ei) && R_finite(ej))
       {
         r = ei - ej;
-        if (!ISNA(ub) && !ISNAN(ub) && r > ub) M[i+nGenes*j] = 1;
-        else if (!ISNA(lb) && !ISNAN(lb) && r < lb) M[j+nGenes*i] = 1;
+        if (R_finite(ub) && r > ub) M[i+nGenes*j] = 1;
+        else if (R_finite(lb) && r < lb) M[j+nGenes*i] = 1;
       }
     }
   }

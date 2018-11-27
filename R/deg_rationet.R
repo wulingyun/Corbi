@@ -39,8 +39,8 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
 #' @export
 netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
-  net <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr)
-  score <- get_adjusted_deg_diff(net)
+  if (!log.expr) expr.val <- log(expr.val)
+  score <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = T)$diff
   pvalue <- pnbinom(abs(score), size = ref.ratio.dist$NB['size'], mu = ref.ratio.dist$NB['mu'], lower.tail = FALSE)
   p = pvalue * 0.5
   up = ifelse(score > 0, p, 1-p)
@@ -55,9 +55,8 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE)
 {
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
-  ref.expr.matrix[is.infinite(ref.expr.matrix)] <- NA
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
-  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_adjusted_deg_diff(get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T))))
+  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
@@ -68,23 +67,24 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
-  expr.val[is.infinite(expr.val)] <- NA
-  .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
+  net <- .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
+  diff <- get_adjusted_deg_diff(net, expr.val)
+  list(net = net, diff = diff)
 }
 
 
 #' Calculate adjusted degree differences for given network
 #'
 #' @importFrom stats median quantile
-get_adjusted_deg_diff <- function(net, p = 0.5)
+get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
 {
   n.gene <- dim(net)[1]
   d.out <- rowSums(net)
   d.in <- colSums(net)
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
-  not.dropout <- d.sum > 0
-  d.diff[not.dropout] <- d.diff[not.dropout] - ceiling(median(d.diff[not.dropout & (d.sum < quantile(d.sum[not.dropout], p))]))
+  g <- is.finite(log.expr.val)
+  d.diff[g] <- d.diff[g] - ceiling(median(d.diff[g & (d.sum <= quantile(d.sum[g], p))]))
   d.diff
 }
 
