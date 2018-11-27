@@ -1,7 +1,5 @@
 #' netDEG: Differentially expressed gene identification method
 #' 
-#' @import metap
-#' 
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
 {
@@ -19,14 +17,14 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
   twoside <- sapply(p, function(i) i$twoside)
   dimnames(up) <- dimnames(down) <- dimnames(twoside) <- dimnames(expr.matrix)
 
-  g.up <- sapply(1:n, function(i) sumlog(up[i,])$p)
-  g.down <- sapply(1:n, function(i) sumlog(down[i,])$p)
-  g.twoside <- sapply(1:n, function(i) sumlog(twoside[i,])$p)
+  g.up <- sapply(1:n, function(i) p_combine(up[i,])$p)
+  g.down <- sapply(1:n, function(i) p_combine(down[i,])$p)
+  g.twoside <- sapply(1:n, function(i) p_combine(twoside[i,])$p)
   names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
 
-  s.up <- sapply(1:m, function(i) sumlog(up[,i])$p)
-  s.down <- sapply(1:m, function(i) sumlog(down[,i])$p)
-  s.twoside <- sapply(1:m, function(i) sumlog(twoside[,i])$p)
+  s.up <- sapply(1:m, function(i) p_combine(up[,i])$p)
+  s.down <- sapply(1:m, function(i) p_combine(down[,i])$p)
+  s.twoside <- sapply(1:m, function(i) p_combine(twoside[,i])$p)
   names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
 
   return(list(up = up, down = down, twoside = twoside,
@@ -88,4 +86,17 @@ get_adjusted_deg_diff <- function(net, p = 0.5)
   not.dropout <- d.sum > 0
   d.diff[not.dropout] <- d.diff[not.dropout] - ceiling(median(d.diff[not.dropout & (d.sum < quantile(d.sum[not.dropout], p))]))
   d.diff
+}
+
+
+#' Calculate combined p-value by Fisher's method
+#' 
+#' @export
+p_combine <- function(p)
+{
+  p[p > 1] <- 1
+  p[p < .Machine$double.xmin] <- .Machine$double.xmin
+  chisq <- (-2) * sum(log(p))
+  df <- 2 * length(p)
+  list(chisq = chisq, df = df, p = pchisq(chisq, df, lower.tail = FALSE))
 }
