@@ -68,8 +68,8 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
   net <- .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
-  diff <- get_adjusted_deg_diff(net, expr.val)
-  list(net = net, diff = diff)
+  d <- get_adjusted_deg_diff(net, expr.val)
+  list(net = net, diff = d$diff, degree = d$degree)
 }
 
 
@@ -84,8 +84,9 @@ get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
   g <- is.finite(log.expr.val)
-  d.diff[g] <- d.diff[g] - ceiling(median(d.diff[g & (d.sum <= quantile(d.sum[g], p))]))
-  d.diff
+  adj.diff <- d.diff
+  adj.diff[g] <- d.diff[g] - ceiling(median(d.diff[g & (d.sum <= quantile(d.sum[g], p))]))
+  list(diff = adj.diff, degree = list(diff = d.diff, sum = d.sum))
 }
 
 

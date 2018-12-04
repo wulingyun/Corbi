@@ -86,7 +86,7 @@ make_DEG_data <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.s
   countsB <- matrix(rnorm(n.genes * n.samples.B, mean = mu0 %*% t(sfB) * deg$FC, sd = sd0 * deg$FC), nrow = n.genes)
   countsA[countsA < 0] <- 0
   countsB[countsB < 0] <- 0
-  return(list(DEG=deg, countsA=countsA, countsB=countsB))
+  return(list(DEG=deg, countsA=countsA, countsB=countsB, factorA=sfA, factorB=sfB))
 }
 
 
@@ -130,5 +130,5 @@ make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.
 # simulate group B
   sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
   countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
-  return(list(DEG=deg, countsA=countsA, countsB=countsB))
+  return(list(DEG=deg, countsA=countsA, countsB=countsB, factorA=sfA, factorB=sfB))
 }
