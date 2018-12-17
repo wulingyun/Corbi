@@ -132,3 +132,32 @@ make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.
   countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
   return(list(DEG=deg, countsA=countsA, countsB=countsB, factorA=sfA, factorB=sfB))
 }
+
+
+#' Simulate dropout expression data
+#' 
+#' 
+#' @references Peter V. Kharchenko, Lev Silberstein, and David T. Scadden.
+#' Bayesian approach to single-cell differential expression analysis.
+#' Nature Methods, 11(7):740–742, 2014.
+#' 
+#' @export
+simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
+{
+  n.genes <- dim(counts)[1]
+  n.samples <- dim(counts)[2]
+  intercept <- rnorm(n.samples, 1.5, 0.5)
+  slope <- rnorm(n.samples, 3, 1)
+  d <- sapply(1:n.samples, function(i) 1 / (1 + exp(slope[i] * (log10(counts[, i]) - intercept[i]))))
+  r <- 2^rnorm(n.samples, sd = dropout.rate.sd) * dropout.rate
+  r[r > 1] <- 1
+  r[r < 0] <- 0
+  r <- round(r * n.genes)
+  dropout <- matrix(0, n.genes, n.samples)
+  for (i in 1:n.samples)
+  {
+    dropout[sample.int(n.genes, r[i], prob = d[, i]), i] <- 1
+  }
+  new.counts <- counts * (1 - dropout)
+  list(counts = new.counts, original.counts = counts, dropout = dropout)
+}
