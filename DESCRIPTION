@@ -1,5 +1,5 @@
 Package: Corbi
-Version: 0.4-3
+Version: 0.4-4
 Title: Collection of Rudimentary Bioinformatics Tools
 Description: Provides a bundle of basic and fundamental bioinformatics tools,
     such as network querying and alignment, subnetwork extraction and search,

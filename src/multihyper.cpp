@@ -61,14 +61,16 @@ double pmultihyper(double X, int K, int nM, int tM, int *M, double *W)
 
 SEXP PMultiHyper(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
 {
-  double X = NUMERIC_POINTER(AS_NUMERIC(_X))[0];
-  int K = INTEGER_POINTER(AS_INTEGER(_K))[0];
+  PROTECT(_X = AS_NUMERIC(_X));
+  double X = NUMERIC_POINTER(_X)[0];
+  PROTECT(_K = AS_INTEGER(_K));
+  int K = INTEGER_POINTER(_K)[0];
 
-  PROTECT(_M = AS_INTEGER(duplicate(_M)));
+  PROTECT(_M = AS_INTEGER(_M));
   int *M = INTEGER_POINTER(_M);
   int nM = length(_M);
   
-  PROTECT(_W = AS_NUMERIC(duplicate(_W)));
+  PROTECT(_W = AS_NUMERIC(_W));
   double *W = NUMERIC_POINTER(_W);
 
 	revsort(W, M, nM);
@@ -85,7 +87,7 @@ SEXP PMultiHyper(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
  
   *P = pmultihyper(X, K, nM, tM, M, W);
 
-  UNPROTECT(3);
+  UNPROTECT(5);
   return(_P);
 }
 
@@ -111,14 +113,16 @@ double pmultinom(double X, int K, int nM, int tM, int *M, double *W)
 
 SEXP PMultiNom(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
 {
-  double X = NUMERIC_POINTER(AS_NUMERIC(_X))[0];
-  int K = INTEGER_POINTER(AS_INTEGER(_K))[0];
+  PROTECT(_X = AS_NUMERIC(_X));
+  double X = NUMERIC_POINTER(_X)[0];
+  PROTECT(_K = AS_INTEGER(_K));
+  int K = INTEGER_POINTER(_K)[0];
 
-  PROTECT(_M = AS_INTEGER(duplicate(_M)));
+  PROTECT(_M = AS_INTEGER(_M));
   int *M = INTEGER_POINTER(_M);
   int nM = length(_M);
   
-  PROTECT(_W = AS_NUMERIC(duplicate(_W)));
+  PROTECT(_W = AS_NUMERIC(_W));
   double *W = NUMERIC_POINTER(_W);
 
   revsort(W, M, nM);
@@ -135,6 +139,6 @@ SEXP PMultiNom(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
  
   *P = pmultinom(X, K, nM, tM, M, W);
 
-  UNPROTECT(3);
+  UNPROTECT(5);
   return(_P);
 }
