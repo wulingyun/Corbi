@@ -174,12 +174,13 @@ SEXP BS_GetSubnets(SEXP _Edges, SEXP _nNodes, SEXP _maxSize)
 {
   PROTECT(_Edges = AS_INTEGER(_Edges));
   int *Edges = INTEGER_POINTER(_Edges);
-  int nEdges = INTEGER_POINTER(AS_INTEGER(GET_DIM(_Edges)))[0];
+  int nEdges = INTEGER_POINTER(GET_DIM(_Edges))[0];
 
   int nNodes = INTEGER_POINTER(AS_INTEGER(_nNodes))[0];
 	int maxSize = INTEGER_POINTER(AS_INTEGER(_maxSize))[0];
   
   if (maxSize < 2) maxSize = 2;
+  if (maxSize > nNodes) maxSize = nNodes;
 
 	SEXP _Subnets;
 	PROTECT(_Subnets = NEW_LIST(maxSize));
@@ -213,7 +214,7 @@ SEXP BS_GetSubnets(SEXP _Edges, SEXP _nNodes, SEXP _maxSize)
     PROTECT(_temp = extend(Subnets[i-1], Subnets[1], n, nEdges, i, 2, i+1));
   	Subnets[i] = INTEGER_POINTER(_temp);
   	SET_VECTOR_ELT(_Subnets, i, _temp);
-    n = INTEGER_POINTER(AS_INTEGER(GET_DIM(_temp)))[0];
+    n = INTEGER_POINTER(GET_DIM(_temp))[0];
   }
 
   UNPROTECT(maxSize + 2);
