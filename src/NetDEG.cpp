@@ -13,7 +13,7 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   double pEdge = NUMERIC_POINTER(_pEdge)[0];
   
   if (pEdge > 1) pEdge = 1;
-  if (pEdge < 0) pEdge = 0;
+  else if (pEdge < 0) pEdge = 0;
   double p = pEdge / 2;
   
   SEXP _LB;
@@ -64,6 +64,96 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   SetListElement(_ratio, 1, "p.edge", _pEdge);
   
   UNPROTECT(4);
+  return(_ratio);
+}
+
+SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim)
+{
+  PROTECT(_LogExprMatrix = AS_NUMERIC(_LogExprMatrix));
+  double *LogExprMatrix = NUMERIC_POINTER(_LogExprMatrix);
+  int *dim = INTEGER_POINTER(AS_INTEGER(GET_DIM(_LogExprMatrix)));
+  int nGenes = dim[0];
+  int nSamples = dim[1];
+  
+  PROTECT(_pEdge = AS_NUMERIC(_pEdge));
+  double pEdge = NUMERIC_POINTER(_pEdge)[0];
+  
+  if (pEdge > 1) pEdge = 1;
+  else if (pEdge < 0) pEdge = 0;
+
+  PROTECT(_pTrim = AS_NUMERIC(_pTrim));
+  double pTrim = NUMERIC_POINTER(_pTrim)[0];
+  
+  if (pTrim > 1) pTrim = 1;
+  else if (pTrim < 0) pTrim = 0;
+  
+  SEXP _LB;
+  PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_LB, nGenes, nGenes);
+  double *LB = NUMERIC_POINTER(_LB);
+  
+  for (int i = 0; i < nGenes * nGenes; i++)
+  {
+    LB[i] = 0;
+  }
+  
+  double *r = (double *) R_alloc(nSamples, sizeof(double));
+  double *e, m, lTrim, uTrim, mTrim;
+  int n, nTrim;
+  for (int i = 0; i < nGenes-1; i++)
+  {
+    for (int j = i+1; j < nGenes; j++)
+    {
+      e = LogExprMatrix;
+      n = 0;
+      for (int k = 0; k < nSamples; k++)
+      {
+        if (R_finite(e[i]) && R_finite(e[j]))
+          r[n++] = e[i] - e[j];
+        e += nGenes;
+      }
+      
+      if (n > 0)
+      {
+        lTrim = quantile(r, n, pTrim, false);
+        uTrim = quantile(r, n, 1-pTrim, true);
+        
+        mTrim = 0;
+        nTrim = 0;
+        for (int k = 0; k < n; k++)
+        {
+          if (r[k] >= lTrim && r[k] <= uTrim)
+          {
+            mTrim += r[k];
+            nTrim++;
+          }
+        }
+        mTrim /= nTrim;
+        
+        for (int k = 0; k < n; k++)
+        {
+          r[k] = fabs(r[k] - mTrim);
+        }
+        
+        m = quantile(r, n, 1-pEdge, false);
+        LB[i+nGenes*j] = mTrim - m;
+        LB[j+nGenes*i] = -(mTrim + m);
+      }
+      else
+      {
+        LB[i+nGenes*j] = R_NegInf;
+        LB[j+nGenes*i] = R_NegInf;
+      }
+    }
+  }
+  
+  SEXP _ratio;
+  PROTECT(_ratio = NEW_LIST(3));
+  SetListElement(_ratio, 0, "LB", _LB);
+  SetListElement(_ratio, 1, "p.edge", _pEdge);
+  SetListElement(_ratio, 2, "p.trim", _pTrim);
+  
+  UNPROTECT(5);
   return(_ratio);
 }
 

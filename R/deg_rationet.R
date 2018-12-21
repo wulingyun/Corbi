@@ -61,6 +61,18 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   dist
 }
 
+#' Calculate expression ratio distribution
+#' 
+#' @export
+get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE)
+{
+  if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
+  dist <- .Call(ND_RatioDistribution2, ref.expr.matrix, p.edge, p.trim)
+  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
+  dist
+}
+
 #' Construct differential expression ratio network
 #' 
 #' @export
