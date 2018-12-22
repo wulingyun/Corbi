@@ -57,6 +57,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
   diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
@@ -69,6 +70,7 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution2, ref.expr.matrix, p.edge, p.trim)
   diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
 }
@@ -90,14 +92,14 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #' @importFrom stats median quantile
 get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
 {
-  n.gene <- dim(net)[1]
+  g.NA <- !is.finite(log.expr.val)
   d.out <- rowSums(net)
   d.in <- colSums(net)
+  d.out[g.NA] <- NA
+  d.in[g.NA] <- NA
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
-  g <- is.finite(log.expr.val)
-  adj.diff <- d.diff
-  adj.diff[g] <- d.diff[g] - ceiling(median(d.diff[g & (d.sum <= quantile(d.sum[g], p))]))
+  adj.diff <- d.diff - ceiling(median(d.diff[d.sum <= quantile(d.sum, p, na.rm = T)], na.rm = T))
   list(diff = adj.diff, degree = list(diff = d.diff, sum = d.sum))
 }
 
@@ -107,6 +109,7 @@ get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
 #' @export
 p_combine <- function(p)
 {
+  p <- p[!is.na(p)]
   p[p > 1] <- 1
   p[p < .Machine$double.xmin] <- .Machine$double.xmin
   chisq <- (-2) * sum(log(p))
