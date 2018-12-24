@@ -20,11 +20,7 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
   SetDim2(_LB, nGenes, nGenes);
   double *LB = NUMERIC_POINTER(_LB);
-  
-  for (int i = 0; i < nGenes * nGenes; i++)
-  {
-    LB[i] = 0;
-  }
+  SetValues(_LB, LB, R_NegInf);
 
   double *r = (double *) R_alloc(nSamples, sizeof(double));
   double *e, m;
@@ -49,11 +45,6 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
 
         m = quantile(r, n, 1-p, true);
         LB[j+nGenes*i] = -m;
-      }
-      else
-      {
-        LB[i+nGenes*j] = R_NegInf;
-        LB[j+nGenes*i] = R_NegInf;
       }
     }
   }
@@ -91,12 +82,8 @@ SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim)
   PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
   SetDim2(_LB, nGenes, nGenes);
   double *LB = NUMERIC_POINTER(_LB);
-  
-  for (int i = 0; i < nGenes * nGenes; i++)
-  {
-    LB[i] = 0;
-  }
-  
+  SetValues(_LB, LB, R_NegInf);
+
   double *r = (double *) R_alloc(nSamples, sizeof(double));
   double *e, m, lTrim, uTrim, mTrim;
   int n, nTrim;
@@ -139,11 +126,6 @@ SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim)
         LB[i+nGenes*j] = mTrim - m;
         LB[j+nGenes*i] = -(mTrim + m);
       }
-      else
-      {
-        LB[i+nGenes*j] = R_NegInf;
-        LB[j+nGenes*i] = R_NegInf;
-      }
     }
   }
   
@@ -166,34 +148,36 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
   PROTECT(_LogExprVal = AS_NUMERIC(_LogExprVal));
   double *LogExprVal = NUMERIC_POINTER(_LogExprVal);
 
-  int *e1 = (int *) R_alloc(nGenes * nGenes / 2, sizeof(int));
-  int *e2 = (int *) R_alloc(nGenes * nGenes / 2, sizeof(int));
+  int *e1 = (int *) R_alloc(nGenes * nGenes, sizeof(int));
+  int *e2 = e1 + nGenes * nGenes / 2;
   int n = 0;
 
-  double r;
+  double r, ei, ej, ub, lb;
   for (int i = 0; i < nGenes-1; i++)
   {
-    for (int j = i+1; j < nGenes; j++)
+    ei = LogExprVal[i];
+    if (R_finite(ei))
     {
-      double ei, ej, ub, lb;
-      ei = LogExprVal[i];
-      ej = LogExprVal[j];
-      lb = RatioLB[i+nGenes*j];
-      ub = -RatioLB[j+nGenes*i];
-      if (R_finite(ei) && R_finite(ej))
+      for (int j = i+1; j < nGenes; j++)
       {
-        r = ei - ej;
-        if (R_finite(ub) && r > ub)
+        ej = LogExprVal[j];
+        if (R_finite(ej))
         {
-          e1[n] = i;
-          e2[n] = j;
-          n++;
-        }
-        else if (R_finite(lb) && r < lb)
-        {
-          e1[n] = j;
-          e2[n] = i;
-          n++;
+          r = ei - ej;
+          lb = RatioLB[i+nGenes*j];
+          ub = -RatioLB[j+nGenes*i];
+          if (R_finite(ub) && r > ub)
+          {
+            e1[n] = i;
+            e2[n] = j;
+            n++;
+          }
+          else if (R_finite(lb) && r < lb)
+          {
+            e1[n] = j;
+            e2[n] = i;
+            n++;
+          }
         }
       }
     }
