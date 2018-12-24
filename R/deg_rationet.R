@@ -94,7 +94,9 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
-  net <- .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
+  edges <- .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
+  n <- length(expr.val)
+  net <- sparseMatrix(i = edges$i, j = edges$j, dims = c(n, n))
   d <- get_adjusted_deg_diff(net, expr.val)
   list(net = net, diff = d$diff, degree = d$degree)
 }

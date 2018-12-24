@@ -166,14 +166,10 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
   PROTECT(_LogExprVal = AS_NUMERIC(_LogExprVal));
   double *LogExprVal = NUMERIC_POINTER(_LogExprVal);
 
-  SEXP _M;
-  PROTECT(_M = NEW_INTEGER(nGenes * nGenes));
-  SetDim2(_M, nGenes, nGenes);
-  int *M = INTEGER_POINTER(_M);
+  int *e1 = (int *) R_alloc(nGenes * nGenes / 2, sizeof(int));
+  int *e2 = (int *) R_alloc(nGenes * nGenes / 2, sizeof(int));
+  int n = 0;
 
-  for (int i = 0; i < nGenes*nGenes; i++)
-    M[i] = 0;
-  
   double r;
   for (int i = 0; i < nGenes-1; i++)
   {
@@ -187,12 +183,39 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
       if (R_finite(ei) && R_finite(ej))
       {
         r = ei - ej;
-        if (R_finite(ub) && r > ub) M[i+nGenes*j] = 1;
-        else if (R_finite(lb) && r < lb) M[j+nGenes*i] = 1;
+        if (R_finite(ub) && r > ub)
+        {
+          e1[n] = i;
+          e2[n] = j;
+          n++;
+        }
+        else if (R_finite(lb) && r < lb)
+        {
+          e1[n] = j;
+          e2[n] = i;
+          n++;
+        }
       }
     }
   }
+
+  SEXP _E1, _E2;
+  PROTECT(_E1 = NEW_INTEGER(n));
+  PROTECT(_E2 = NEW_INTEGER(n));
+  int *E1 = INTEGER_POINTER(_E1);
+  int *E2 = INTEGER_POINTER(_E2);
   
-  UNPROTECT(3);
+  for (int i = 0; i < n; i++)
+  {
+    E1[i] = e1[i] + 1;
+    E2[i] = e2[i] + 1;
+  }
+  
+  SEXP _M;
+  PROTECT(_M = NEW_LIST(2));
+  SetListElement(_M, 0, "i", _E1);
+  SetListElement(_M, 1, "j", _E2);
+
+  UNPROTECT(5);
   return(_M);
 }
