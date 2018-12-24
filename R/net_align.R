@@ -44,8 +44,6 @@
 #' net_align("querynet.txt", "targetnet.txt", "nodesim.txt")
 #' }
 #' 
-#' @import CRF
-#' 
 #' @export
 net_align <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {

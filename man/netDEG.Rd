@@ -4,7 +4,8 @@
 \alias{netDEG}
 \title{netDEG: Differentially expressed gene identification method}
 \usage{
-netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
+netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
+  use.parallel = FALSE)
 }
 \description{
 netDEG: Differentially expressed gene identification method

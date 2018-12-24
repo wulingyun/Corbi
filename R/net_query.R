@@ -73,8 +73,6 @@
 #' net_query("querynet.txt", "targetnet.txt", "nodesim.txt", query.type=3)
 #' }
 #' 
-#' @import CRF
-#' 
 #' @export
 net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-10, delta.c=0.5, delta.e=1, delta.s=1, output="result.txt")
 {
@@ -162,7 +160,7 @@ net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 	W[,label.gap] <- delta$e
 	W[label.gap, label.gap] <- delta$c
 
-	crf <- make.crf(query.net, rowSums(S > 0))
+	crf <- CRF::make.crf(query.net, rowSums(S > 0))
 
 	crf$state.map <- matrix(label.gap, nrow=crf$n.nodes, ncol=crf$max.state)
 	for (i in 1:crf$n.nodes)
@@ -188,17 +186,17 @@ net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 
 decode_heuristic <- function(crf)
 {
-	result <- try(decode.junction(crf), TRUE)
+	result <- try(CRF::decode.junction(crf), TRUE)
 	if (class(result) == "try-error")
 	{
-		result <- decode.lbp(crf)
+		result <- CRF::decode.lbp(crf)
 	}
 	result
 }
 
 .net_query.solve_crf <- function(model, query.type)
 {
-	decode.method <- list(decode.lbp, decode.chain, decode.tree, decode_heuristic, decode.ilp)
+	decode.method <- list(CRF::decode.lbp, CRF::decode.chain, CRF::decode.tree, decode_heuristic, CRF::decode.ilp)
 	if (!is.numeric(query.type) || query.type > length(decode.method) || query.type < 1) query.type = 4
 	result <- decode.method[[query.type]](model)
 	result <- model$state.map[cbind(1:model$n.nodes, result)]

@@ -5,7 +5,7 @@
 \title{Calculate expression ratio distribution}
 \usage{
 get_ratio_distribution2(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
-  log.expr = FALSE)
+  log.expr = FALSE, use.parallel = FALSE)
 }
 \description{
 Calculate expression ratio distribution

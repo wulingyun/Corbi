@@ -1,8 +1,13 @@
 #' netDEG: Differentially expressed gene identification method
 #' 
 #' @export
-netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
+netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE, use.parallel = FALSE)
 {
+  if (use.parallel && requireNamespace("BiocParallel"))
+  {
+    lapply <- BiocParallel::bplapply
+  }
+
   if (!log.expr) {
     ref.expr.matrix <- log(ref.expr.matrix)
     expr.matrix <- log(expr.matrix)
@@ -34,14 +39,12 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE)
 
 #' Calculate netDEG statistics and p-values
 #'
-#' @importFrom stats pnbinom
-#' 
 #' @export
 netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
   score <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = T)$diff
-  pvalue <- pnbinom(abs(score), size = ref.ratio.dist$NB['size'], mu = ref.ratio.dist$NB['mu'], lower.tail = FALSE)
+  pvalue <- stats::pnbinom(abs(score), size = ref.ratio.dist$NB['size'], mu = ref.ratio.dist$NB['mu'], lower.tail = FALSE)
   p = pvalue * 0.5
   up = ifelse(score > 0, p, 1-p)
   down = ifelse(score < 0, p, 1-p)
@@ -52,11 +55,16 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #' Calculate expression ratio distribution
 #' 
 #' @export
-get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE)
+get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE, use.parallel = FALSE)
 {
+  if (use.parallel && requireNamespace("BiocParallel"))
+  {
+    lapply <- BiocParallel::bplapply
+  }
+
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
-  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
@@ -65,11 +73,16 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 #' Calculate expression ratio distribution
 #' 
 #' @export
-get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE)
+get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE, use.parallel = FALSE)
 {
+  if (use.parallel && requireNamespace("BiocParallel"))
+  {
+    lapply <- BiocParallel::bplapply
+  }
+  
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution2, ref.expr.matrix, p.edge, p.trim)
-  diff <- as.vector(sapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
@@ -89,7 +102,6 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 
 #' Calculate adjusted degree differences for given network
 #'
-#' @importFrom stats median quantile
 get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
 {
   g.NA <- !is.finite(log.expr.val)
@@ -99,7 +111,7 @@ get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
   d.in[g.NA] <- NA
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
-  adj.diff <- d.diff - ceiling(median(d.diff[d.sum <= quantile(d.sum, p, na.rm = T)], na.rm = T))
+  adj.diff <- d.diff - ceiling(stats::median(d.diff[d.sum <= stats::quantile(d.sum, p, na.rm = T)], na.rm = T))
   list(diff = adj.diff, degree = list(diff = d.diff, sum = d.sum))
 }
 
@@ -114,5 +126,5 @@ p_combine <- function(p)
   p[p < .Machine$double.xmin] <- .Machine$double.xmin
   chisq <- (-2) * sum(log(p))
   df <- 2 * length(p)
-  list(chisq = chisq, df = df, p = pchisq(chisq, df, lower.tail = FALSE))
+  list(chisq = chisq, df = df, p = stats::pchisq(chisq, df, lower.tail = FALSE))
 }

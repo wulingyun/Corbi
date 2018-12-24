@@ -23,21 +23,19 @@
 #'   \item{gene}{The vector of gene status: 1 for up-regulated, -1 for down-regulated, and 0 for normal genes.}
 #'   \item{sample}{The vector of sample status: 1 for abnormal, and 0 for normal samples.}
 #' 
-#' @importFrom stats runif
-#' 
 #' @export
 make_DEG_pattern <- function(n.genes, n.samples, fold.change = 2, gene.rate = 0.3, sample.rate = 1.0, active.rate = 1.0, up.rate = 0.5)
 {
-  active.gene <- runif(n.genes) <= gene.rate
-  active.sample <- runif(n.samples) <= sample.rate
+  active.gene <- stats::runif(n.genes) <= gene.rate
+  active.sample <- stats::runif(n.samples) <= sample.rate
   if (sum(active.gene) < 1) active.gene[sample.int(n.genes, 1)] <- TRUE
   if (sum(active.sample) < 1) active.sample[sample.int(n.samples, 1)] <- TRUE
   up.gene <- logical(n.genes)
-  up.gene[active.gene] <- runif(sum(active.gene)) <= up.rate
+  up.gene[active.gene] <- stats::runif(sum(active.gene)) <= up.rate
   down.gene <- active.gene & !up.gene
   fc.sub <- matrix(fold.change, sum(active.gene), sum(active.sample))
   fc.sub[down.gene[active.gene], ] <- 1/fold.change
-  fc.sub[runif(length(fc.sub)) > active.rate] <- 1
+  fc.sub[stats::runif(length(fc.sub)) > active.rate] <- 1
   fc <- matrix(1, n.genes, n.samples)
   fc[active.gene, active.sample] <- fc.sub
   return(list(FC=fc, gene=up.gene-down.gene, sample=as.integer(active.sample)))
@@ -68,22 +66,20 @@ make_DEG_pattern <- function(n.genes, n.samples, fold.change = 2, gene.rate = 0.
 #'   \item{countsA}{The expression matrix of group A. Each row represents a gene and each column represents a sample.}
 #'   \item{countsB}{The expression matrix of group B. Each row represents a gene and each column represents a sample.}
 #' 
-#' @importFrom stats rnorm
-#' 
 #' @export
 make_DEG_data <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, alpha = 0.2, size.factor.sd = 0.1, ...)
 {
   # simulate DEG and heterogeneity
   deg <- make_DEG_pattern(n.genes, n.samples.B, ...)
   # simulate expression mean and dispersion
-  mu0 <- 2^rnorm(n.genes, exp.mean, exp.sd)
+  mu0 <- 2^stats::rnorm(n.genes, exp.mean, exp.sd)
   sd0 <- alpha * mu0
   # simulate group A
-  sfA <- 2^rnorm(n.samples.A, sd = size.factor.sd)
-  countsA <- matrix(rnorm(n.genes * n.samples.A, mean = mu0 %*% t(sfA), sd = sd0), nrow = n.genes)
+  sfA <- 2^stats::rnorm(n.samples.A, sd = size.factor.sd)
+  countsA <- matrix(stats::rnorm(n.genes * n.samples.A, mean = mu0 %*% t(sfA), sd = sd0), nrow = n.genes)
   # simulate group B
-  sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
-  countsB <- matrix(rnorm(n.genes * n.samples.B, mean = mu0 %*% t(sfB) * deg$FC, sd = sd0 * deg$FC), nrow = n.genes)
+  sfB <- 2^stats::rnorm(n.samples.B, sd = size.factor.sd)
+  countsB <- matrix(stats::rnorm(n.genes * n.samples.B, mean = mu0 %*% t(sfB) * deg$FC, sd = sd0 * deg$FC), nrow = n.genes)
   countsA[countsA < 0] <- 0
   countsB[countsB < 0] <- 0
   return(list(DEG=deg, countsA=countsA, countsB=countsB, factorA=sfA, factorB=sfB))
@@ -114,22 +110,20 @@ make_DEG_data <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.s
 #'   \item{countsA}{The expression matrix of group A. Each row represents a gene and each column represents a sample.}
 #'   \item{countsB}{The expression matrix of group B. Each row represents a gene and each column represents a sample.}
 #' 
-#' @importFrom stats rnorm rnbinom
-#' 
 #' @export
 make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.sd = 2, dispersion = NULL, size.factor.sd = 0.1, ...)
 {
 # simulate DEG and heterogeneity
   deg <- make_DEG_pattern(n.genes, n.samples.B, ...)
 # simulate expression mean
-  mu0 <- 2^rnorm(n.genes, exp.mean, exp.sd)
+  mu0 <- 2^stats::rnorm(n.genes, exp.mean, exp.sd)
   if (is.null(dispersion)) dispersion <- 4/mu0 + 0.1
 # simulate group A
-  sfA <- 2^rnorm(n.samples.A, sd = size.factor.sd)
-  countsA <- matrix(rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
+  sfA <- 2^stats::rnorm(n.samples.A, sd = size.factor.sd)
+  countsA <- matrix(stats::rnbinom(n.genes * n.samples.A, mu = mu0 %*% t(sfA), size = 1/dispersion), nrow = n.genes)
 # simulate group B
-  sfB <- 2^rnorm(n.samples.B, sd = size.factor.sd)
-  countsB <- matrix(rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
+  sfB <- 2^stats::rnorm(n.samples.B, sd = size.factor.sd)
+  countsB <- matrix(stats::rnbinom(n.genes * n.samples.B, mu = mu0 %*% t(sfB) * deg$FC, size = 1/dispersion), nrow = n.genes)
   return(list(DEG=deg, countsA=countsA, countsB=countsB, factorA=sfA, factorB=sfB))
 }
 
@@ -146,10 +140,10 @@ simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
 {
   n.genes <- dim(counts)[1]
   n.samples <- dim(counts)[2]
-  intercept <- rnorm(n.samples, 1.5, 0.5)
-  slope <- rnorm(n.samples, 3, 1)
+  intercept <- stats::rnorm(n.samples, 1.5, 0.5)
+  slope <- stats::rnorm(n.samples, 3, 1)
   d <- sapply(1:n.samples, function(i) 1 / (1 + exp(slope[i] * (log10(counts[, i]) - intercept[i]))))
-  r <- 2^rnorm(n.samples, sd = dropout.rate.sd) * dropout.rate
+  r <- 2^stats::rnorm(n.samples, sd = dropout.rate.sd) * dropout.rate
   r[r > 1] <- 1
   r[r < 0] <- 0
   r <- round(r * n.genes)
