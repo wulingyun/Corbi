@@ -66,10 +66,12 @@ SEXP PMultiHyper(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
   PROTECT(_K = AS_INTEGER(_K));
   int K = INTEGER_POINTER(_K)[0];
 
+  PROTECT(_M = duplicate(_M));
   PROTECT(_M = AS_INTEGER(_M));
   int *M = INTEGER_POINTER(_M);
   int nM = length(_M);
   
+  PROTECT(_W = duplicate(_W));
   PROTECT(_W = AS_NUMERIC(_W));
   double *W = NUMERIC_POINTER(_W);
 
@@ -87,7 +89,7 @@ SEXP PMultiHyper(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
  
   *P = pmultihyper(X, K, nM, tM, M, W);
 
-  UNPROTECT(5);
+  UNPROTECT(7);
   return(_P);
 }
 
@@ -118,10 +120,12 @@ SEXP PMultiNom(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
   PROTECT(_K = AS_INTEGER(_K));
   int K = INTEGER_POINTER(_K)[0];
 
+  PROTECT(_M = duplicate(_M));
   PROTECT(_M = AS_INTEGER(_M));
   int *M = INTEGER_POINTER(_M);
   int nM = length(_M);
   
+  PROTECT(_W = duplicate(_W));
   PROTECT(_W = AS_NUMERIC(_W));
   double *W = NUMERIC_POINTER(_W);
 
@@ -139,6 +143,6 @@ SEXP PMultiNom(SEXP _X, SEXP _K, SEXP _M, SEXP _W)
  
   *P = pmultinom(X, K, nM, tM, M, W);
 
-  UNPROTECT(5);
+  UNPROTECT(7);
   return(_P);
 }
