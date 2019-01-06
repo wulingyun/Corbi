@@ -26,7 +26,7 @@ pro_align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length
 
 	adj <- matrix(0, nrow=n.nodes, ncol=n.nodes)
 	for (i in 2:n.nodes) adj[i-1, i] <- 1
-	crf <- make.crf(adj, n.states)
+	crf <- CRF::make.crf(adj, n.states)
 
 	scores <- PA_scores(D1, D2, afp.length)
 	scores$node.score <- exp(-scores$node.score)
@@ -50,7 +50,7 @@ pro_align <- function(D1, D2, gap.penalty1 = 0.5, gap.penalty2 = 0.5, afp.length
 		crf$edge.pot[[e]][1:n.d2, 1:n.d2] <- scores$edge.score[,, crf$edges[e,1]]
 	}
 
-	label <- decode.chain(crf)
+	label <- CRF::decode.chain(crf)
 	label[label > n.d2] <- 0
 	label
 }

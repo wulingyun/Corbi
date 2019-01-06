@@ -2,6 +2,7 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 #include "misc.h"
+#include "quantile.h"
 using namespace std;
 
 /* Interfaces to R */
@@ -21,4 +22,8 @@ extern "C" {
   
   SEXP BS_GetSubnets(SEXP _Edges, SEXP _nNodes, SEXP _maxSize);
   SEXP BS_ExtendSubnets(SEXP _Sub1, SEXP _Sub2, SEXP _size);
+  
+  SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge);
+  SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim);
+  SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal);
 }

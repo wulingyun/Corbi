@@ -74,7 +74,7 @@
 #' 
 #' @references Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, Peter Csermely,
 #' Ling-Yun Wu. Discovering cooperative biomarkers for heterogeneous complex disease diagnoses.
-#' Manuscript, 2017.
+#' Briefings in Bioinformatics, bbx090, 2017.
 #' 
 #' @import Matrix
 #' 
@@ -149,14 +149,13 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
   ))
 }
 
-
-#' @import Matrix mpmi
-#' 
+# Compute the network 2 using mutual information
+# 
 .markrank.compute_net2 <- function(dataset, label, dis=NULL, d=Inf, trace=FALSE)
 {
   l <- ncol(dataset)
   label <- as.matrix(as.numeric(label))
-  MI1 <- mminjk(dataset, label, level=0L, na.rm=FALSE)
+  MI1 <- mpmi::mminjk(dataset, label, level=0L, na.rm=FALSE)
   MI2 <- Matrix(0, l, l, dimnames=list(colnames(dataset),colnames(dataset)), sparse=TRUE)
   
   
@@ -164,7 +163,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 	  for (i in 1:(l-1)) {
 		  if (trace == TRUE && i%%10 == 0) print(i)
 		  dataset_tmp <- (dataset[,(i+1):l, drop=FALSE] + dataset[,i])/sqrt(2)
-		  MI2[(i+1):l, i] <- mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
+		  MI2[(i+1):l, i] <- mpmi::mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
 	  }			
   }else{
 	  for (i in 1:(l-1)) {
@@ -174,7 +173,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 		  if (length(index) > 0){
 	      inds  <- ((i+1):l)[index]
 		    dataset_tmp <- (dataset[,inds, drop=FALSE] + dataset[,i])/sqrt(2)
-		    MI2[inds, i] <- mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
+		    MI2[inds, i] <- mpmi::mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
 		  }
 	  }
   }
