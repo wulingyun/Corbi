@@ -155,3 +155,39 @@ simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
   new.counts <- counts * (1 - dropout)
   list(counts = new.counts, original.counts = counts, dropout = dropout)
 }
+
+
+#' Simulate sample groups from given samples with labels
+#' 
+#' @export
+simulate_sample_groups <- function(labels, groups, sizes, replace = FALSE)
+{
+  if (sum(groups %in% labels) < length(groups)) stop("The elements in 'groups' must be available labels!")
+  if (length(sizes) != length(groups))
+  {
+    if (length(sizes) == 1) sizes <- rep_len(sizes, length(groups))
+    else stop("The lengths of 'groups' and 'sizes' must be equal!")
+  }
+  if (replace)
+  {
+    sample.groups <- lapply(1:length(groups), function(i) sample(which(labels == groups[i]), sizes[i], replace = T))
+  }
+  else
+  {
+    u.groups <- unique(groups)
+    u.sizes <- sapply(u.groups, function(id) sum(sizes[groups == id]))
+    total.sizes <- sapply(u.groups, function(id) sum(labels == id))
+    if (any(u.sizes > total.sizes)) stop("The total sampling size is too larger when 'replace = FALSE'!")
+    u.samples <- lapply(1:length(u.groups), function(i) sample(which(labels == u.groups[i]), u.sizes[i], replace = F))
+    sample.groups <- list()
+    for (k in 1:length(u.groups))
+    {
+      k.groups <- groups == u.groups[k]
+      k.id <- 1:sum(k.groups)
+      partition <- sample(rep(k.id, times = sizes[k.groups]), u.sizes[k])
+      sample.groups[k.groups] <- lapply(k.id, function(i) u.samples[[k]][partition == i])
+    }
+  }
+  names(sample.groups) <- groups
+  sample.groups
+}
