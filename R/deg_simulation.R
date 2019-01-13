@@ -130,6 +130,18 @@ make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.
 
 #' Simulate dropout expression data
 #' 
+#' Generate the expression data with desired dropout rate
+#' 
+#' The dropout event is modelled by a logistic distribution such that the low expression genes have 
+#' higher probability of dropout. The expression value of genes in a sample are randomly set to zero
+#' with probabilities associated with their true expression values until the desired dropout rate
+#' for that sample is meet.
+#' 
+#' @param counts expression matrix where each row is a gene and each column is a sample.
+#' @param dropout.rate the desired average dropout rate of all samples.
+#' @param dropout.rate.sd the desired standard deviation of dropout rate among samples.
+#' 
+#' @return This function will return an expression matrix with the same dimension as \code{counts}.
 #' 
 #' @references Peter V. Kharchenko, Lev Silberstein, and David T. Scadden.
 #' Bayesian approach to single-cell differential expression analysis.
@@ -158,6 +170,19 @@ simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
 
 
 #' Simulate sample groups from given samples with labels
+#' 
+#' Generate sample groups with desired labels and sizes from given sample labels.
+#' 
+#' @param labels a vector containing the label of each sample in the pool.
+#' @param groups a vector containing the desired label of samples in each group.
+#' The label must be available in the sample pool provided by \code{labels}.
+#' @param sizes integer vector indicating the desired number of samples in each group.
+#' The length must be either one or the same as \code{groups}.
+#' @param replace logical variable indicating whether sampling is with replacement.
+#' 
+#' @return This function will return a list with the same length as \code{groups}.
+#' Each component is a vector containing the indexes of samples that are sampled for
+#' the corresponding group.
 #' 
 #' @export
 simulate_sample_groups <- function(labels, groups, sizes, replace = FALSE)

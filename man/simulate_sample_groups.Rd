@@ -6,6 +6,22 @@
 \usage{
 simulate_sample_groups(labels, groups, sizes, replace = FALSE)
 }
+\arguments{
+\item{labels}{a vector containing the label of each sample in the pool.}
+
+\item{groups}{a vector containing the desired label of samples in each group.
+The label must be available in the sample pool provided by \code{labels}.}
+
+\item{sizes}{integer vector indicating the desired number of samples in each group.
+The length must be either one or the same as \code{groups}.}
+
+\item{replace}{logical variable indicating whether sampling is with replacement.}
+}
+\value{
+This function will return a list with the same length as \code{groups}.
+Each component is a vector containing the indexes of samples that are sampled for
+the corresponding group.
+}
 \description{
-Simulate sample groups from given samples with labels
+Generate sample groups with desired labels and sizes from given sample labels.
 }
