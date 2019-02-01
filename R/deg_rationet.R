@@ -31,6 +31,16 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
   s.down <- sapply(1:m, function(i) p_combine(down[,i])$p)
   s.twoside <- sapply(1:m, function(i) p_combine(twoside[,i])$p)
   names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
+  
+  zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
+  n0 <- sum(zero.genes)
+  m1 <- ref.expr.matrix[zero.genes, , drop = F]
+  m1 <- ifelse(is.finite(m1), exp(m1), 0)
+  m2 <- expr.matrix[zero.genes, , drop = F]
+  m2 <- ifelse(is.finite(m2), exp(m2), 0)
+  g.up[zero.genes] <- sapply(1:n0, function(i) t.test(m1[i, ], m2[i, ], alternative = "less")$p.value)
+  g.down[zero.genes] <- sapply(1:n0, function(i) t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value)
+  g.twoside[zero.genes] <- sapply(1:n0, function(i) t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value)
 
   return(list(up = up, down = down, twoside = twoside,
               gene = list(up = g.up, down = g.down, twoside = g.twoside),
