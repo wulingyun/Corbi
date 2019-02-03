@@ -38,9 +38,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
   m1 <- ifelse(is.finite(m1), exp(m1), 0)
   m2 <- expr.matrix[zero.genes, , drop = F]
   m2 <- ifelse(is.finite(m2), exp(m2), 0)
-  g.up[zero.genes] <- sapply(1:n0, function(i) stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value)
-  g.down[zero.genes] <- sapply(1:n0, function(i) stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value)
-  g.twoside[zero.genes] <- sapply(1:n0, function(i) stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value)
+  g.up[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value, m))$p)
+  g.down[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value, m))$p)
+  g.twoside[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value, m))$p)
 
   return(list(up = up, down = down, twoside = twoside,
               gene = list(up = g.up, down = g.down, twoside = g.twoside),
