@@ -149,6 +149,15 @@ get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
 
 #' Calculate combined p-value by Fisher's method
 #' 
+#' The Fisher's method is used to combine the results from several independent tests.
+#' 
+#' @param p the numeric vector containing the p-values need to combine.
+#' 
+#' @return This function will return a list with the following components:
+#'   \item{chisq}{The chi-squared statistic.}
+#'   \item{df}{The degrees of freedom of chi-squared distribution.}
+#'   \item{p}{The p-value of chi-squared statistic.}
+#' 
 #' @export
 p_combine <- function(p)
 {
