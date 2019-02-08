@@ -1,7 +1,8 @@
 #' netDEG: Differentially expressed gene identification method
 #' 
 #' @export
-netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE, use.parallel = FALSE)
+netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE, 
+                   summarize = c("gene", "sample"), use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -14,37 +15,55 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
   }
   n <- dim(expr.matrix)[1]
   m <- dim(expr.matrix)[2]
-  ref.ratio.dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T)
-  p <- lapply(1:m, function(i) netDEG_pvalue(ref.ratio.dist, expr.matrix[,i], log.expr = T))
-
+  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T)
+  p <- lapply(1:m, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = T))
+  rm(dist)
+  
   up <- sapply(p, function(i) i$up)
   down <- sapply(p, function(i) i$down)
   twoside <- sapply(p, function(i) i$twoside)
   dimnames(up) <- dimnames(down) <- dimnames(twoside) <- dimnames(expr.matrix)
 
-  g.up <- sapply(1:n, function(i) p_combine(up[i,])$p)
-  g.down <- sapply(1:n, function(i) p_combine(down[i,])$p)
-  g.twoside <- sapply(1:n, function(i) p_combine(twoside[i,])$p)
-  names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
-
-  s.up <- sapply(1:m, function(i) p_combine(up[,i])$p)
-  s.down <- sapply(1:m, function(i) p_combine(down[,i])$p)
-  s.twoside <- sapply(1:m, function(i) p_combine(twoside[,i])$p)
-  names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
+  results <- list(up = up, down = down, twoside = twoside)
   
-  zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
-  n0 <- sum(zero.genes)
-  m1 <- ref.expr.matrix[zero.genes, , drop = F]
-  m1 <- ifelse(is.finite(m1), exp(m1), 0)
-  m2 <- expr.matrix[zero.genes, , drop = F]
-  m2 <- ifelse(is.finite(m2), exp(m2), 0)
-  g.up[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value, m))$p)
-  g.down[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value, m))$p)
-  g.twoside[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value, m))$p)
+  if ("gene" %in% summarize)
+  {
+    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T)
+    p <- lapply(1:dim(ref.expr.matrix)[2], function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T))
+    rm(dist)
+    up2 <- sapply(p, function(i) i$up)
+    down2 <- sapply(p, function(i) i$down)
+    twoside2 <- sapply(p, function(i) i$twoside)
 
-  return(list(up = up, down = down, twoside = twoside,
-              gene = list(up = g.up, down = g.down, twoside = g.twoside),
-              sample = list(up = s.up, down = s.down, twoside = s.twoside)))
+    g.up <- sapply(1:n, function(i) min(p_combine(up[i,])$p, p_combine(up2[i,])$p))
+    g.down <- sapply(1:n, function(i) min(p_combine(down[i,])$p, p_combine(down2[i,])$p))
+    g.twoside <- sapply(1:n, function(i) min(p_combine(twoside[i,])$p, p_combine(twoside2[i,])$p))
+    names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
+    
+    zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
+    n0 <- sum(zero.genes)
+    m1 <- ref.expr.matrix[zero.genes, , drop = F]
+    m1 <- ifelse(is.finite(m1), exp(m1), 0)
+    m2 <- expr.matrix[zero.genes, , drop = F]
+    m2 <- ifelse(is.finite(m2), exp(m2), 0)
+    g.up[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value, m))$p)
+    g.down[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value, m))$p)
+    g.twoside[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value, m))$p)
+    
+    results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
+  }
+
+  if ("sample" %in% summarize)
+  {
+    s.up <- sapply(1:m, function(i) p_combine(up[,i])$p)
+    s.down <- sapply(1:m, function(i) p_combine(down[,i])$p)
+    s.twoside <- sapply(1:m, function(i) p_combine(twoside[,i])$p)
+    names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
+    
+    results$sample <- list(up = s.up, down = s.down, twoside = s.twoside)
+  }
+
+  return(results)
 }
 
 #' Calculate netDEG statistics and p-values
