@@ -13,10 +13,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
     ref.expr.matrix <- log(ref.expr.matrix)
     expr.matrix <- log(expr.matrix)
   }
-  n <- dim(expr.matrix)[1]
-  m <- dim(expr.matrix)[2]
+  n.samples <- dim(expr.matrix)[2]
   dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T)
-  p <- lapply(1:m, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = T))
+  p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = T))
   rm(dist)
   
   up <- sapply(p, function(i) i$up)
@@ -28,36 +27,39 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
   
   if ("gene" %in% summarize)
   {
+    n.genes <- dim(expr.matrix)[1]
+    n.refs <- dim(ref.expr.matrix)[2]
     dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T)
-    p <- lapply(1:dim(ref.expr.matrix)[2], function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T))
+    p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T))
     rm(dist)
-    up2 <- sapply(p, function(i) i$up)
-    down2 <- sapply(p, function(i) i$down)
-    twoside2 <- sapply(p, function(i) i$twoside)
+    up <- cbind(up, sapply(p, function(i) i$up))
+    down <- cbind(down, sapply(p, function(i) i$down))
+    twoside <- cbind(twoside, sapply(p, function(i) i$twoside))
 
-    g.up <- sapply(1:n, function(i) min(p_combine(up[i,])$p, p_combine(up2[i,])$p))
-    g.down <- sapply(1:n, function(i) min(p_combine(down[i,])$p, p_combine(down2[i,])$p))
-    g.twoside <- sapply(1:n, function(i) min(p_combine(twoside[i,])$p, p_combine(twoside2[i,])$p))
+    g.up <- sapply(1:n.genes, function(i) p_combine(up[i,])$p)
+    g.down <- sapply(1:n.genes, function(i) p_combine(down[i,])$p)
+    g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,])$p)
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
-    n0 <- sum(zero.genes)
     m1 <- ref.expr.matrix[zero.genes, , drop = F]
     m1 <- ifelse(is.finite(m1), exp(m1), 0)
     m2 <- expr.matrix[zero.genes, , drop = F]
     m2 <- ifelse(is.finite(m2), exp(m2), 0)
-    g.up[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value, m))$p)
-    g.down[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value, m))$p)
-    g.twoside[zero.genes] <- sapply(1:n0, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value, m))$p)
+    n1 <- sum(zero.genes)
+    n2 <- n.samples + n.refs
+    g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value, n2))$p)
+    g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value, n2))$p)
+    g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value, n2))$p)
     
     results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
   }
 
   if ("sample" %in% summarize)
   {
-    s.up <- sapply(1:m, function(i) p_combine(up[,i])$p)
-    s.down <- sapply(1:m, function(i) p_combine(down[,i])$p)
-    s.twoside <- sapply(1:m, function(i) p_combine(twoside[,i])$p)
+    s.up <- sapply(1:n.samples, function(i) p_combine(up[,i])$p)
+    s.down <- sapply(1:n.samples, function(i) p_combine(down[,i])$p)
+    s.twoside <- sapply(1:n.samples, function(i) p_combine(twoside[,i])$p)
     names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
     
     results$sample <- list(up = s.up, down = s.down, twoside = s.twoside)
