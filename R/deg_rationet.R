@@ -42,15 +42,18 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
-    m1 <- ref.expr.matrix[zero.genes, , drop = F]
-    m1 <- ifelse(is.finite(m1), exp(m1), 0)
-    m2 <- expr.matrix[zero.genes, , drop = F]
-    m2 <- ifelse(is.finite(m2), exp(m2), 0)
     n1 <- sum(zero.genes)
     n2 <- n.samples + n.refs
-    g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "less")$p.value, n2))$p)
-    g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "greater")$p.value, n2))$p)
-    g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::t.test(m1[i, ], m2[i, ], alternative = "two.sided")$p.value, n2))$p)
+    if (n1 > 0)
+    {
+      m1 <- ref.expr.matrix[zero.genes, , drop = F]
+      m1 <- ifelse(is.finite(m1), exp(m1), 0)
+      m2 <- expr.matrix[zero.genes, , drop = F]
+      m2 <- ifelse(is.finite(m2), exp(m2), 0)
+      g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "less")$p.value, n2))$p)
+      g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "greater")$p.value, n2))$p)
+      g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "two.sided")$p.value, n2))$p)
+    }
     
     results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
   }
