@@ -88,6 +88,20 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 
 #' Calculate expression ratio distribution
 #' 
+#' Calculate the lower and upper quantiles of expression ratios for each pair of genes,
+#' and estimate the parameters of negative binomial distribution from reference expression data.
+#' 
+#' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
+#' @param p.edge The total lower and upper quantiles of expression ratios for each pair of genes.
+#' @param log.expr Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.
+#' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
+#' 
+#' @return This function will return a list with the following components:
+#'   \item{LB}{A numeric matrix with element [i,j] represents the lower quantile of expressioin ratios for gene pairs (i, j).}
+#'   \item{NB}{A numeric vector with two elements: \code{size} and \code{mu}, 
+#'   which are the estimated parameters of negative binomial distribution.}
+#'   \item{p.edge}{The used input parameter \code{p.edge}.}
+#'   
 #' @export
 get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE, use.parallel = FALSE)
 {
@@ -105,6 +119,22 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 }
 
 #' Calculate expression ratio distribution
+#' 
+#' Calculate the lower and upper quantiles of expression ratios after trimming the extreme values, 
+#' and estimate the parameters of negative binomial distribution from reference expression data.
+#' 
+#' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
+#' @param p.edge The total lower and upper quantiles of trimmed expression ratios for each pair of genes.
+#' @param p.trim The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.
+#' @param log.expr Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.
+#' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
+#' 
+#' @return This function will return a list with the following components:
+#'   \item{LB}{A numeric matrix with element [i,j] represents the lower quantile of trimmed expressioin ratios for gene pairs (i, j).}
+#'   \item{NB}{A numeric vector with two elements: \code{size} and \code{mu}, 
+#'   which are the estimated parameters of negative binomial distribution.}
+#'   \item{p.edge}{The used input parameter \code{p.edge}.}
+#'   \item{p.trim}{The used input parameter \code{p.trim}.}
 #' 
 #' @export
 get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE, use.parallel = FALSE)

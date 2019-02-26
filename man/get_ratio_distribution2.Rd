@@ -7,6 +7,26 @@
 get_ratio_distribution2(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
   log.expr = FALSE, use.parallel = FALSE)
 }
+\arguments{
+\item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
+
+\item{p.edge}{The total lower and upper quantiles of trimmed expression ratios for each pair of genes.}
+
+\item{p.trim}{The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.}
+
+\item{log.expr}{Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.}
+
+\item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
+}
+\value{
+This function will return a list with the following components:
+  \item{LB}{A numeric matrix with element [i,j] represents the lower quantile of trimmed expressioin ratios for gene pairs (i, j).}
+  \item{NB}{A numeric vector with two elements: \code{size} and \code{mu}, 
+  which are the estimated parameters of negative binomial distribution.}
+  \item{p.edge}{The used input parameter \code{p.edge}.}
+  \item{p.trim}{The used input parameter \code{p.trim}.}
+}
 \description{
-Calculate expression ratio distribution
+Calculate the lower and upper quantiles of expression ratios after trimming the extreme values, 
+and estimate the parameters of negative binomial distribution from reference expression data.
 }
