@@ -93,7 +93,7 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #' 
 #' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
 #' @param p.edge The total lower and upper quantiles of expression ratios for each pair of genes.
-#' @param log.expr Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.
+#' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a list with the following components:
@@ -126,7 +126,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 #' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
 #' @param p.edge The total lower and upper quantiles of trimmed expression ratios for each pair of genes.
 #' @param p.trim The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.
-#' @param log.expr Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.
+#' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a list with the following components:
@@ -154,6 +154,17 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 
 #' Construct differential expression ratio network
 #' 
+#' Construct the differential expression ratio network for a single sample.
+#' 
+#' @param ref.ratio.dist The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.
+#' @param expr.val Numeric vector of gene expression values in the sample.
+#' @param log.expr Logical variable indicating whether the input expression vector is in logarithmic scale.
+#' 
+#' @return This function will return a list with the following components:
+#'   \item{net}{The binary adjacent matrix of differential expression ratio network.}
+#'   \item{diff}{A numeric vector containing the adjusted degree differences of all genes.}
+#'   \item{degree}{A list containing the raw degree differences and sums of all genes.}
+#' 
 #' @export
 get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
@@ -167,7 +178,18 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 
 
 #' Calculate adjusted degree differences for given network
-#'
+#' 
+#' Calculate the adjusted degree differences for all genes in the given network.
+#' 
+#' @param net The binary adjacent matrix of differential expression ratio network.
+#' @param log.expr.val Numeric vector containing the logarithmic scale gene expression values.
+#' @param p The parameter for calculating the adjusted degree differences.
+#' 
+#' @return This function will return a list with the following components:
+#'   \item{diff}{A numeric vector containing the adjusted degree differences of all genes.}
+#'   \item{degree}{A list containing the raw degree differences and sums of all genes.}
+#' 
+#' @export
 get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
 {
   g.NA <- !is.finite(log.expr.val)

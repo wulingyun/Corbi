@@ -14,7 +14,7 @@ get_ratio_distribution2(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 
 \item{p.trim}{The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.}
 
-\item{log.expr}{Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.}
+\item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
 
 \item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }

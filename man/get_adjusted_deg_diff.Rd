@@ -6,6 +6,18 @@
 \usage{
 get_adjusted_deg_diff(net, log.expr.val, p = 0.5)
 }
+\arguments{
+\item{net}{The binary adjacent matrix of differential expression ratio network.}
+
+\item{log.expr.val}{Numeric vector containing the logarithmic scale gene expression values.}
+
+\item{p}{The parameter for calculating the adjusted degree differences.}
+}
+\value{
+This function will return a list with the following components:
+  \item{diff}{A numeric vector containing the adjusted degree differences of all genes.}
+  \item{degree}{A list containing the raw degree differences and sums of all genes.}
+}
 \description{
-Calculate adjusted degree differences for given network
+Calculate the adjusted degree differences for all genes in the given network.
 }

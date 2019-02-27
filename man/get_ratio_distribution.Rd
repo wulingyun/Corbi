@@ -12,7 +12,7 @@ get_ratio_distribution(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE,
 
 \item{p.edge}{The total lower and upper quantiles of expression ratios for each pair of genes.}
 
-\item{log.expr}{Logical variable indicating to whether the input expression matrix is transformed to logarithmic scale.}
+\item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
 
 \item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }

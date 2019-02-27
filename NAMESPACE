@@ -3,6 +3,7 @@
 export(best_subnets)
 export(column)
 export(extend_subnets)
+export(get_adjusted_deg_diff)
 export(get_diff_ratio_net)
 export(get_ratio_distribution)
 export(get_ratio_distribution2)
