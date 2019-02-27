@@ -10,7 +10,7 @@ get_ratio_distribution2(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
 
-\item{p.edge}{The total lower and upper quantiles of trimmed expression ratios for each pair of genes.}
+\item{p.edge}{The expected probability of edges in the expression ratio network for a normal sample.}
 
 \item{p.trim}{The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.}
 

@@ -1,8 +1,26 @@
 #' netDEG: Differentially expressed gene identification method
 #' 
+#' Perform netDEG for two group samples.
+#' 
+#' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
+#' @param expr.matrix The test expression matrix. Each row represents a gene and each column represents a sample.
+#' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
+#' @param summarize Character vector indicating how to summarize the results. Available methods are \code{c("gene", "sample")}.
+#' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
+#' 
+#' @return This function will return a list with the following components:
+#'   \item{up}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of up-regulation test.}
+#'   \item{down}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of down-regulation test.}
+#'   \item{twoside}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of twoside test.}
+#'   \item{gene}{A list containing the gene-wise summaried results, containing three components: \code{up}, \code{down}, 
+#'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+#'   \item{sample}{A list containing the sample-wise summaried results, containing three components: \code{up}, \code{down},
+#'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+#' 
 #' @export
-netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE, 
-                   summarize = c("gene", "sample"), use.parallel = FALSE)
+netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("gene", "sample"),
+                   log.expr = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -71,8 +89,19 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, log.expr = FALSE,
   return(results)
 }
 
-#' Calculate netDEG statistics and p-values
+#' Calculate netDEG p-values
+#' 
+#' Perform the single or two side tests and calculate the p-values.
+#' 
+#' @param ref.ratio.dist The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.
+#' @param expr.val Numeric vector of gene expression values in the sample.
+#' @param log.expr Logical variable indicating whether the input expression vector is in logarithmic scale.
 #'
+#' @return This function will return a list with the following components:
+#'   \item{up}{A numeric vector containing the p-values of up-regulation test.}
+#'   \item{down}{A numeric vector containing the p-values of down-regulation test.}
+#'   \item{twoside}{A numeric vector containing the p-values of twoside test.}
+#' 
 #' @export
 netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 {
@@ -92,7 +121,7 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #' and estimate the parameters of negative binomial distribution from reference expression data.
 #' 
 #' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
-#' @param p.edge The total lower and upper quantiles of expression ratios for each pair of genes.
+#' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
@@ -124,7 +153,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 #' and estimate the parameters of negative binomial distribution from reference expression data.
 #' 
 #' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
-#' @param p.edge The total lower and upper quantiles of trimmed expression ratios for each pair of genes.
+#' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
 #' @param p.trim The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
