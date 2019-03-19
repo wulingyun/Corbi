@@ -107,7 +107,11 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 # First one is preferred.
   
   D1 <- diag(1/degs)
-  A1 <- t(NET1)%*%D1
+  A1 <- t(NET1)
+  for (i in 1:ncol(A1)){
+    if (i %% 100 == 0) print(i)
+    A1[,i] <- A1[,i]/degs[i]
+  }
  
   if (d != Inf){
     dis <- get_shortest_distances(adj_matrix)
