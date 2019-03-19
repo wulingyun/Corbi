@@ -106,10 +106,9 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 # Solving the final matrix equation by iterative method or matrix inversion method. 
 # First one is preferred.
   
-  D1 <- diag(1/degs)
   A1 <- t(NET1)
   for (i in 1:ncol(A1)){
-    if (i %% 100 == 0) print(i)
+    if (i %% 1000 == 0) print(i)
     A1[,i] <- A1[,i]/degs[i]
   }
  
@@ -122,15 +121,18 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
   if (class(Given_NET2) == "NULL"){
   	system.time(NET2 <- .markrank.compute_net2(dataset, label, dis, d, trace=trace))
   }
-  D2 <- Matrix(0, n, n, sparse=TRUE, dimnames=list(colnames(dataset), colnames(dataset)))
-  diag(D2) <- 1/rowSums(NET2)
-  A2 <- t(NET2)%*%D2
-  A  <- lambda*A1 + (1-lambda)*A2
+  degs <- rowSums(NET2)
+  A2 <- t(NET2)
+  for (i in 1:ncol(A2)){
+    if (i %% 1000 == 0) print(i)
+    A2[,i] <- A2[,i]/degs[i]
+  }
+  A <- lambda*A1 + (1-lambda)*A2
   
   if (class(E_value) == "NULL"){
 	  PCC <- NULL														
       for (i in 1:n){
-        PCC[i] <- stats::cor(dataset[,i], label, method="pearson")
+        PCC[i] <- stats::cor(dataset[,i], label, method = "pearson")
       }
     E_value <- abs(PCC)											# Use the absolute value of Pearson correlation coefficient(PCC) as the prior information.
   }
