@@ -125,7 +125,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
   A2 <- t(NET2)
   for (i in 1:ncol(A2)){
     if (i %% 1000 == 0) print(i)
-    A2[,i] <- A2[,i]/degs[i]
+    if (degs[i] != 0) A2[,i] <- A2[,i]/degs[i]
   }
   A <- lambda*A1 + (1-lambda)*A2
   
