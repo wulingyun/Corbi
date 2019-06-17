@@ -169,6 +169,47 @@ simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
 }
 
 
+#' Simulate dropout expression data
+#' 
+#' Generate the expression data with desired dropout rate range
+#' 
+#' The dropout event is modelled by a logistic distribution such that the low expression genes have 
+#' higher probability of dropout. The expression value of genes in a sample are randomly set to zero
+#' with probabilities associated with their true expression values until the desired dropout rate
+#' for that sample is meet.
+#' 
+#' @param counts expression matrix where each row is a gene and each column is a sample.
+#' @param min.rate the minimum dropout rate of all samples.
+#' @param max.rate the maximum dropout rate of all samples.
+#' 
+#' @return This function will return an expression matrix with the same dimension as \code{counts}.
+#' 
+#' @references Peter V. Kharchenko, Lev Silberstein, and David T. Scadden.
+#' Bayesian approach to single-cell differential expression analysis.
+#' Nature Methods, 11(7):740–742, 2014.
+#' 
+#' @export
+simulate_dropout2 <- function(counts, min.rate = 0, max.rate = 0.8)
+{
+  n.genes <- dim(counts)[1]
+  n.samples <- dim(counts)[2]
+  intercept <- stats::rnorm(n.samples, 1.5, 0.5)
+  slope <- stats::rnorm(n.samples, 3, 1)
+  d <- sapply(1:n.samples, function(i) 1 / (1 + exp(slope[i] * (log10(counts[, i]) - intercept[i]))))
+  r <- stats::runif(n.samples, min.rate, max.rate)
+  r[r > 1] <- 1
+  r[r < 0] <- 0
+  r <- round(r * n.genes)
+  dropout <- matrix(0, n.genes, n.samples)
+  for (i in 1:n.samples)
+  {
+    dropout[sample.int(n.genes, r[i], prob = d[, i]), i] <- 1
+  }
+  new.counts <- counts * (1 - dropout)
+  list(counts = new.counts, original.counts = counts, dropout = dropout)
+}
+
+
 #' Simulate sample groups from given samples with labels
 #' 
 #' Generate sample groups with desired labels and sizes from given sample labels.
