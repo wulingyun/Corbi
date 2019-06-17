@@ -4,7 +4,8 @@
 \alias{get_diff_ratio_net}
 \title{Construct differential expression ratio network}
 \usage{
-get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = FALSE)
+get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = FALSE,
+  scale.degree = FALSE)
 }
 \arguments{
 \item{ref.ratio.dist}{The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.}
@@ -12,6 +13,8 @@ get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = FALSE)
 \item{expr.val}{Numeric vector of gene expression values in the sample.}
 
 \item{log.expr}{Logical variable indicating whether the input expression vector is in logarithmic scale.}
+
+\item{scale.degree}{Logical variable indicating whether the degree values are scaled according to the dropout rate.}
 }
 \value{
 This function will return a list with the following components:

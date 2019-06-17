@@ -7,6 +7,7 @@
 #' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
 #' @param summarize Character vector indicating how to summarize the results. Available methods are \code{c("gene", "sample")}.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a list with the following components:
@@ -20,7 +21,7 @@
 #' 
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("gene", "sample"),
-                   log.expr = FALSE, use.parallel = FALSE)
+                   log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -32,8 +33,8 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
     expr.matrix <- log(expr.matrix)
   }
   n.samples <- dim(expr.matrix)[2]
-  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T)
-  p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = T))
+  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
+  p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = T, scale.degree = scale.degree))
   rm(dist)
   
   up <- sapply(p, function(i) i$up)
@@ -47,8 +48,8 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
   {
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
-    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T)
-    p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T))
+    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
+    p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree))
     rm(dist)
     up <- cbind(up, sapply(p, function(i) i$up))
     down <- cbind(down, sapply(p, function(i) i$down))
@@ -96,6 +97,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
 #' @param ref.ratio.dist The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.
 #' @param expr.val Numeric vector of gene expression values in the sample.
 #' @param log.expr Logical variable indicating whether the input expression vector is in logarithmic scale.
+#' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #'
 #' @return This function will return a list with the following components:
 #'   \item{up}{A numeric vector containing the p-values of up-regulation test.}
@@ -103,10 +105,10 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
 #'   \item{twoside}{A numeric vector containing the p-values of twoside test.}
 #' 
 #' @export
-netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
+netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degree = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
-  score <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = T)$diff
+  score <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = T, scale.degree = scale.degree)$diff
   pvalue <- stats::pnbinom(abs(score), size = ref.ratio.dist$NB['size'], mu = ref.ratio.dist$NB['mu'], lower.tail = FALSE)
   p = pvalue * 0.5
   up = ifelse(score > 0, p, 1-p)
@@ -123,6 +125,7 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #' @param ref.expr.matrix The reference expression matrix. Each row represents a gene and each column represents a sample.
 #' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a list with the following components:
@@ -132,7 +135,7 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #'   \item{p.edge}{The used input parameter \code{p.edge}.}
 #'   
 #' @export
-get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE, use.parallel = FALSE)
+get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -141,7 +144,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
-  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
@@ -156,6 +159,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 #' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
 #' @param p.trim The percentage of lower or upper extreme values to be trimmed from the expression ratios for each pair of genes.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a list with the following components:
@@ -166,7 +170,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 #'   \item{p.trim}{The used input parameter \code{p.trim}.}
 #' 
 #' @export
-get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE, use.parallel = FALSE)
+get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -175,7 +179,7 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
   
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution2, ref.expr.matrix, p.edge, p.trim)
-  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T)$diff))
+  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
@@ -188,6 +192,7 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 #' @param ref.ratio.dist The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.
 #' @param expr.val Numeric vector of gene expression values in the sample.
 #' @param log.expr Logical variable indicating whether the input expression vector is in logarithmic scale.
+#' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' 
 #' @return This function will return a list with the following components:
 #'   \item{net}{The binary adjacent matrix of differential expression ratio network.}
@@ -195,13 +200,13 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 #'   \item{degree}{A list containing the raw degree differences and sums of all genes.}
 #' 
 #' @export
-get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
+get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degree = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
   edges <- .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
   n <- length(expr.val)
   net <- sparseMatrix(i = edges$i, j = edges$j, dims = c(n, n))
-  d <- get_adjusted_deg_diff(net, expr.val)
+  d <- get_adjusted_deg_diff(net, expr.val, scale.degree)
   list(net = net, diff = d$diff, degree = d$degree)
 }
 
@@ -212,6 +217,7 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #' 
 #' @param net The binary adjacent matrix of differential expression ratio network.
 #' @param log.expr.val Numeric vector containing the logarithmic scale gene expression values.
+#' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param p The parameter for calculating the adjusted degree differences.
 #' 
 #' @return This function will return a list with the following components:
@@ -219,11 +225,17 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE)
 #'   \item{degree}{A list containing the raw degree differences and sums of all genes.}
 #' 
 #' @export
-get_adjusted_deg_diff <- function(net, log.expr.val, p = 0.5)
+get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0.5)
 {
   g.NA <- !is.finite(log.expr.val)
   d.out <- rowSums(net)
   d.in <- colSums(net)
+  if (scale.degree)
+  {
+    f <- length(g.NA) / sum(!g.NA)
+    d.out <- round(d.out * f)
+    d.in <- round(d.in * f)
+  }
   d.out[g.NA] <- NA
   d.in[g.NA] <- NA
   d.sum <- d.out + d.in
