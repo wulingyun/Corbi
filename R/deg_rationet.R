@@ -20,7 +20,8 @@
 #'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
 #' 
 #' @export
-netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("gene", "sample"),
+netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
+                   summarize = c("gene", "sample"), summarize_method = c("sumlog", "sumlog"),
                    log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
@@ -46,6 +47,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
   
   if ("gene" %in% summarize)
   {
+    method <- summarize_method[summarize == "gene"][1]
+    if (is.na(method)) method <- "sumlog"
+
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
     dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
@@ -55,9 +59,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
     down <- cbind(down, sapply(p, function(i) i$down))
     twoside <- cbind(twoside, sapply(p, function(i) i$twoside))
 
-    g.up <- sapply(1:n.genes, function(i) p_combine(up[i,])$p)
-    g.down <- sapply(1:n.genes, function(i) p_combine(down[i,])$p)
-    g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,])$p)
+    g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method)$p)
+    g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method)$p)
+    g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,], method)$p)
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
@@ -69,9 +73,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
       m1 <- ifelse(is.finite(m1), exp(m1), 0)
       m2 <- expr.matrix[zero.genes, , drop = F]
       m2 <- ifelse(is.finite(m2), exp(m2), 0)
-      g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "less")$p.value, n2))$p)
-      g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "greater")$p.value, n2))$p)
-      g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "two.sided")$p.value, n2))$p)
+      g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "less")$p.value, n2), method)$p)
+      g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "greater")$p.value, n2), method)$p)
+      g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "two.sided")$p.value, n2), method)$p)
     }
     
     results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
@@ -79,9 +83,12 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, summarize = c("ge
 
   if ("sample" %in% summarize)
   {
-    s.up <- sapply(1:n.samples, function(i) p_combine(up[,i])$p)
-    s.down <- sapply(1:n.samples, function(i) p_combine(down[,i])$p)
-    s.twoside <- sapply(1:n.samples, function(i) p_combine(twoside[,i])$p)
+    method <- summarize_method[summarize == "sample"][1]
+    if (is.na(method)) method <- "sumlog"
+
+    s.up <- sapply(1:n.samples, function(i) p_combine(up[,i], method)$p)
+    s.down <- sapply(1:n.samples, function(i) p_combine(down[,i], method)$p)
+    s.twoside <- sapply(1:n.samples, function(i) p_combine(twoside[,i], method)$p)
     names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
     
     results$sample <- list(up = s.up, down = s.down, twoside = s.twoside)
@@ -245,24 +252,41 @@ get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0
 }
 
 
-#' Calculate combined p-value by Fisher's method
+#' Calculate combined p-value
 #' 
-#' The Fisher's method is used to combine the results from several independent tests.
+#' Combine the statistical significance results from several independent tests by using one of several methods.
 #' 
 #' @param p the numeric vector containing the p-values need to combine.
+#' @param method the method use to combine the p-values, can be "sumlog" (Fisher's method), "sumz" (Stouffer’s method).
 #' 
 #' @return This function will return a list with the following components:
-#'   \item{chisq}{The chi-squared statistic.}
+#'   \item{p}{The combined p-value.}
+#'   \item{v}{The value of statistic.}
+#'   \item{}{Use "sumlog" method:}
+#'   \item{chisq}{The value of chi-squared statistic.}
 #'   \item{df}{The degrees of freedom of chi-squared distribution.}
-#'   \item{p}{The p-value of chi-squared statistic.}
+#'   \item{}{Use "sumz" method:}
+#'   \item{z}{The value of sum z statistic.}
 #' 
 #' @export
-p_combine <- function(p)
+p_combine <- function(p, method = "sumlog")
 {
   p <- p[!is.na(p)]
   p[p > 1] <- 1
   p[p < .Machine$double.xmin] <- .Machine$double.xmin
-  chisq <- (-2) * sum(log(p))
-  df <- 2 * length(p)
-  list(chisq = chisq, df = df, p = stats::pchisq(chisq, df, lower.tail = FALSE))
+  if (method == "sumlog")
+  {
+    chisq <- (-2) * sum(log(p))
+    df <- 2 * length(p)
+    list(chisq = chisq, df = df, v = chisq, p = stats::pchisq(chisq, df, lower.tail = FALSE))
+  }
+  else if (method == "sumz")
+  {
+    z <- sum(stats::qnorm(p, lower.tail = FALSE)) / sqrt(length(p))
+    list(z = z, v = z, p = stats::pnorm(z, lower.tail = FALSE))
+  }
+  else
+  {
+    stop("Unknown method in function p_combine: ", method)
+  }
 }

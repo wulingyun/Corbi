@@ -5,8 +5,9 @@
 \title{netDEG: Differentially expressed gene identification method}
 \usage{
 netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
-  summarize = c("gene", "sample"), log.expr = FALSE,
-  scale.degree = FALSE, use.parallel = FALSE)
+  summarize = c("gene", "sample"), summarize_method = c("sumlog",
+  "sumlog"), log.expr = FALSE, scale.degree = FALSE,
+  use.parallel = FALSE)
 }
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
