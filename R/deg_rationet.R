@@ -258,6 +258,7 @@ get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0
 #' 
 #' @param p the numeric vector containing the p-values need to combine.
 #' @param method the method use to combine the p-values, can be "sumlog" (Fisher's method), "sumz" (Stouffer’s method).
+#' @param shrink the number of p-values used in calculation, which are uniform selected from original p-value vector.
 #' 
 #' @return This function will return a list with the following components:
 #'   \item{p}{The combined p-value.}
@@ -269,11 +270,15 @@ get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0
 #'   \item{z}{The value of sum z statistic.}
 #' 
 #' @export
-p_combine <- function(p, method = "sumlog")
+p_combine <- function(p, method = "sumlog", shrink = Inf)
 {
   p <- p[!is.na(p)]
   p[p > 1] <- 1
   p[p < .Machine$double.xmin] <- .Machine$double.xmin
+  if (shrink > 0 && length(p) > shrink)
+  {
+    p <- sort(p)[ceiling((2*(1:shrink)-1) / (2*shrink) * length(p))]
+  }
   if (method == "sumlog")
   {
     chisq <- (-2) * sum(log(p))

@@ -4,12 +4,14 @@
 \alias{p_combine}
 \title{Calculate combined p-value}
 \usage{
-p_combine(p, method = "sumlog")
+p_combine(p, method = "sumlog", shrink = Inf)
 }
 \arguments{
 \item{p}{the numeric vector containing the p-values need to combine.}
 
 \item{method}{the method use to combine the p-values, can be "sumlog" (Fisher's method), "sumz" (Stouffer’s method).}
+
+\item{shrink}{the number of p-values used in calculation, which are uniform selected from original p-value vector.}
 }
 \value{
 This function will return a list with the following components:
