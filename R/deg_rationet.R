@@ -6,6 +6,8 @@
 #' @param expr.matrix The test expression matrix. Each row represents a gene and each column represents a sample.
 #' @param p.edge The expected probability of edges in the expression ratio network for a normal sample.
 #' @param summarize Character vector indicating how to summarize the results. Available methods are \code{c("gene", "sample")}.
+#' @param summarize.method Character vector indicating the methods used to summarize the results. See \code{p_combine}.
+#' @param summarize.shrink Numeric vector indicating the shrink parameter to summarize the results. See \code{p_combine}.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
 #' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
@@ -21,7 +23,7 @@
 #' 
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
-                   summarize = c("gene", "sample"), summarize_method = c("sumlog", "sumlog"),
+                   summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
                    log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
@@ -47,8 +49,10 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   
   if ("gene" %in% summarize)
   {
-    method <- summarize_method[summarize == "gene"][1]
+    method <- summarize.method[summarize == "gene"][1]
     if (is.na(method)) method <- "sumlog"
+    shrink <- summarize.shrink[summarize == "gene"][1]
+    if (is.na(shrink)) shrink <- Inf
 
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
@@ -59,9 +63,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     down <- cbind(down, sapply(p, function(i) i$down))
     twoside <- cbind(twoside, sapply(p, function(i) i$twoside))
 
-    g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method)$p)
-    g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method)$p)
-    g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,], method)$p)
+    g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method, shrink)$p)
+    g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method, shrink)$p)
+    g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,], method, shrink)$p)
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
@@ -73,9 +77,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
       m1 <- ifelse(is.finite(m1), exp(m1), 0)
       m2 <- expr.matrix[zero.genes, , drop = F]
       m2 <- ifelse(is.finite(m2), exp(m2), 0)
-      g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "less")$p.value, n2), method)$p)
-      g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "greater")$p.value, n2), method)$p)
-      g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "two.sided")$p.value, n2), method)$p)
+      g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "less")$p.value, n2), method, shrink)$p)
+      g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "greater")$p.value, n2), method, shrink)$p)
+      g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = F, alternative = "two.sided")$p.value, n2), method, shrink)$p)
     }
     
     results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
@@ -83,12 +87,14 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
   if ("sample" %in% summarize)
   {
-    method <- summarize_method[summarize == "sample"][1]
+    method <- summarize.method[summarize == "sample"][1]
     if (is.na(method)) method <- "sumlog"
-
-    s.up <- sapply(1:n.samples, function(i) p_combine(up[,i], method)$p)
-    s.down <- sapply(1:n.samples, function(i) p_combine(down[,i], method)$p)
-    s.twoside <- sapply(1:n.samples, function(i) p_combine(twoside[,i], method)$p)
+    shrink <- summarize.shrink[summarize == "sample"][1]
+    if (is.na(shrink)) shrink <- Inf
+    
+    s.up <- sapply(1:n.samples, function(i) p_combine(up[,i], method, shrink)$p)
+    s.down <- sapply(1:n.samples, function(i) p_combine(down[,i], method, shrink)$p)
+    s.twoside <- sapply(1:n.samples, function(i) p_combine(twoside[,i], method, shrink)$p)
     names(s.up) <- names(s.down) <- names(s.twoside) <- colnames(expr.matrix)
     
     results$sample <- list(up = s.up, down = s.down, twoside = s.twoside)
