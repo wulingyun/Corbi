@@ -290,12 +290,16 @@ p_combine <- function(p, method = "sumlog", shrink = Inf)
   {
     chisq <- (-2) * sum(log(p))
     df <- 2 * length(p)
-    list(chisq = chisq, df = df, v = chisq, p = stats::pchisq(chisq, df, lower.tail = FALSE))
+    p <- stats::pchisq(chisq, df, lower.tail = FALSE)
+    if (p == 0) p <- .Machine$double.xmin / chisq
+    list(chisq = chisq, df = df, v = chisq, p = p)
   }
   else if (method == "sumz")
   {
     z <- sum(stats::qnorm(p, lower.tail = FALSE)) / sqrt(length(p))
-    list(z = z, v = z, p = stats::pnorm(z, lower.tail = FALSE))
+    p <- stats::pnorm(z, lower.tail = FALSE)
+    if (p == 0) p <- .Machine$double.xmin / z
+    list(z = z, v = z, p = p)
   }
   else
   {
