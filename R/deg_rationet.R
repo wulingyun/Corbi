@@ -285,6 +285,7 @@ p_combine <- function(p, method = "sumlog", shrink = Inf)
   {
     p <- sort(p)[ceiling((2*(1:shrink)-1) / (2*shrink) * length(p))]
   }
+  if (length(p) == 0) p <- 0.5
   if (method == "sumlog")
   {
     chisq <- (-2) * sum(log(p))
