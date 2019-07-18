@@ -252,5 +252,7 @@ p_combine <- function(p)
   p[p < .Machine$double.xmin] <- .Machine$double.xmin
   chisq <- (-2) * sum(log(p))
   df <- 2 * length(p)
-  list(chisq = chisq, df = df, p = stats::pchisq(chisq, df, lower.tail = FALSE))
+  p <- stats::pchisq(chisq, df, lower.tail = FALSE)
+  if (p == 0) p <- .Machine$double.xmin / chisq
+  list(chisq = chisq, df = df, p = p)
 }
