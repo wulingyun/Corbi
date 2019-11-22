@@ -2,7 +2,7 @@
 #' 
 #' This pakcage provides a bundle of basic and fundamental bioinformatics tools.
 #'
-#' These bioinformatics tools are developed by \href{http://wulab.aporc.org}{WuLab} at Academy of Mathematics
+#' These bioinformatics tools are developed by \href{http://wulab.ac.cn}{WuLab} at Academy of Mathematics
 #' and Systems Science, Chinese Academy of Sciences.
 #' 
 #' Network querying and alignment:
@@ -24,6 +24,11 @@
 #'   \item \code{\link{markrank}} Biomarker identification and prioritization by integrating gene expression with biomolecular network
 #' }
 #' 
+#' Differential expressed gene identification:
+#' \itemize{
+#'   \item \code{\link{netDEG}} Differential expressed gene identification by individual networks
+#' }
+#' 
 #' @name Corbi-package
 #' @aliases Corbi-package Corbi
 #' @docType package
@@ -35,6 +40,10 @@
 #' @references Qiang Huang, Ling-Yun Wu, and Xiang-Sun Zhang. Corbi: A new
 #' R package for biological network alignment and querying. BMC Systems Biology,
 #' 7(Suppl 2):S6, 2013.
+#' @references Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, 
+#' Peter Csermely, and Ling-Yun Wu. Discovering cooperative biomarkers for 
+#' heterogeneous complex disease diagnoses. Briefings in Bioinformatics, 
+#' bbx090, 2017.
 #' 
 #' @useDynLib Corbi, .registration = TRUE
 #' 

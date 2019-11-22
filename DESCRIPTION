@@ -1,5 +1,5 @@
 Package: Corbi
-Version: 0.4-4
+Version: 0.5-0
 Title: Collection of Rudimentary Bioinformatics Tools
 Description: Provides a bundle of basic and fundamental bioinformatics tools,
     such as network querying and alignment, subnetwork extraction and search,
@@ -10,8 +10,8 @@ Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
     "dcsun@amss.ac.cn"))
 ByteCompile: TRUE
 Depends: R (>= 3.0.2)
-Imports: CRF, Matrix, mpmi
-Suggests: knitr, rmarkdown, MASS, matrixcalc
+Imports: Matrix
+Suggests: knitr, rmarkdown, BiocParallel, CRF, MASS, stats, matrixcalc, mpmi
 VignetteBuilder: knitr
 License: GPL (>= 2)
 BugReports: https://github.com/wulingyun/Corbi/issues
