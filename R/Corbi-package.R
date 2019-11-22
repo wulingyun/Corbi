@@ -43,7 +43,7 @@
 #' @references Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, 
 #' Peter Csermely, and Ling-Yun Wu. Discovering cooperative biomarkers for 
 #' heterogeneous complex disease diagnoses. Briefings in Bioinformatics, 
-#' bbx090, 2017.
+#' 20(1), 89–101, 2019.
 #' 
 #' @useDynLib Corbi, .registration = TRUE
 #' 

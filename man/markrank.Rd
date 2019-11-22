@@ -95,5 +95,5 @@ this result and use the top ranked genes for further analysis.
 \references{
 Duanchen Sun, Xianwen Ren, Eszter Ari, Tamas Korcsmaros, Peter Csermely,
 Ling-Yun Wu. Discovering cooperative biomarkers for heterogeneous complex disease diagnoses.
-Briefings in Bioinformatics, bbx090, 2017.
+Briefings in Bioinformatics, 20(1), 89–101, 2019.
 }
