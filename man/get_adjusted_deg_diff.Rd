@@ -4,12 +4,14 @@
 \alias{get_adjusted_deg_diff}
 \title{Calculate adjusted degree differences for given network}
 \usage{
-get_adjusted_deg_diff(net, log.expr.val, p = 0.5)
+get_adjusted_deg_diff(net, log.expr.val, scale.degree = FALSE, p = 0.5)
 }
 \arguments{
 \item{net}{The binary adjacent matrix of differential expression ratio network.}
 
 \item{log.expr.val}{Numeric vector containing the logarithmic scale gene expression values.}
+
+\item{scale.degree}{Logical variable indicating whether the degree values are scaled according to the dropout rate.}
 
 \item{p}{The parameter for calculating the adjusted degree differences.}
 }

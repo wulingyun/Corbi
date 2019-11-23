@@ -2,19 +2,27 @@
 % Please edit documentation in R/deg_rationet.R
 \name{p_combine}
 \alias{p_combine}
-\title{Calculate combined p-value by Fisher's method}
+\title{Calculate combined p-value}
 \usage{
-p_combine(p)
+p_combine(p, method = "sumlog", shrink = Inf)
 }
 \arguments{
 \item{p}{the numeric vector containing the p-values need to combine.}
+
+\item{method}{the method use to combine the p-values, can be "sumlog" (Fisher's method), "sumz" (Stouffer’s method).}
+
+\item{shrink}{the number of p-values used in calculation, which are uniform selected from original p-value vector.}
 }
 \value{
 This function will return a list with the following components:
-  \item{chisq}{The chi-squared statistic.}
+  \item{p}{The combined p-value.}
+  \item{v}{The value of statistic.}
+  \item{}{Use "sumlog" method:}
+  \item{chisq}{The value of chi-squared statistic.}
   \item{df}{The degrees of freedom of chi-squared distribution.}
-  \item{p}{The p-value of chi-squared statistic.}
+  \item{}{Use "sumz" method:}
+  \item{z}{The value of sum z statistic.}
 }
 \description{
-The Fisher's method is used to combine the results from several independent tests.
+Combine the statistical significance results from several independent tests by using one of several methods.
 }

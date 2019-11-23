@@ -5,8 +5,9 @@
 \title{netDEG: Differentially expressed gene identification method}
 \usage{
 netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
-  summarize = c("gene", "sample"), log.expr = FALSE,
-  use.parallel = FALSE)
+  summarize = c("gene", "sample"), summarize.method = c("sumlog",
+  "sumlog"), summarize.shrink = c(Inf, Inf), log.expr = FALSE,
+  scale.degree = FALSE, use.parallel = FALSE)
 }
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
@@ -17,7 +18,13 @@ netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
 \item{summarize}{Character vector indicating how to summarize the results. Available methods are \code{c("gene", "sample")}.}
 
+\item{summarize.method}{Character vector indicating the methods used to summarize the results. See \code{p_combine}.}
+
+\item{summarize.shrink}{Numeric vector indicating the shrink parameter to summarize the results. See \code{p_combine}.}
+
 \item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
+
+\item{scale.degree}{Logical variable indicating whether the degree values are scaled according to the dropout rate.}
 
 \item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }
