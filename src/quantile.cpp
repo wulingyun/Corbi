@@ -45,3 +45,38 @@ double quantile(double *x, int n, double p, bool sorted)
   if (j < n) q += gamma * x[j];
   return (q);
 }
+
+double var(double *x, int n)
+{
+  double v = 0;
+  if (n > 1)
+  {
+    double m = 0;
+    for (int i = 0; i < n; i++)
+      m += x[i];
+    m /= n;
+    for (int i = 0; i < n; i++)
+    {
+      double s = x[i] - m;
+      v += s * s;
+    }
+    v /= (n-1);
+  }
+  else
+    v = 0;
+  return(v);
+}
+
+double bw_nrd0(double *x, int n, bool sorted)
+{
+  if (!sorted) R_rsort(x, n);
+  double sd, IQR, s;
+  sd = sqrt(var(x, n));
+  IQR = quantile(x, n, 0.75, true) - quantile(x, n, 0.25, true);
+  s = min(sd, IQR / 1.34);
+  if (s == 0) s = sd;
+  if (s == 0) s = fabs(x[0]);
+  if (s == 0) s = 1;
+  s = 0.9 * s * pow(n, -0.2);
+  return(s);
+}
