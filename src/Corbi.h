@@ -1,6 +1,7 @@
 #include <R.h>
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
+#include <Rmath.h>
 #include "misc.h"
 #include "quantile.h"
 using namespace std;
