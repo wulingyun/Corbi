@@ -244,7 +244,7 @@ simulate_sample_groups <- function(labels, groups, sizes, replace = FALSE)
     u.sizes <- sapply(u.groups, function(id) sum(sizes[groups == id]))
     total.sizes <- sapply(u.groups, function(id) sum(labels == id))
     if (any(u.sizes > total.sizes)) stop("The total sampling size is too larger when 'replace = FALSE'!")
-    u.samples <- lapply(1:length(u.groups), function(i) sample(which(labels == u.groups[i]), u.sizes[i], replace = F))
+    u.samples <- lapply(1:length(u.groups), function(i) sample(which(labels == u.groups[i]), u.sizes[i], replace = FALSE))
     sample.groups <- list()
     for (k in 1:length(u.groups))
     {
