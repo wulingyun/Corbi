@@ -7,7 +7,7 @@
 netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   summarize = c("gene", "sample"), summarize.method = c("sumlog",
   "sumlog"), summarize.shrink = c(Inf, Inf), log.expr = FALSE,
-  scale.degree = FALSE, use.parallel = FALSE)
+  zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
 }
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
@@ -24,6 +24,8 @@ netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
 \item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
 
+\item{zero.as.dropout}{Logical variable indicating whether the zero expressions are regarded as dropouts.}
+
 \item{scale.degree}{Logical variable indicating whether the degree values are scaled according to the dropout rate.}
 
 \item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
@@ -33,10 +35,12 @@ This function will return a list with the following components:
   \item{up}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of up-regulation test.}
   \item{down}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of down-regulation test.}
   \item{twoside}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of twoside test.}
+  \item{rev}{A list containing the reverse comparison results, containing three components: \code{up}, \code{down}, 
+  and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
   \item{gene}{A list containing the gene-wise summaried results, containing three components: \code{up}, \code{down}, 
-  and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+  and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
   \item{sample}{A list containing the sample-wise summaried results, containing three components: \code{up}, \code{down},
-  and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+  and \code{twoside}. Available if the sample method is specified in \code{summarize} argument.}
 }
 \description{
 Perform netDEG for two group samples.

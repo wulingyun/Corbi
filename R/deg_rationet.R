@@ -9,6 +9,7 @@
 #' @param summarize.method Character vector indicating the methods used to summarize the results. See \code{p_combine}.
 #' @param summarize.shrink Numeric vector indicating the shrink parameter to summarize the results. See \code{p_combine}.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param zero.as.dropout Logical variable indicating whether the zero expressions are regarded as dropouts.
 #' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
@@ -16,15 +17,17 @@
 #'   \item{up}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of up-regulation test.}
 #'   \item{down}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of down-regulation test.}
 #'   \item{twoside}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of twoside test.}
+#'   \item{rev}{A list containing the reverse comparison results, containing three components: \code{up}, \code{down}, 
+#'   and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
 #'   \item{gene}{A list containing the gene-wise summaried results, containing three components: \code{up}, \code{down}, 
-#'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+#'   and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
 #'   \item{sample}{A list containing the sample-wise summaried results, containing three components: \code{up}, \code{down},
-#'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+#'   and \code{twoside}. Available if the sample method is specified in \code{summarize} argument.}
 #' 
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
                    summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
-                   log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
+                   log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -34,6 +37,11 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   if (!log.expr) {
     ref.expr.matrix <- log(ref.expr.matrix)
     expr.matrix <- log(expr.matrix)
+  }
+  if (!zero.as.dropout) {
+    zero.expr = min(ref.expr.matrix[ref.expr.matrix != -Inf], 0, na.rm = T) - log(10)
+    ref.expr.matrix[ref.expr.matrix == -Inf] <- zero.expr
+    expr.matrix[expr.matrix == -Inf] <- zero.expr
   }
   n.samples <- dim(expr.matrix)[2]
   dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
@@ -59,9 +67,17 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
     p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree))
     rm(dist)
-    up <- cbind(up, sapply(p, function(i) i$up))
-    down <- cbind(down, sapply(p, function(i) i$down))
-    twoside <- cbind(twoside, sapply(p, function(i) i$twoside))
+
+    rev.up <- sapply(p, function(i) i$up)
+    rev.down <- sapply(p, function(i) i$down)
+    rev.twoside <- sapply(p, function(i) i$twoside)
+    dimnames(rev.up) <- dimnames(rev.down) <- dimnames(rev.twoside) <- dimnames(expr.matrix)
+
+    results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
+
+    up <- cbind(up, rev.up)
+    down <- cbind(down, rev.down)
+    twoside <- cbind(twoside, rev.twoside)
 
     g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method, shrink)$p)
     g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method, shrink)$p)
