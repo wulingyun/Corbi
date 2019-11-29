@@ -1,5 +1,4 @@
 #include "Corbi.h"
-#include <Rmath.h>
 
 SEXP RMultiHyper(SEXP _N, SEXP _K, SEXP _M)
 {

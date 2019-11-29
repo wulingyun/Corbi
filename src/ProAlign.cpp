@@ -1,5 +1,4 @@
 #include "Corbi.h"
-#include <Rmath.h>
 
 inline double _afp_score(double *D1, double *D2, int nD1, int nD2, int afpLength, int i, int j)
 {

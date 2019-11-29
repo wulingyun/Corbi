@@ -1,5 +1,4 @@
 #include "Corbi.h"
-#include <Rmath.h>
 
 SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
 {
