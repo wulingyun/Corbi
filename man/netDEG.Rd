@@ -7,7 +7,7 @@
 netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   summarize = c("gene", "sample"), summarize.method = c("sumlog",
   "sumlog"), summarize.shrink = c(Inf, Inf), log.expr = FALSE,
-  scale.degree = FALSE, use.parallel = FALSE)
+  zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
 }
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
@@ -23,6 +23,8 @@ netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 \item{summarize.shrink}{Numeric vector indicating the shrink parameter to summarize the results. See \code{p_combine}.}
 
 \item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
+
+\item{zero.as.dropout}{Logical variable indicating whether the zero expressions are regarded as dropouts.}
 
 \item{scale.degree}{Logical variable indicating whether the degree values are scaled according to the dropout rate.}
 

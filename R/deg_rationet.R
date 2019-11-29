@@ -9,6 +9,7 @@
 #' @param summarize.method Character vector indicating the methods used to summarize the results. See \code{p_combine}.
 #' @param summarize.shrink Numeric vector indicating the shrink parameter to summarize the results. See \code{p_combine}.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param zero.as.dropout Logical variable indicating whether the zero expressions are regarded as dropouts.
 #' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
@@ -24,7 +25,7 @@
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
                    summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
-                   log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
+                   log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel"))
   {
@@ -34,6 +35,11 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   if (!log.expr) {
     ref.expr.matrix <- log(ref.expr.matrix)
     expr.matrix <- log(expr.matrix)
+  }
+  if (!zero.as.dropout) {
+    zero.expr = min(ref.expr.matrix[ref.expr.matrix != -Inf], 0, na.rm = T) - log(10)
+    ref.expr.matrix[ref.expr.matrix == -Inf] <- zero.expr
+    expr.matrix[expr.matrix == -Inf] <- zero.expr
   }
   n.samples <- dim(expr.matrix)[2]
   dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
