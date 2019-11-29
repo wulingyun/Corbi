@@ -39,13 +39,13 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     expr.matrix <- log(expr.matrix)
   }
   if (!zero.as.dropout) {
-    zero.expr = min(ref.expr.matrix[ref.expr.matrix != -Inf], 0, na.rm = T) - log(10)
+    zero.expr = min(ref.expr.matrix[ref.expr.matrix != -Inf], 0, na.rm = TRUE) - log(10)
     ref.expr.matrix[ref.expr.matrix == -Inf] <- zero.expr
     expr.matrix[expr.matrix == -Inf] <- zero.expr
   }
   n.samples <- dim(expr.matrix)[2]
-  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
-  p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = T, scale.degree = scale.degree))
+  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree)
+  p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
   rm(dist)
   
   up <- sapply(p, function(i) i$up)
@@ -64,8 +64,8 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
-    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
-    p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree))
+    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree)
+    p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
     rm(dist)
 
     rev.up <- sapply(p, function(i) i$up)
@@ -137,7 +137,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degree = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
-  score <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = T, scale.degree = scale.degree)$diff
+  score <- get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = TRUE, scale.degree = scale.degree)$diff
   pvalue <- stats::pnbinom(abs(score), size = ref.ratio.dist$NB['size'], mu = ref.ratio.dist$NB['mu'], lower.tail = FALSE)
   p = pvalue * 0.5
   up = ifelse(score > 0, p, 1-p)
@@ -173,7 +173,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
-  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree)$diff))
+  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
@@ -208,7 +208,7 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
   
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   dist <- .Call(ND_RatioDistribution2, ref.expr.matrix, p.edge, p.trim)
-  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree)$diff))
+  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
   dist
@@ -269,7 +269,7 @@ get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0
   d.in[g.NA] <- NA
   d.sum <- d.out + d.in
   d.diff <- d.out - d.in
-  adj.diff <- d.diff - ceiling(stats::median(d.diff[d.sum <= stats::quantile(d.sum, p, na.rm = T)], na.rm = T))
+  adj.diff <- d.diff - ceiling(stats::median(d.diff[d.sum <= stats::quantile(d.sum, p, na.rm = TRUE)], na.rm = TRUE))
   list(diff = adj.diff, degree = list(diff = d.diff, sum = d.sum))
 }
 

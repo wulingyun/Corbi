@@ -236,7 +236,7 @@ simulate_sample_groups <- function(labels, groups, sizes, replace = FALSE)
   }
   if (replace)
   {
-    sample.groups <- lapply(1:length(groups), function(i) sample(which(labels == groups[i]), sizes[i], replace = T))
+    sample.groups <- lapply(1:length(groups), function(i) sample(which(labels == groups[i]), sizes[i], replace = TRUE))
   }
   else
   {
