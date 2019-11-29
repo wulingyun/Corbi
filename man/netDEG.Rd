@@ -35,10 +35,12 @@ This function will return a list with the following components:
   \item{up}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of up-regulation test.}
   \item{down}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of down-regulation test.}
   \item{twoside}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of twoside test.}
+  \item{rev}{A list containing the reverse comparison results, containing three components: \code{up}, \code{down}, 
+  and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
   \item{gene}{A list containing the gene-wise summaried results, containing three components: \code{up}, \code{down}, 
-  and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+  and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
   \item{sample}{A list containing the sample-wise summaried results, containing three components: \code{up}, \code{down},
-  and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+  and \code{twoside}. Available if the sample method is specified in \code{summarize} argument.}
 }
 \description{
 Perform netDEG for two group samples.

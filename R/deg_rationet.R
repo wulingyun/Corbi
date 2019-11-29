@@ -17,10 +17,12 @@
 #'   \item{up}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of up-regulation test.}
 #'   \item{down}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of down-regulation test.}
 #'   \item{twoside}{A numeric matrix with same dimension as \code{expr.matrix}, containing the p-values of twoside test.}
+#'   \item{rev}{A list containing the reverse comparison results, containing three components: \code{up}, \code{down}, 
+#'   and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
 #'   \item{gene}{A list containing the gene-wise summaried results, containing three components: \code{up}, \code{down}, 
-#'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+#'   and \code{twoside}. Available if the gene method is specified in \code{summarize} argument.}
 #'   \item{sample}{A list containing the sample-wise summaried results, containing three components: \code{up}, \code{down},
-#'   and \code{twoside}. Available if the corresponding method is specified in \code{summarize} argument.}
+#'   and \code{twoside}. Available if the sample method is specified in \code{summarize} argument.}
 #' 
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
@@ -65,9 +67,17 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = T, scale.degree = scale.degree)
     p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = T, scale.degree = scale.degree))
     rm(dist)
-    up <- cbind(up, sapply(p, function(i) i$up))
-    down <- cbind(down, sapply(p, function(i) i$down))
-    twoside <- cbind(twoside, sapply(p, function(i) i$twoside))
+
+    rev.up <- sapply(p, function(i) i$up)
+    rev.down <- sapply(p, function(i) i$down)
+    rev.twoside <- sapply(p, function(i) i$twoside)
+    dimnames(rev.up) <- dimnames(rev.down) <- dimnames(rev.twoside) <- dimnames(expr.matrix)
+
+    results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
+
+    up <- cbind(up, rev.up)
+    down <- cbind(down, rev.down)
+    twoside <- cbind(twoside, rev.twoside)
 
     g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method, shrink)$p)
     g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method, shrink)$p)
