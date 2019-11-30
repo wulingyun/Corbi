@@ -4,8 +4,12 @@
 \alias{get_diff_ratio_net}
 \title{Construct differential expression ratio network}
 \usage{
-get_diff_ratio_net(ref.ratio.dist, expr.val, log.expr = FALSE,
-  scale.degree = FALSE)
+get_diff_ratio_net(
+  ref.ratio.dist,
+  expr.val,
+  log.expr = FALSE,
+  scale.degree = FALSE
+)
 }
 \arguments{
 \item{ref.ratio.dist}{The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.}

@@ -4,9 +4,18 @@
 \alias{markrank}
 \title{MarkRank}
 \usage{
-markrank(dataset, label, adj_matrix, alpha = 0.8, lambda = 0.2,
-  eps = 1e-10, E_value = NULL, trace = TRUE, d = Inf,
-  Given_NET2 = NULL)
+markrank(
+  dataset,
+  label,
+  adj_matrix,
+  alpha = 0.8,
+  lambda = 0.2,
+  eps = 1e-10,
+  E_value = NULL,
+  trace = TRUE,
+  d = Inf,
+  Given_NET2 = NULL
+)
 }
 \arguments{
 \item{dataset}{The microarray expression matrix of related disease. Each row represents
@@ -74,7 +83,7 @@ the G_2 computation. We suggest \code{d=Inf}, the default value, to fully use th
 matrix. If the user given a preset \code{d}, the distance matrix of input network \code{dis} 
 will be returned.
 
-2) MarkRank uses a random-walk based iteration procedure to score each gene. The detailed formula is:
+2) MarkRank uses a random-walk based iteration procedure to score each gene. The detailed formula is: 
 
 \code{score} = \code{alpha}*[\code{lambda}*A1 + (1-\code{lambda})*A2]*\code{score} + (1-\code{alpha})*\code{E_value}.
 
@@ -82,9 +91,9 @@ The users could set an appropriate parameter settings in their pracitical applic
 Our suggested value is \code{alpha}=0.8 and \code{lambda}=0.2. The model input parameter combinations and iteration steps will
 be returned in output components \code{initial_pars} and \code{steps}, respectively. Because the iteration step is separate with
 the cooperation network construction, the user can use the parameter \code{Given_NET2} to tune
-the model parameters. In detail, the user could set
+the model parameters. In detail, the user could set 
 
-\code{Given_NET2 = result$NET2}
+\code{Given_NET2 = result$NET2} 
 
 in \code{markrank} input to avoid the repeated computation of G_2, where the object \code{result}
 is the returned variable of \code{markrank} function.

@@ -4,10 +4,18 @@
 \alias{netDEG}
 \title{netDEG: Differentially expressed gene identification method}
 \usage{
-netDEG(ref.expr.matrix, expr.matrix, p.edge = 0.1,
-  summarize = c("gene", "sample"), summarize.method = c("sumlog",
-  "sumlog"), summarize.shrink = c(Inf, Inf), log.expr = FALSE,
-  zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
+netDEG(
+  ref.expr.matrix,
+  expr.matrix,
+  p.edge = 0.1,
+  summarize = c("gene", "sample"),
+  summarize.method = c("sumlog", "sumlog"),
+  summarize.shrink = c(Inf, Inf),
+  log.expr = FALSE,
+  zero.as.dropout = TRUE,
+  scale.degree = TRUE,
+  use.parallel = FALSE
+)
 }
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}

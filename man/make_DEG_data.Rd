@@ -4,8 +4,16 @@
 \alias{make_DEG_data}
 \title{Simulate differentially expressed gene data (Gaussian)}
 \usage{
-make_DEG_data(n.genes, n.samples.A, n.samples.B, exp.mean = 8,
-  exp.sd = 2, alpha = 0.2, size.factor.sd = 0.1, ...)
+make_DEG_data(
+  n.genes,
+  n.samples.A,
+  n.samples.B,
+  exp.mean = 8,
+  exp.sd = 2,
+  alpha = 0.2,
+  size.factor.sd = 0.1,
+  ...
+)
 }
 \arguments{
 \item{n.genes}{The total number of genes in the simulated data.}

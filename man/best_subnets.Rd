@@ -4,8 +4,13 @@
 \alias{best_subnets}
 \title{The best subnetworks}
 \usage{
-best_subnets(func, net.matrix, max.size = 10, exhaust.size = 5,
-  max.top = 10000)
+best_subnets(
+  func,
+  net.matrix,
+  max.size = 10,
+  exhaust.size = 5,
+  max.top = 10000
+)
 }
 \arguments{
 \item{func}{The objective function to maximize}

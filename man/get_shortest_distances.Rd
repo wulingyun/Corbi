@@ -4,8 +4,10 @@
 \alias{get_shortest_distances}
 \title{Calculate shortest distances of unweighted network}
 \usage{
-get_shortest_distances(net.matrix, source.nodes = rep_len(TRUE,
-  dim(net.matrix)[1]))
+get_shortest_distances(
+  net.matrix,
+  source.nodes = rep_len(TRUE, dim(net.matrix)[1])
+)
 }
 \arguments{
 \item{net.matrix}{Logical adjacency matrix of given unweighted network}

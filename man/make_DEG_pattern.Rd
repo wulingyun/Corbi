@@ -4,8 +4,15 @@
 \alias{make_DEG_pattern}
 \title{Simulate differentially expressed gene pattern}
 \usage{
-make_DEG_pattern(n.genes, n.samples, fold.change = 2, gene.rate = 0.3,
-  sample.rate = 1, active.rate = 1, up.rate = 0.5)
+make_DEG_pattern(
+  n.genes,
+  n.samples,
+  fold.change = 2,
+  gene.rate = 0.3,
+  sample.rate = 1,
+  active.rate = 1,
+  up.rate = 0.5
+)
 }
 \arguments{
 \item{n.genes}{The total number of genes in the simulated data.}

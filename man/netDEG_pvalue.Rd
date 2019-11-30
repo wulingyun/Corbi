@@ -4,8 +4,7 @@
 \alias{netDEG_pvalue}
 \title{Calculate netDEG p-values}
 \usage{
-netDEG_pvalue(ref.ratio.dist, expr.val, log.expr = FALSE,
-  scale.degree = FALSE)
+netDEG_pvalue(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degree = FALSE)
 }
 \arguments{
 \item{ref.ratio.dist}{The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.}

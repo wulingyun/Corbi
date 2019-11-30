@@ -4,8 +4,16 @@
 \alias{make_DEG_data2}
 \title{Simulate differentially expressed gene data (Negative binomial)}
 \usage{
-make_DEG_data2(n.genes, n.samples.A, n.samples.B, exp.mean = 8,
-  exp.sd = 2, dispersion = NULL, size.factor.sd = 0.1, ...)
+make_DEG_data2(
+  n.genes,
+  n.samples.A,
+  n.samples.B,
+  exp.mean = 8,
+  exp.sd = 2,
+  dispersion = NULL,
+  size.factor.sd = 0.1,
+  ...
+)
 }
 \arguments{
 \item{n.genes}{The total number of genes in the simulated data.}

@@ -4,8 +4,13 @@
 \alias{get_ratio_distribution}
 \title{Calculate expression ratio distribution}
 \usage{
-get_ratio_distribution(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE,
-  scale.degree = FALSE, use.parallel = FALSE)
+get_ratio_distribution(
+  ref.expr.matrix,
+  p.edge = 0.1,
+  log.expr = FALSE,
+  scale.degree = FALSE,
+  use.parallel = FALSE
+)
 }
 \arguments{
 \item{ref.expr.matrix}{The reference expression matrix. Each row represents a gene and each column represents a sample.}
