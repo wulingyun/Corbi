@@ -1,7 +1,8 @@
 # README #
 
 Corbi is an R package provided a bundle of basic and fundamental bioinformatics tools,
-    such as network querying and alignment, subnetwork extraction and search.
+    such as differential expression analysis, biomarker identification, network querying
+    and alignment, subnetwork extraction and search.
 
 ### How to install? ###
 

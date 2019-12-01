@@ -31,9 +31,9 @@ Biomarker identification:
   \item \code{\link{markrank}} Biomarker identification and prioritization by integrating gene expression with biomolecular network
 }
 
-Differential expressed gene identification:
+Differential expression analysis:
 \itemize{
-  \item \code{\link{netDEG}} Differential expressed gene identification by individual networks
+  \item \code{\link{netDEG}} Sample specific differential expression analysis
 }
 }
 \references{
