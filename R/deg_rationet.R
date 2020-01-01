@@ -71,7 +71,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     rev.up <- sapply(p, function(i) i$up)
     rev.down <- sapply(p, function(i) i$down)
     rev.twoside <- sapply(p, function(i) i$twoside)
-    dimnames(rev.up) <- dimnames(rev.down) <- dimnames(rev.twoside) <- dimnames(expr.matrix)
+    dimnames(rev.up) <- dimnames(rev.down) <- dimnames(rev.twoside) <- dimnames(ref.expr.matrix)
 
     results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
 
