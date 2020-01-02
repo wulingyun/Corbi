@@ -141,7 +141,10 @@ make_DEG_data2 <- function(n.genes, n.samples.A, n.samples.B, exp.mean = 8, exp.
 #' @param dropout.rate the desired average dropout rate of all samples.
 #' @param dropout.rate.sd the desired standard deviation of dropout rate among samples.
 #' 
-#' @return This function will return an expression matrix with the same dimension as \code{counts}.
+#' @return This function will return a list with the following components:
+#'   \item{counts}{The modified expression matrix with the same dimension as input \code{counts}.}
+#'   \item{original.counts}{The original input expression matrix.}
+#'   \item{dropout}{The binary matrix indicating where the dropout events happen.}
 #' 
 #' @references Peter V. Kharchenko, Lev Silberstein, and David T. Scadden.
 #' Bayesian approach to single-cell differential expression analysis.
@@ -158,11 +161,12 @@ simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
   r <- 2^stats::rnorm(n.samples, sd = dropout.rate.sd) * dropout.rate
   r[r > 1] <- 1
   r[r < 0] <- 0
-  r <- round(r * n.genes)
   dropout <- matrix(0, n.genes, n.samples)
   for (i in 1:n.samples)
   {
-    dropout[sample.int(n.genes, r[i], prob = d[, i]), i] <- 1
+    gi <- which(counts[, i] > 0)
+    ri <- round(r[i] * length(gi))
+    dropout[sample(gi, ri, prob = d[gi, i]), i] <- 1
   }
   new.counts <- counts * (1 - dropout)
   list(counts = new.counts, original.counts = counts, dropout = dropout)
@@ -182,7 +186,10 @@ simulate_dropout <- function(counts, dropout.rate = 0, dropout.rate.sd = 0.1)
 #' @param min.rate the minimum dropout rate of all samples.
 #' @param max.rate the maximum dropout rate of all samples.
 #' 
-#' @return This function will return an expression matrix with the same dimension as \code{counts}.
+#' @return This function will return a list with the following components:
+#'   \item{counts}{The modified expression matrix with the same dimension as input \code{counts}.}
+#'   \item{original.counts}{The original input expression matrix.}
+#'   \item{dropout}{The binary matrix indicating where the dropout events happen.}
 #' 
 #' @references Peter V. Kharchenko, Lev Silberstein, and David T. Scadden.
 #' Bayesian approach to single-cell differential expression analysis.
@@ -199,11 +206,12 @@ simulate_dropout2 <- function(counts, min.rate = 0, max.rate = 0.8)
   r <- stats::runif(n.samples, min.rate, max.rate)
   r[r > 1] <- 1
   r[r < 0] <- 0
-  r <- round(r * n.genes)
   dropout <- matrix(0, n.genes, n.samples)
   for (i in 1:n.samples)
   {
-    dropout[sample.int(n.genes, r[i], prob = d[, i]), i] <- 1
+    gi <- which(counts[, i] > 0)
+    ri <- round(r[i] * length(gi))
+    dropout[sample(gi, ri, prob = d[gi, i]), i] <- 1
   }
   new.counts <- counts * (1 - dropout)
   list(counts = new.counts, original.counts = counts, dropout = dropout)

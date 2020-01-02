@@ -14,7 +14,10 @@ simulate_dropout2(counts, min.rate = 0, max.rate = 0.8)
 \item{max.rate}{the maximum dropout rate of all samples.}
 }
 \value{
-This function will return an expression matrix with the same dimension as \code{counts}.
+This function will return a list with the following components:
+  \item{counts}{The modified expression matrix with the same dimension as input \code{counts}.}
+  \item{original.counts}{The original input expression matrix.}
+  \item{dropout}{The binary matrix indicating where the dropout events happen.}
 }
 \description{
 Generate the expression data with desired dropout rate range
