@@ -75,8 +75,8 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
     results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
 
-    up <- cbind(up, rev.up)
-    down <- cbind(down, rev.down)
+    up <- cbind(up, rev.down)
+    down <- cbind(down, rev.up)
     twoside <- cbind(twoside, rev.twoside)
 
     g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method, shrink)$p)
