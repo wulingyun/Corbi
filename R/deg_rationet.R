@@ -174,8 +174,9 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   if (use.parallel)
   {
-    dist.i <- lapply(1:(dim(ref.expr.matrix)[1]-1), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
-    dist <- .Call(ND_RatioDistributionParM, dist.i)
+    n.genes <- dim(ref.expr.matrix)[1]
+    dist.i <- lapply(1:ceiling((n.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
+    dist <- .Call(ND_RatioDistributionParM, dist.i, n.genes)
     dist$p.edge <- p.edge
   }
   else

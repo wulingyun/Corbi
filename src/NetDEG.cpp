@@ -69,16 +69,16 @@ SEXP ND_RatioDistributionParI(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _I)
   double pEdge = NUMERIC_POINTER(_pEdge)[0];
 
   PROTECT(_I = AS_INTEGER(_I));
-  int i = INTEGER_POINTER(_I)[0];
+  int I = INTEGER_POINTER(_I)[0];
     
   if (pEdge > 1) pEdge = 1;
   else if (pEdge < 0) pEdge = 0;
   double p = pEdge / 2;
   
-  int nLB = nGenes - i;
+  int nLB = nGenes - I;
   SEXP _LB;
-  PROTECT(_LB = NEW_NUMERIC(nLB * 2));
-  SetDim2(_LB, nLB, 2);
+  PROTECT(_LB = NEW_NUMERIC(nGenes * 2));
+  SetDim2(_LB, nGenes, 2);
   double *LB = NUMERIC_POINTER(_LB);
   SetValues(_LB, LB, R_NegInf);
 
@@ -86,25 +86,34 @@ SEXP ND_RatioDistributionParI(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _I)
   double *e, m;
   int n;
 
-  i = i - 1;
-  for (int j = i+1; j < nGenes; j++)
+  int II[2], KK;
+  II[0] = I - 1;
+  II[1] = nGenes - I - 1;
+  if (II[0] < II[1]) KK = 2;
+  else KK = 1;
+  
+  for (int ii = 0; ii < KK; ii++)
   {
-    e = LogExprMatrix;
-    n = 0;
-    for (int k = 0; k < nSamples; k++)
+    int i = II[ii];
+    for (int j = i+1; j < nGenes; j++)
     {
-      if (R_finite(e[i]) && R_finite(e[j]))
-        r[n++] = e[i] - e[j];
-      e += nGenes;
-    }
-
-    if (n > 0)
-    {
-      m = quantile(r, n, p, false);
-      LB[j-i-1] = m;
-
-      m = quantile(r, n, 1-p, true);
-      LB[j-i-1+nLB] = -m;
+      e = LogExprMatrix;
+      n = 0;
+      for (int k = 0; k < nSamples; k++)
+      {
+        if (R_finite(e[i]) && R_finite(e[j]))
+          r[n++] = e[i] - e[j];
+        e += nGenes;
+      }
+  
+      if (n > 0)
+      {
+        m = quantile(r, n, p, false);
+        LB[j-i-1 + nLB*ii] = m;
+  
+        m = quantile(r, n, 1-p, true);
+        LB[j-i-1 + nLB*ii + nGenes] = -m;
+      }
     }
   }
 
@@ -112,9 +121,10 @@ SEXP ND_RatioDistributionParI(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _I)
   return(_LB);
 }
 
-SEXP ND_RatioDistributionParM(SEXP _DistI)
+SEXP ND_RatioDistributionParM(SEXP _DistI, SEXP _nGenes)
 {
-  int nGenes = length(_DistI) + 1;
+  PROTECT(_nGenes = AS_INTEGER(_nGenes));
+  int nGenes = INTEGER_POINTER(_nGenes)[0];
 
   SEXP _LB;
   PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
@@ -122,25 +132,36 @@ SEXP ND_RatioDistributionParM(SEXP _DistI)
   double *LB = NUMERIC_POINTER(_LB);
   SetValues(_LB, LB, R_NegInf);
 
-  for (int i = 0; i < nGenes-1; i++)
+  for (int I = 0; I < (nGenes/2); I++)
   {
     SEXP _M;
-    PROTECT(_M = AS_NUMERIC(GetListElement(_DistI, i)));
+    PROTECT(_M = AS_NUMERIC(GetListElement(_DistI, I)));
     double *m = NUMERIC_POINTER(_M);
-    for (int j = i+1; j < nGenes; j++)
+    
+    int II[2], KK, nLB;
+    II[0] = I;
+    II[1] = nGenes - I - 2;
+    if (II[0] < II[1]) KK = 2;
+    else KK = 1;
+    nLB = nGenes - I - 1;
+  
+    for (int ii = 0; ii < KK; ii++)
     {
-      LB[i+nGenes*j] = *m;
-      LB[j+nGenes*i] = *(m+nGenes-i-1);
-      m++;
+      int i = II[ii];
+      for (int j = i+1; j < nGenes; j++)
+      {
+        LB[i+nGenes*j] = m[j-i-1 + nLB*ii];
+        LB[j+nGenes*i] = m[j-i-1 + nLB*ii + nGenes];
+      }
     }
     UNPROTECT(1);
   }
 
   SEXP _ratio;
-  PROTECT(_ratio = NEW_LIST(2));
+  PROTECT(_ratio = NEW_LIST(1));
   SetListElement(_ratio, 0, "LB", _LB);
 
-  UNPROTECT(2);
+  UNPROTECT(3);
   return(_ratio);
 }
 
