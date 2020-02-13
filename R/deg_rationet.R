@@ -44,7 +44,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     expr.matrix[expr.matrix == -Inf] <- zero.expr
   }
   n.samples <- dim(expr.matrix)[2]
-  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree)
+  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
   p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
   rm(dist)
   
@@ -64,7 +64,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
-    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree)
+    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
     p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
     rm(dist)
 
@@ -172,7 +172,16 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   }
 
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
-  dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
+  if (use.parallel)
+  {
+    dist.i <- lapply(1:(dim(ref.expr.matrix)[1]-1), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
+    dist <- .Call(ND_RatioDistributionParM, dist.i)
+    dist$p.edge <- p.edge
+  }
+  else
+  {
+    dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
+  }
   diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
   dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate

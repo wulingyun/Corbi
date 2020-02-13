@@ -57,6 +57,93 @@ SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge)
   return(_ratio);
 }
 
+SEXP ND_RatioDistributionParI(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _I)
+{
+  PROTECT(_LogExprMatrix = AS_NUMERIC(_LogExprMatrix));
+  double *LogExprMatrix = NUMERIC_POINTER(_LogExprMatrix);
+  int *dim = INTEGER_POINTER(AS_INTEGER(GET_DIM(_LogExprMatrix)));
+  int nGenes = dim[0];
+  int nSamples = dim[1];
+
+  PROTECT(_pEdge = AS_NUMERIC(_pEdge));
+  double pEdge = NUMERIC_POINTER(_pEdge)[0];
+
+  PROTECT(_I = AS_INTEGER(_I));
+  int i = INTEGER_POINTER(_I)[0];
+    
+  if (pEdge > 1) pEdge = 1;
+  else if (pEdge < 0) pEdge = 0;
+  double p = pEdge / 2;
+  
+  int nLB = nGenes - i;
+  SEXP _LB;
+  PROTECT(_LB = NEW_NUMERIC(nLB * 2));
+  SetDim2(_LB, nLB, 2);
+  double *LB = NUMERIC_POINTER(_LB);
+  SetValues(_LB, LB, R_NegInf);
+
+  double *r = (double *) R_alloc(nSamples, sizeof(double));
+  double *e, m;
+  int n;
+
+  i = i - 1;
+  for (int j = i+1; j < nGenes; j++)
+  {
+    e = LogExprMatrix;
+    n = 0;
+    for (int k = 0; k < nSamples; k++)
+    {
+      if (R_finite(e[i]) && R_finite(e[j]))
+        r[n++] = e[i] - e[j];
+      e += nGenes;
+    }
+
+    if (n > 0)
+    {
+      m = quantile(r, n, p, false);
+      LB[j-i-1] = m;
+
+      m = quantile(r, n, 1-p, true);
+      LB[j-i-1+nLB] = -m;
+    }
+  }
+
+  UNPROTECT(4);
+  return(_LB);
+}
+
+SEXP ND_RatioDistributionParM(SEXP _DistI)
+{
+  int nGenes = length(_DistI) + 1;
+
+  SEXP _LB;
+  PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_LB, nGenes, nGenes);
+  double *LB = NUMERIC_POINTER(_LB);
+  SetValues(_LB, LB, R_NegInf);
+
+  for (int i = 0; i < nGenes-1; i++)
+  {
+    SEXP _M;
+    PROTECT(_M = AS_NUMERIC(GetListElement(_DistI, i)));
+    double *m = NUMERIC_POINTER(_M);
+    for (int j = i+1; j < nGenes; j++)
+    {
+      LB[i+nGenes*j] = *m;
+      LB[j+nGenes*i] = *(m+nGenes-i-1);
+      m++;
+    }
+    UNPROTECT(1);
+  }
+
+  SEXP _ratio;
+  PROTECT(_ratio = NEW_LIST(2));
+  SetListElement(_ratio, 0, "LB", _LB);
+
+  UNPROTECT(2);
+  return(_ratio);
+}
+
 SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim)
 {
   PROTECT(_LogExprMatrix = AS_NUMERIC(_LogExprMatrix));
