@@ -44,7 +44,11 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     expr.matrix[expr.matrix == -Inf] <- zero.expr
   }
   n.samples <- dim(expr.matrix)[2]
+  
+  message("Estimating the ratio distribution from reference samples")
   dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
+
+  message("Calculating the sample-specific p-values for test samples")
   p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
   rm(dist)
   
@@ -57,15 +61,15 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   
   if ("gene" %in% summarize)
   {
-    method <- summarize.method[summarize == "gene"][1]
-    if (is.na(method)) method <- "sumlog"
-    shrink <- summarize.shrink[summarize == "gene"][1]
-    if (is.na(shrink)) shrink <- Inf
-
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
+
+    message("Estimating the ratio distribution from test samples")
     dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
+
+    message("Calculating the sample-specific p-values for reference samples")
     p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
+    
     rm(dist)
 
     rev.up <- sapply(p, function(i) i$up)
@@ -75,6 +79,13 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
     results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
 
+    message("Gene-wise summarization")
+    
+    method <- summarize.method[summarize == "gene"][1]
+    if (is.na(method)) method <- "sumlog"
+    shrink <- summarize.shrink[summarize == "gene"][1]
+    if (is.na(shrink)) shrink <- Inf
+    
     up <- cbind(up, rev.down)
     down <- cbind(down, rev.up)
     twoside <- cbind(twoside, rev.twoside)
@@ -103,6 +114,8 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
   if ("sample" %in% summarize)
   {
+    message("Sample-wise summarization")
+    
     method <- summarize.method[summarize == "sample"][1]
     if (is.na(method)) method <- "sumlog"
     shrink <- summarize.shrink[summarize == "sample"][1]
