@@ -11,7 +11,7 @@ Authors@R: c(person("Ling-Yun", "Wu", role = c("aut", "cre"), email =
 ByteCompile: TRUE
 Depends: R (>= 3.0.2)
 Imports: Matrix
-Suggests: knitr, rmarkdown, BiocParallel, CRF, MASS, stats, matrixcalc, mpmi
+Suggests: knitr, rmarkdown, BiocParallel, CRF, MASS, stats, matrixcalc, mpmi, fitdistrplus
 VignetteBuilder: knitr
 License: GPL (>= 2)
 BugReports: https://github.com/wulingyun/Corbi/issues

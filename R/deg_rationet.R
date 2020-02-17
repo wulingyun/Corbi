@@ -29,8 +29,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
                    summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
                    log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
 {
-  if (use.parallel && requireNamespace("BiocParallel"))
-  {
+  if (use.parallel && requireNamespace("BiocParallel")) {
     lapply <- BiocParallel::bplapply
   }
 
@@ -59,8 +58,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
   results <- list(up = up, down = down, twoside = twoside)
   
-  if ("gene" %in% summarize)
-  {
+  if ("gene" %in% summarize) {
     n.genes <- dim(expr.matrix)[1]
     n.refs <- dim(ref.expr.matrix)[2]
 
@@ -98,8 +96,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
     n1 <- sum(zero.genes)
     n2 <- n.samples + n.refs
-    if (n1 > 0)
-    {
+    if (n1 > 0) {
       m1 <- ref.expr.matrix[zero.genes, , drop = FALSE]
       m1 <- ifelse(is.finite(m1), exp(m1), 0)
       m2 <- expr.matrix[zero.genes, , drop = FALSE]
@@ -112,8 +109,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
   }
 
-  if ("sample" %in% summarize)
-  {
+  if ("sample" %in% summarize) {
     message("Sample-wise summarization")
     
     method <- summarize.method[summarize == "sample"][1]
@@ -179,26 +175,28 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degr
 #' @export
 get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
-  if (use.parallel && requireNamespace("BiocParallel"))
-  {
+  if (use.parallel && requireNamespace("BiocParallel")) {
     lapply <- BiocParallel::bplapply
   }
 
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
-  if (use.parallel)
-  {
+  if (use.parallel) {
     n.genes <- dim(ref.expr.matrix)[1]
     dist.i <- lapply(1:ceiling((n.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
     dist <- .Call(ND_RatioDistributionParM, dist.i, n.genes)
     dist$p.edge <- p.edge
   }
-  else
-  {
+  else {
     dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
   }
   diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
-  dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
+  if (requireNamespace("fitdistrplus")) {
+    dist$NB <- fitdistrplus::fitdist(abs(diff), "nbinom")$estimate
+  }
+  else {
+    dist$NB <- MASS::fitdistr(abs(diff), "negative binomial")$estimate
+  }
   dist
 }
 
@@ -224,8 +222,7 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
 #' @export
 get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3, log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
-  if (use.parallel && requireNamespace("BiocParallel"))
-  {
+  if (use.parallel && requireNamespace("BiocParallel")) {
     lapply <- BiocParallel::bplapply
   }
   
@@ -233,7 +230,12 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
   dist <- .Call(ND_RatioDistribution2, ref.expr.matrix, p.edge, p.trim)
   diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
-  dist$NB <- MASS::fitdistr(abs(diff), "negative binomial", lower = c(1e-10, 1e-10))$estimate
+  if (requireNamespace("fitdistrplus")) {
+    dist$NB <- fitdistrplus::fitdist(abs(diff), "nbinom")$estimate
+  }
+  else {
+    dist$NB <- MASS::fitdistr(abs(diff), "negative binomial")$estimate
+  }
   dist
 }
 
@@ -282,8 +284,7 @@ get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0
   g.NA <- !is.finite(log.expr.val)
   d.out <- rowSums(net)
   d.in <- colSums(net)
-  if (scale.degree)
-  {
+  if (scale.degree) {
     f <- length(g.NA) / sum(!g.NA)
     d.out <- round(d.out * f)
     d.in <- round(d.in * f)
@@ -320,28 +321,24 @@ p_combine <- function(p, method = "sumlog", shrink = Inf)
   p <- p[!is.na(p)]
   p[p > 1] <- 1
   p[p < .Machine$double.xmin] <- .Machine$double.xmin
-  if (shrink > 0 && length(p) > shrink)
-  {
+  if (shrink > 0 && length(p) > shrink) {
     p <- sort(p)[ceiling((2*(1:shrink)-1) / (2*shrink) * length(p))]
   }
   if (length(p) == 0) p <- 0.5
-  if (method == "sumlog")
-  {
+  if (method == "sumlog") {
     chisq <- (-2) * sum(log(p))
     df <- 2 * length(p)
     p <- stats::pchisq(chisq, df, lower.tail = FALSE)
     if (p == 0) p <- .Machine$double.xmin / chisq
     list(chisq = chisq, df = df, v = chisq, p = p)
   }
-  else if (method == "sumz")
-  {
+  else if (method == "sumz") {
     z <- sum(stats::qnorm(p, lower.tail = FALSE)) / sqrt(length(p))
     p <- stats::pnorm(z, lower.tail = FALSE)
     if (p == 0) p <- .Machine$double.xmin / z
     list(z = z, v = z, p = p)
   }
-  else
-  {
+  else {
     stop("Unknown method in function p_combine: ", method)
   }
 }
