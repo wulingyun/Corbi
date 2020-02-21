@@ -55,6 +55,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   down <- sapply(p, function(i) i$down)
   twoside <- sapply(p, function(i) i$twoside)
   dimnames(up) <- dimnames(down) <- dimnames(twoside) <- dimnames(expr.matrix)
+  rm(p)
 
   results <- list(up = up, down = down, twoside = twoside)
   
@@ -67,13 +68,13 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
 
     message("Calculating the sample-specific p-values for reference samples")
     p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
-    
     rm(dist)
 
     rev.up <- sapply(p, function(i) i$up)
     rev.down <- sapply(p, function(i) i$down)
     rev.twoside <- sapply(p, function(i) i$twoside)
     dimnames(rev.up) <- dimnames(rev.down) <- dimnames(rev.twoside) <- dimnames(ref.expr.matrix)
+    rm(p)
 
     results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
 
@@ -182,8 +183,8 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
   if (use.parallel) {
     n.genes <- dim(ref.expr.matrix)[1]
-    dist.i <- lapply(1:ceiling((n.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
-    dist <- .Call(ND_RatioDistributionParM, dist.i, n.genes)
+    dist <- lapply(1:ceiling((n.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
+    dist <- .Call(ND_RatioDistributionParM, dist, n.genes)
     dist$p.edge <- p.edge
   }
   else {
