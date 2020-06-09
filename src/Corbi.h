@@ -30,4 +30,5 @@ extern "C" {
   SEXP ND_RatioDistributionParM(SEXP _DistI, SEXP _nGenes);
   SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim);
   SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal);
+  SEXP ND_RatioVariance(SEXP _LogExprMatrix);
 }

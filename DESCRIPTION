@@ -16,5 +16,5 @@ VignetteBuilder: knitr
 License: GPL (>= 2)
 BugReports: https://github.com/wulingyun/Corbi/issues
 URL: https://github.com/wulingyun/Corbi
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Encoding: UTF-8

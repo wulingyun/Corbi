@@ -310,3 +310,52 @@ SEXP ND_DiffRatioNet(SEXP _RatioLB, SEXP _LogExprVal)
   UNPROTECT(5);
   return(_M);
 }
+
+SEXP ND_RatioVariance(SEXP _LogExprMatrix)
+{
+  PROTECT(_LogExprMatrix = AS_NUMERIC(_LogExprMatrix));
+  double *LogExprMatrix = NUMERIC_POINTER(_LogExprMatrix);
+  int *dim = INTEGER_POINTER(AS_INTEGER(GET_DIM(_LogExprMatrix)));
+  int nGenes = dim[0];
+  int nSamples = dim[1];
+
+  SEXP _Var;
+  PROTECT(_Var = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_Var, nGenes, nGenes);
+  double *Var = NUMERIC_POINTER(_Var);
+  SetValues(_Var, Var, 0.0);
+  
+  double *r = (double *) R_alloc(nSamples, sizeof(double));
+  double *e, m, v;
+  int n;
+  for (int i = 0; i < nGenes-1; i++)
+  {
+    for (int j = i+1; j < nGenes; j++)
+    {
+      e = LogExprMatrix;
+      n = 0;
+      m = v = 0;
+      for (int k = 0; k < nSamples; k++)
+      {
+        if (R_finite(e[i]) && R_finite(e[j]))
+        {
+          r[n] = e[i] - e[j];
+          m += r[n];
+          v += r[n] * r[n];
+          n++;
+        }
+        e += nGenes;
+      }
+      
+      if (n > 0)
+      {
+        v = (v - m * m / n)  / (n - 1);
+        Var[i+nGenes*j] = v;
+        Var[j+nGenes*i] = v;
+      }
+    }
+  }
+
+  UNPROTECT(2);
+  return(_Var);
+}
