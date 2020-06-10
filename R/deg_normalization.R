@@ -41,7 +41,7 @@ URG_getFactor <- function(expr.matrix, p.edge = 0.25, p.gene = 0.4, log.expr = F
     log.expr <- TRUE
   }
   ratio_var <- get_ratio_variance(expr.matrix, log.expr = log.expr)
-  cutoff <- quantile(ratio_var[lower.tri(ratio_var)], p.edge)
+  cutoff <- stats::quantile(ratio_var[lower.tri(ratio_var)], p.edge)
   adj_matrix <- ifelse(ratio_var <= cutoff, 1, 0) 
 
   g <- igraph::graph_from_adjacency_matrix(adj_matrix)
