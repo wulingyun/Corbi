@@ -29,6 +29,11 @@
 #'   \item \code{\link{netDEG}} Sample specific differential expression analysis
 #' }
 #' 
+#' Data normalization:
+#' \itemize{
+#'   \item \code{\link{URG_getFactor}} Gene expression data normalization by the uniform ratio graph method
+#' }
+#' 
 #' @name Corbi-package
 #' @aliases Corbi-package Corbi
 #' @docType package
@@ -44,6 +49,8 @@
 #' Peter Csermely, and Ling-Yun Wu. Discovering cooperative biomarkers for 
 #' heterogeneous complex disease diagnoses. Briefings in Bioinformatics, 
 #' 20(1), 89–101, 2019.
+#' @references Xinhan Ye, Ling-Yun Wu. URG: a new normalization method for 
+#' gene expression data based on graph model. Manuscript.
 #' 
 #' @useDynLib Corbi, .registration = TRUE
 #' 
