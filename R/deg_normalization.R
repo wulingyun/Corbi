@@ -45,7 +45,8 @@ URG_getFactor <- function(expr.matrix, p.edge = 0.25, p.gene = 0.4, log.expr = F
   adj_matrix <- ifelse(ratio_var <= cutoff, 1, 0) 
 
   g <- igraph::graph_from_adjacency_matrix(adj_matrix)
-  max_component <- which(igraph::components(g)$membership == 1)
+  components <- igraph::components(g)
+  max_component <- which(components$membership == which.max(components$csize))
   node_degree <- igraph::degree(g, max_component)
   
   n_stable <- min(length(max_component), round(dim(adj_matrix)[1] * p.gene))
