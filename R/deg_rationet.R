@@ -11,6 +11,7 @@
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
 #' @param zero.as.dropout Logical variable indicating whether the zero expressions are regarded as dropouts.
 #' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
+#' @param adjust.p Logical variable indicating whether the individual-level p-values are adjusted by "BH" method.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a list with the following components:
@@ -27,7 +28,7 @@
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
                    summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
-                   log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, use.parallel = FALSE)
+                   log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, adjust.p = TRUE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel")) {
     lapply <- BiocParallel::bplapply
@@ -57,6 +58,12 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   dimnames(up) <- dimnames(down) <- dimnames(twoside) <- dimnames(expr.matrix)
   rm(p)
 
+  if (adjust.p) {
+    up <- t(apply(up, 1, function(x) p.adjust(x, "BH")))
+    down <- t(apply(down, 1, function(x) p.adjust(x, "BH")))
+    twoside <- t(apply(twoside, 1, function(x) p.adjust(x, "BH")))
+  }
+
   results <- list(up = up, down = down, twoside = twoside)
   
   if ("gene" %in% summarize) {
@@ -76,6 +83,12 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     dimnames(rev.up) <- dimnames(rev.down) <- dimnames(rev.twoside) <- dimnames(ref.expr.matrix)
     rm(p)
 
+    if (adjust.p) {
+      rev.up <- t(apply(rev.up, 1, function(x) p.adjust(x, "BH")))
+      rev.down <- t(apply(rev.down, 1, function(x) p.adjust(x, "BH")))
+      rev.twoside <- t(apply(rev.twoside, 1, function(x) p.adjust(x, "BH")))
+    }
+
     results$rev <- list(up = rev.up, down = rev.down, twoside = rev.twoside)
 
     message("Gene-wise summarization")
@@ -85,13 +98,12 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     shrink <- summarize.shrink[summarize == "gene"][1]
     if (is.na(shrink)) shrink <- Inf
     
-    up <- cbind(up, rev.down)
-    down <- cbind(down, rev.up)
-    twoside <- cbind(twoside, rev.twoside)
-
     g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method, shrink)$p)
     g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method, shrink)$p)
     g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,], method, shrink)$p)
+    g.up <- pmin(g.up, sapply(1:n.genes, function(i) p_combine(rev.down[i,], method, shrink)$p))
+    g.down <- pmin(g.down, sapply(1:n.genes, function(i) p_combine(rev.up[i,], method, shrink)$p))
+    g.twoside <- pmin(g.twoside, sapply(1:n.genes, function(i) p_combine(rev.twoside[i,], method, shrink)$p))
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0

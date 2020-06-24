@@ -14,6 +14,7 @@ netDEG(
   log.expr = FALSE,
   zero.as.dropout = TRUE,
   scale.degree = TRUE,
+  adjust.p = TRUE,
   use.parallel = FALSE
 )
 }
@@ -35,6 +36,8 @@ netDEG(
 \item{zero.as.dropout}{Logical variable indicating whether the zero expressions are regarded as dropouts.}
 
 \item{scale.degree}{Logical variable indicating whether the degree values are scaled according to the dropout rate.}
+
+\item{adjust.p}{Logical variable indicating whether the individual-level p-values are adjusted by "BH" method.}
 
 \item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }
