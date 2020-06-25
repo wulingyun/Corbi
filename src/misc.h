@@ -85,7 +85,7 @@ inline SEXP GetListElement(SEXP list, const char *tag)
       value = VECTOR_ELT(list, i);
       break;
     }
-    return value;
+  return value;
 }
 
 /* set the list element */
