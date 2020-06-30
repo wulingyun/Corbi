@@ -98,12 +98,12 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     shrink <- summarize.shrink[summarize == "gene"][1]
     if (is.na(shrink)) shrink <- Inf
     
-    g.up <- sapply(1:n.genes, function(i) p_combine(up[i,], method, shrink)$p)
-    g.down <- sapply(1:n.genes, function(i) p_combine(down[i,], method, shrink)$p)
-    g.twoside <- sapply(1:n.genes, function(i) p_combine(twoside[i,], method, shrink)$p)
-    g.up <- pmin(g.up, sapply(1:n.genes, function(i) p_combine(rev.down[i,], method, shrink)$p), na.rm = T)
-    g.down <- pmin(g.down, sapply(1:n.genes, function(i) p_combine(rev.up[i,], method, shrink)$p), na.rm = T)
-    g.twoside <- pmin(g.twoside, sapply(1:n.genes, function(i) p_combine(rev.twoside[i,], method, shrink)$p), na.rm = T)
+    g.up <- cbind(up, rev.down)
+    g.down <- cbind(down, rev.up)
+    g.twoside <- cbind(twoside, rev.twoside)
+    g.up <- sapply(1:n.genes, function(i) p_combine(g.up[i,], method, shrink)$p)
+    g.down <- sapply(1:n.genes, function(i) p_combine(g.down[i,], method, shrink)$p)
+    g.twoside <- sapply(1:n.genes, function(i) p_combine(g.twoside[i,], method, shrink)$p)
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
     zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
