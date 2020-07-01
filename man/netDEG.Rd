@@ -8,6 +8,7 @@ netDEG(
   ref.expr.matrix,
   expr.matrix,
   p.edge = 0.1,
+  n.ref.genes = 10000,
   summarize = c("gene", "sample"),
   summarize.method = c("sumlog", "sumlog"),
   summarize.shrink = c(Inf, Inf),

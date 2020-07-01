@@ -7,6 +7,7 @@
 get_ratio_distribution(
   ref.expr.matrix,
   p.edge = 0.1,
+  n.ref.genes = 10000,
   log.expr = FALSE,
   scale.degree = FALSE,
   use.parallel = FALSE

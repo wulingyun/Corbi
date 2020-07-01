@@ -26,7 +26,7 @@
 #'   and \code{twoside}. Available if the sample method is specified in \code{summarize} argument.}
 #' 
 #' @export
-netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
+netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, n.ref.genes = 10000,
                    summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
                    log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, adjust.p = TRUE, use.parallel = FALSE)
 {
@@ -46,7 +46,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
   n.samples <- dim(expr.matrix)[2]
   
   message("Estimating the ratio distribution from reference samples")
-  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
+  dist <- get_ratio_distribution(ref.expr.matrix, p.edge, n.ref.genes = n.ref.genes, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
 
   message("Calculating the sample-specific p-values for test samples")
   p <- lapply(1:n.samples, function(i) netDEG_pvalue(dist, expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
@@ -71,7 +71,7 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1,
     n.refs <- dim(ref.expr.matrix)[2]
 
     message("Estimating the ratio distribution from test samples")
-    dist <- get_ratio_distribution(expr.matrix, p.edge, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
+    dist <- get_ratio_distribution(expr.matrix, p.edge, n.ref.genes = n.ref.genes, log.expr = TRUE, scale.degree = scale.degree, use.parallel = use.parallel)
 
     message("Calculating the sample-specific p-values for reference samples")
     p <- lapply(1:n.refs, function(i) netDEG_pvalue(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree))
@@ -186,22 +186,51 @@ netDEG_pvalue <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degr
 #'   \item{p.edge}{The used input parameter \code{p.edge}.}
 #'   
 #' @export
-get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
+get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, n.ref.genes = 10000, log.expr = FALSE, scale.degree = FALSE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel")) {
     lapply <- BiocParallel::bplapply
   }
 
   if (!log.expr) ref.expr.matrix <- log(ref.expr.matrix)
+  n.non0 <- rowSums(is.finite(ref.expr.matrix))
+  n.genes <- dim(ref.expr.matrix)[1]
+  
+  if (n.ref.genes <= 0) n.ref.genes <- n.genes
+  n.ref.genes <- min(n.ref.genes, n.genes, sum(n.non0 > 0))
+  ref.genes <- (1:n.genes) %in% sample.int(n.genes, n.ref.genes, replace = F, prob = n.non0)
+  map.genes <- integer(n.genes)
+  map.genes[ref.genes] <- cumsum(ref.genes)[ref.genes]
+  map.genes[!ref.genes] <- cumsum(!ref.genes)[!ref.genes]
+  dist <- list(n.ref.genes = n.ref.genes, ref.genes = ref.genes, map.genes = map.genes)
+
+  ref.expr.matrix.A <- ref.expr.matrix[ref.genes, , drop = F]
+  ref.expr.matrix.B <- ref.expr.matrix[!ref.genes, , drop = F]
   if (use.parallel) {
-    n.genes <- dim(ref.expr.matrix)[1]
-    dist <- lapply(1:ceiling((n.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix, p.edge, i))
-    dist <- .Call(ND_RatioDistributionParM, dist, n.genes)
-    dist$p.edge <- p.edge
+    dist$LB0 <- lapply(1:ceiling((n.ref.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix.A, p.edge, i))
+    dist$LB0 <- .Call(ND_RatioDistributionParM, dist$LB0, n.ref.genes)
   }
   else {
-    dist <- .Call(ND_RatioDistribution, ref.expr.matrix, p.edge)
+    dist$LB0 <- .Call(ND_RatioDistribution, ref.expr.matrix.A, p.edge)
   }
+  if (n.ref.genes < n.genes) {
+    if (use.parallel) {
+      n <- n.genes - n.ref.genes
+      temp <- sapply(1:n.ref.genes, function(i) .Call(ND_RatioDistributionParAiB, ref.expr.matrix.A[i, ], ref.expr.matrix.B, p.edge))
+      dist$LB1 <- t(temp[1:n, , drop = F])
+      dist$LB2 <- temp[(n+1):(2*n), , drop = F]
+    }
+    else {
+      temp <- .Call(ND_RatioDistributionAB, ref.expr.matrix.A, ref.expr.matrix.B, p.edge)
+      dist$LB1 <- temp$LB1
+      dist$LB2 <- temp$LB2
+    }
+  }
+  else {
+    dist$LB1 <- NULL
+    dist$LB2 <- NULL
+  }
+  
   diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
   diff <- diff[!is.na(diff)]
   if (requireNamespace("fitdistrplus")) {
@@ -210,6 +239,8 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, log.expr = FAL
   else {
     dist$NB <- MASS::fitdistr(abs(diff), "negative binomial")$estimate
   }
+  
+  dist$p.edge <- p.edge
   dist
 }
 
@@ -270,7 +301,7 @@ get_ratio_distribution2 <- function(ref.expr.matrix, p.edge = 0.1, p.trim = 0.3,
 get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale.degree = FALSE)
 {
   if (!log.expr) expr.val <- log(expr.val)
-  edges <- .Call(ND_DiffRatioNet, ref.ratio.dist$LB, expr.val)
+  edges <- .Call(ND_DiffRatioNet, ref.ratio.dist, expr.val)
   n <- length(expr.val)
   net <- sparseMatrix(i = edges$i, j = edges$j, dims = c(n, n))
   d <- get_adjusted_deg_diff(net, expr.val, scale.degree)

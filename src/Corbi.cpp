@@ -11,6 +11,8 @@ const R_CallMethodDef callMethods[] = {
   {"ND_RatioDistribution", (DL_FUNC) &ND_RatioDistribution, 2},
   {"ND_RatioDistributionParI", (DL_FUNC) &ND_RatioDistributionParI, 3},
   {"ND_RatioDistributionParM", (DL_FUNC) &ND_RatioDistributionParM, 2},
+  {"ND_RatioDistributionAB", (DL_FUNC) &ND_RatioDistributionAB, 3},
+  {"ND_RatioDistributionParAiB", (DL_FUNC) &ND_RatioDistributionParAiB, 3},
   {"ND_RatioDistribution2", (DL_FUNC) &ND_RatioDistribution2, 3},
   {"ND_DiffRatioNet", (DL_FUNC) &ND_DiffRatioNet, 2},
   {"ND_RatioVariance", (DL_FUNC) &ND_RatioVariance, 1},
