@@ -465,7 +465,7 @@ SEXP ND_RatioVariance(SEXP _LogExprMatrix)
   PROTECT(_Var = NEW_NUMERIC(nGenes * nGenes));
   SetDim2(_Var, nGenes, nGenes);
   double *Var = NUMERIC_POINTER(_Var);
-  SetValues(_Var, Var, 0.0);
+  SetValues(_Var, Var, R_PosInf);
   
   double *r = (double *) R_alloc(nSamples, sizeof(double));
   double *e, m, v;
@@ -489,7 +489,7 @@ SEXP ND_RatioVariance(SEXP _LogExprMatrix)
         e += nGenes;
       }
       
-      if (n > 0)
+      if (n > 1)
       {
         v = (v - m * m / n)  / (n - 1);
         Var[i+nGenes*j] = v;

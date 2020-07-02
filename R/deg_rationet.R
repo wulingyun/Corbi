@@ -304,7 +304,7 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale
   edges <- .Call(ND_DiffRatioNet, ref.ratio.dist, expr.val)
   n <- length(expr.val)
   net <- sparseMatrix(i = edges$i, j = edges$j, dims = c(n, n))
-  d <- get_adjusted_deg_diff(net, expr.val, scale.degree)
+  d <- get_adjusted_deg_diff(net, expr.val, ref.ratio.dist, scale.degree)
   list(net = net, diff = d$diff, degree = d$degree)
 }
 
@@ -315,6 +315,7 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale
 #' 
 #' @param net The binary adjacent matrix of differential expression ratio network.
 #' @param log.expr.val Numeric vector containing the logarithmic scale gene expression values.
+#' @param ref.ratio.dist The expression ratio distribution profile returned by \code{get_ratio_distribution} or \code{get_ratio_distribution2}.
 #' @param scale.degree Logical variable indicating whether the degree values are scaled according to the dropout rate.
 #' @param p The parameter for calculating the adjusted degree differences.
 #' 
@@ -323,13 +324,13 @@ get_diff_ratio_net <- function(ref.ratio.dist, expr.val, log.expr = FALSE, scale
 #'   \item{degree}{A list containing the raw degree differences and sums of all genes.}
 #' 
 #' @export
-get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0.5)
+get_adjusted_deg_diff <- function(net, log.expr.val, ref.ratio.dist, scale.degree = FALSE, p = 0.5)
 {
   g.NA <- !is.finite(log.expr.val)
-  d.out <- rowSums(net)
-  d.in <- colSums(net)
+  d.out <- rowSums(net[, ref.ratio.dist$ref.genes])
+  d.in <- colSums(net[ref.ratio.dist$ref.genes, ])
   if (scale.degree) {
-    f <- length(g.NA) / sum(!g.NA)
+    f <- length(g.NA) / sum(!g.NA & ref.ratio.dist$ref.genes)
     d.out <- round(d.out * f)
     d.in <- round(d.in * f)
   }
