@@ -4,7 +4,13 @@
 \alias{URG_getFactor}
 \title{Calculate normalization factors for URG method}
 \usage{
-URG_getFactor(expr.matrix, p.edge = 0.25, p.gene = 0.4, log.expr = FALSE)
+URG_getFactor(
+  expr.matrix,
+  p.edge = 0.25,
+  p.gene = 0.4,
+  log.expr = FALSE,
+  use.parallel = FALSE
+)
 }
 \arguments{
 \item{expr.matrix}{The expression matrix. Each row represents a gene and each column represents a sample.}
@@ -14,6 +20,8 @@ URG_getFactor(expr.matrix, p.edge = 0.25, p.gene = 0.4, log.expr = FALSE)
 \item{p.gene}{The maximal percentage of genes that are selected as the stable genes.}
 
 \item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
+
+\item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }
 \value{
 This function will return a numeric vector with each element [i] represents the normalization

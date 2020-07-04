@@ -116,44 +116,46 @@ SEXP ND_RatioDistributionParI(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _I)
   return(_LB);
 }
 
-SEXP ND_RatioDistributionParM(SEXP _DistI, SEXP _nGenes)
+SEXP ND_ParMerge(SEXP _SubI, SEXP _nGenes, SEXP _defV, SEXP _isSym)
 {
   PROTECT(_nGenes = AS_INTEGER(_nGenes));
   int nGenes = INTEGER_POINTER(_nGenes)[0];
+  double defV = NUMERIC_POINTER(_defV)[0];
+  int isSym = LOGICAL_POINTER(_isSym)[0];
 
-  SEXP _LB;
-  PROTECT(_LB = NEW_NUMERIC(nGenes * nGenes));
-  SetDim2(_LB, nGenes, nGenes);
-  double *LB = NUMERIC_POINTER(_LB);
-  SetValues(_LB, LB, R_NegInf);
+  SEXP _M;
+  PROTECT(_M = NEW_NUMERIC(nGenes * nGenes));
+  SetDim2(_M, nGenes, nGenes);
+  double *M = NUMERIC_POINTER(_M);
+  SetValues(_M, M, defV);
 
   for (int I = 0; I < (nGenes/2); I++)
   {
-    SEXP _M;
-    PROTECT(_M = AS_NUMERIC(GetListElement(_DistI, I)));
-    double *m = NUMERIC_POINTER(_M);
+    SEXP _S;
+    PROTECT(_S = AS_NUMERIC(GetListElement(_SubI, I)));
+    double *S = NUMERIC_POINTER(_S);
     
-    int II[2], KK, nLB;
+    int II[2], KK, n;
     II[0] = I;
     II[1] = nGenes - I - 2;
     if (II[0] < II[1]) KK = 2;
     else KK = 1;
-    nLB = nGenes - I - 1;
+    n = nGenes - I - 1;
   
     for (int ii = 0; ii < KK; ii++)
     {
       int i = II[ii];
       for (int j = i+1; j < nGenes; j++)
       {
-        LB[i+nGenes*j] = m[j-i-1 + nLB*ii];
-        LB[j+nGenes*i] = m[j-i-1 + nLB*ii + nGenes];
+        M[i+nGenes*j] = S[j-i-1 + n*ii];
+        M[j+nGenes*i] = isSym ? S[j-i-1 + n*ii] : S[j-i-1 + n*ii + nGenes];
       }
     }
     UNPROTECT(1);
   }
 
   UNPROTECT(2);
-  return(_LB);
+  return(_M);
 }
 
 SEXP ND_RatioDistributionAB(SEXP _LogExprMatrixA, SEXP _LogExprMatrixB, SEXP _pEdge)
@@ -499,5 +501,64 @@ SEXP ND_RatioVariance(SEXP _LogExprMatrix)
   }
 
   UNPROTECT(2);
+  return(_Var);
+}
+
+SEXP ND_RatioVarianceParI(SEXP _LogExprMatrix, SEXP _I)
+{
+  PROTECT(_LogExprMatrix = AS_NUMERIC(_LogExprMatrix));
+  double *LogExprMatrix = NUMERIC_POINTER(_LogExprMatrix);
+  int *dim = INTEGER_POINTER(AS_INTEGER(GET_DIM(_LogExprMatrix)));
+  int nGenes = dim[0];
+  int nSamples = dim[1];
+
+  PROTECT(_I = AS_INTEGER(_I));
+  int I = INTEGER_POINTER(_I)[0];
+    
+  int nVar = nGenes - I;
+  SEXP _Var;
+  PROTECT(_Var = NEW_NUMERIC(nGenes));
+  double *Var = NUMERIC_POINTER(_Var);
+  SetValues(_Var, Var, R_PosInf);
+
+  double *r = (double *) R_alloc(nSamples, sizeof(double));
+  double *e, m, v;
+  int n;
+
+  int II[2], KK;
+  II[0] = I - 1;
+  II[1] = nGenes - I - 1;
+  if (II[0] < II[1]) KK = 2;
+  else KK = 1;
+  
+  for (int ii = 0; ii < KK; ii++)
+  {
+    int i = II[ii];
+    for (int j = i+1; j < nGenes; j++)
+    {
+      e = LogExprMatrix;
+      n = 0;
+      m = v = 0;
+      for (int k = 0; k < nSamples; k++)
+      {
+        if (R_finite(e[i]) && R_finite(e[j]))
+        {
+          r[n] = e[i] - e[j];
+          m += r[n];
+          v += r[n] * r[n];
+          n++;
+        }
+        e += nGenes;
+      }
+      
+      if (n > 1)
+      {
+        v = (v - m * m / n)  / (n - 1);
+        Var[j-i-1 + nVar*ii] = v;
+      }
+    }
+  }
+
+  UNPROTECT(3);
   return(_Var);
 }

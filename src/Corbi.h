@@ -27,10 +27,11 @@ extern "C" {
   
   SEXP ND_RatioDistribution(SEXP _LogExprMatrix, SEXP _pEdge);
   SEXP ND_RatioDistributionParI(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _I);
-  SEXP ND_RatioDistributionParM(SEXP _DistI, SEXP _nGenes);
+  SEXP ND_ParMerge(SEXP _SubI, SEXP _nGenes, SEXP _defV, SEXP _isSym);
   SEXP ND_RatioDistributionAB(SEXP _LogExprMatrixA, SEXP _LogExprMatrixB, SEXP _pEdge);
   SEXP ND_RatioDistributionParAiB(SEXP _LogExprMatrixAi, SEXP _LogExprMatrixB, SEXP _pEdge);
   SEXP ND_RatioDistribution2(SEXP _LogExprMatrix, SEXP _pEdge, SEXP _pTrim);
   SEXP ND_DiffRatioNet(SEXP _Dist, SEXP _LogExprVal);
   SEXP ND_RatioVariance(SEXP _LogExprMatrix);
+  SEXP ND_RatioVarianceParI(SEXP _LogExprMatrix, SEXP _I);
 }

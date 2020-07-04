@@ -204,11 +204,11 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, n.ref.genes = 
   map.genes[!ref.genes] <- cumsum(!ref.genes)[!ref.genes]
   dist <- list(n.ref.genes = n.ref.genes, ref.genes = ref.genes, map.genes = map.genes)
 
-  ref.expr.matrix.A <- ref.expr.matrix[ref.genes, , drop = F]
-  ref.expr.matrix.B <- ref.expr.matrix[!ref.genes, , drop = F]
+  ref.expr.matrix.A <- ref.expr.matrix[ref.genes, , drop = FALSE]
+  ref.expr.matrix.B <- ref.expr.matrix[!ref.genes, , drop = FALSE]
   if (use.parallel) {
     dist$LB0 <- lapply(1:ceiling((n.ref.genes-1)/2), function (i) .Call(ND_RatioDistributionParI, ref.expr.matrix.A, p.edge, i))
-    dist$LB0 <- .Call(ND_RatioDistributionParM, dist$LB0, n.ref.genes)
+    dist$LB0 <- .Call(ND_ParMerge, dist$LB0, n.ref.genes, -Inf, FALSE)
   }
   else {
     dist$LB0 <- .Call(ND_RatioDistribution, ref.expr.matrix.A, p.edge)

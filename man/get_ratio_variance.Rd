@@ -4,16 +4,18 @@
 \alias{get_ratio_variance}
 \title{Calculate expression ratio variances}
 \usage{
-get_ratio_variance(expr.matrix, log.expr = FALSE)
+get_ratio_variance(expr.matrix, log.expr = FALSE, use.parallel = FALSE)
 }
 \arguments{
 \item{expr.matrix}{The expression matrix. Each row represents a gene and each column represents a sample.}
 
 \item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
+
+\item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }
 \value{
 This function will return a numeric matrix with element [i,j] represents the variance of 
-expressioin ratios for gene pairs (i, j).
+expression ratios for gene pairs (i, j).
 }
 \description{
 Calculate the variances of expression ratios for each pair of genes.
