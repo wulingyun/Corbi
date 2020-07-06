@@ -39,9 +39,9 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, n.ref.genes = 100
     expr.matrix <- log(expr.matrix)
   }
   if (!zero.as.dropout) {
-    zero.expr = min(ref.expr.matrix[ref.expr.matrix != -Inf], 0, na.rm = TRUE) - log(10)
-    ref.expr.matrix[ref.expr.matrix == -Inf] <- zero.expr
-    expr.matrix[expr.matrix == -Inf] <- zero.expr
+    zero.expr = min(ref.expr.matrix[is.finite(ref.expr.matrix)], 0, na.rm = TRUE) - log(2)
+    ref.expr.matrix[!is.finite(ref.expr.matrix)] <- zero.expr
+    expr.matrix[!is.finite(expr.matrix)] <- zero.expr
   }
   n.samples <- dim(expr.matrix)[2]
   

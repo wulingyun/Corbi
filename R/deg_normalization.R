@@ -64,6 +64,7 @@ get_stable_genes <- function(expr.matrix, max.stable, p.edge = 0.25, log.expr = 
 #' @param p.edge The percentage of gene pairs that are selected into the uniform ratio graph.
 #' @param p.gene The maximal percentage of genes that are selected as the stable genes.
 #' @param log.expr Logical variable indicating whether the input expression matrix is in logarithmic scale.
+#' @param zero.as.dropout Logical variable indicating whether the zero expressions are regarded as dropouts.
 #' @param use.parallel Logical variable indicating to use the BiocParallel package to accelerate computation.
 #' 
 #' @return This function will return a numeric vector with each element [i] represents the normalization
@@ -75,16 +76,18 @@ get_stable_genes <- function(expr.matrix, max.stable, p.edge = 0.25, log.expr = 
 #' gene expression data based on graph model. Manuscript.
 #'   
 #' @export
-URG_getFactor <- function(expr.matrix, p.edge = 0.25, p.gene = 0.4, log.expr = FALSE, use.parallel = FALSE)
+URG_getFactor <- function(expr.matrix, p.edge = 0.25, p.gene = 0.4, log.expr = FALSE, zero.as.dropout = FALSE, use.parallel = FALSE)
 {
-  if (!log.expr) {
-    expr.matrix[expr.matrix <= 0] <- 0.01
-    expr.matrix <- log(expr.matrix)
+  if (!log.expr) expr.matrix <- log(expr.matrix)
+  if (!zero.as.dropout) {
+    zero.expr = min(expr.matrix[is.finite(expr.matrix)], 0, na.rm = TRUE) - log(2)
+    expr.matrix[!is.finite(expr.matrix)] <- zero.expr
   }
 
   stable_genes <- get_stable_genes(expr.matrix, round(dim(expr.matrix)[1] * p.gene), p.edge, TRUE, use.parallel)
   stable_expr <- expr.matrix[stable_genes, , drop = FALSE]
-  geom <- exp(apply(stable_expr, 2, mean))
+  stable_expr[!is.finite(stable_expr)] <- NA
+  geom <- exp(apply(stable_expr, 2, mean, na.rm = TRUE))
   mean(geom) / geom
 }
 

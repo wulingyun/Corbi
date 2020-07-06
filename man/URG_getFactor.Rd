@@ -9,6 +9,7 @@ URG_getFactor(
   p.edge = 0.25,
   p.gene = 0.4,
   log.expr = FALSE,
+  zero.as.dropout = FALSE,
   use.parallel = FALSE
 )
 }
@@ -20,6 +21,8 @@ URG_getFactor(
 \item{p.gene}{The maximal percentage of genes that are selected as the stable genes.}
 
 \item{log.expr}{Logical variable indicating whether the input expression matrix is in logarithmic scale.}
+
+\item{zero.as.dropout}{Logical variable indicating whether the zero expressions are regarded as dropouts.}
 
 \item{use.parallel}{Logical variable indicating to use the BiocParallel package to accelerate computation.}
 }
