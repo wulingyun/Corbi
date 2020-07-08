@@ -374,13 +374,13 @@ p_combine <- function(p, method = "sumlog", shrink = Inf)
     chisq <- (-2) * sum(log(p))
     df <- 2 * length(p)
     p <- stats::pchisq(chisq, df, lower.tail = FALSE)
-    if (p == 0) p <- .Machine$double.xmin / chisq
+    if (p < .Machine$double.xmin) p <- .Machine$double.xmin / chisq
     list(chisq = chisq, df = df, v = chisq, p = p)
   }
   else if (method == "sumz") {
     z <- sum(stats::qnorm(p, lower.tail = FALSE)) / sqrt(length(p))
     p <- stats::pnorm(z, lower.tail = FALSE)
-    if (p == 0) p <- .Machine$double.xmin / z
+    if (p < .Machine$double.xmin) p <- .Machine$double.xmin / z
     list(z = z, v = z, p = p)
   }
   else {
