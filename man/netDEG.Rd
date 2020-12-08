@@ -10,7 +10,7 @@ netDEG(
   p.edge = 0.1,
   n.ref.genes = 10000,
   summarize = c("gene", "sample"),
-  summarize.method = c("sumlog", "sumlog"),
+  summarize.method = c("hmean", "hmean"),
   summarize.shrink = c(Inf, Inf),
   log.expr = FALSE,
   zero.as.dropout = TRUE,

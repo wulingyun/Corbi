@@ -4,7 +4,7 @@
 \alias{p_combine}
 \title{Calculate combined p-value}
 \usage{
-p_combine(p, method = "sumlog", shrink = Inf)
+p_combine(p, method = "hmean", shrink = Inf)
 }
 \arguments{
 \item{p}{the numeric vector containing the p-values need to combine.}

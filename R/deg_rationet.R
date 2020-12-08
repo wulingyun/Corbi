@@ -27,7 +27,7 @@
 #' 
 #' @export
 netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, n.ref.genes = 10000,
-                   summarize = c("gene", "sample"), summarize.method = c("sumlog", "sumlog"), summarize.shrink = c(Inf, Inf),
+                   summarize = c("gene", "sample"), summarize.method = c("hmean", "hmean"), summarize.shrink = c(Inf, Inf),
                    log.expr = FALSE, zero.as.dropout = TRUE, scale.degree = TRUE, adjust.p = TRUE, use.parallel = FALSE)
 {
   if (use.parallel && requireNamespace("BiocParallel")) {
@@ -106,17 +106,16 @@ netDEG <- function(ref.expr.matrix, expr.matrix, p.edge = 0.1, n.ref.genes = 100
     g.twoside <- sapply(1:n.genes, function(i) p_combine(g.twoside[i,], method, shrink)$p)
     names(g.up) <- names(g.down) <- names(g.twoside) <- rownames(expr.matrix)
     
-    zero.genes <- rowSums(is.finite(ref.expr.matrix)) == 0 | rowSums(is.finite(expr.matrix)) == 0
-    n1 <- sum(zero.genes)
-    n2 <- n.samples + n.refs
-    if (n1 > 0) {
-      m1 <- ref.expr.matrix[zero.genes, , drop = FALSE]
-      m1 <- ifelse(is.finite(m1), exp(m1), 0)
-      m2 <- expr.matrix[zero.genes, , drop = FALSE]
-      m2 <- ifelse(is.finite(m2), exp(m2), 0)
-      g.up[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = FALSE, alternative = "less")$p.value, n2), method, shrink)$p)
-      g.down[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = FALSE, alternative = "greater")$p.value, n2), method, shrink)$p)
-      g.twoside[zero.genes] <- sapply(1:n1, function(i) p_combine(rep(stats::wilcox.test(m1[i, ], m2[i, ], exact = FALSE, alternative = "two.sided")$p.value, n2), method, shrink)$p)
+    g0 <- rowSums(is.finite(ref.expr.matrix)) <= 0 | rowSums(is.finite(expr.matrix)) <= 0
+    n0 <- sum(g0)
+    if (n0 > 0) {
+      m1 <- ref.expr.matrix[g0, , drop = FALSE]
+      m1 <- ifelse(is.finite(m1), 1, 0)
+      m2 <- expr.matrix[g0, , drop = FALSE]
+      m2 <- ifelse(is.finite(m2), 1, 0)
+      g.up[g0] <- sapply(1:n0, function(i) stats::wilcox.test(m1[i, ], m2[i, ], exact = FALSE, alternative = "less")$p.value)
+      g.down[g0] <- sapply(1:n0, function(i) stats::wilcox.test(m1[i, ], m2[i, ], exact = FALSE, alternative = "greater")$p.value)
+      g.twoside[g0] <- sapply(1:n0, function(i) stats::wilcox.test(m1[i, ], m2[i, ], exact = FALSE, alternative = "two.sided")$p.value)
     }
     
     results$gene <- list(up = g.up, down = g.down, twoside = g.twoside)
@@ -216,9 +215,9 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, n.ref.genes = 
   if (n.ref.genes < n.genes) {
     if (use.parallel) {
       n <- n.genes - n.ref.genes
-      temp <- sapply(1:n.ref.genes, function(i) .Call(ND_RatioDistributionParAiB, ref.expr.matrix.A[i, ], ref.expr.matrix.B, p.edge))
-      dist$LB1 <- t(temp[1:n, , drop = F])
-      dist$LB2 <- temp[(n+1):(2*n), , drop = F]
+      temp <- simplify2array(lapply(1:n.ref.genes, function(i) .Call(ND_RatioDistributionParAiB, ref.expr.matrix.A[i, ], ref.expr.matrix.B, p.edge)), higher = F)
+      dist$LB1 <- t(temp[1:n, , drop = FALSE])
+      dist$LB2 <- temp[(n+1):(2*n), , drop = FALSE]
     }
     else {
       temp <- .Call(ND_RatioDistributionAB, ref.expr.matrix.A, ref.expr.matrix.B, p.edge)
@@ -231,7 +230,8 @@ get_ratio_distribution <- function(ref.expr.matrix, p.edge = 0.1, n.ref.genes = 
     dist$LB2 <- NULL
   }
   
-  diff <- unlist(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff))
+  diff <- simplify2array(lapply(1:dim(ref.expr.matrix)[2], function(i) get_diff_ratio_net(dist, ref.expr.matrix[,i], log.expr = TRUE, scale.degree = scale.degree)$diff), higher = F)
+  diff <- diff[dist$ref.genes, ]
   diff <- diff[!is.na(diff)]
   if (requireNamespace("fitdistrplus")) {
     dist$NB <- fitdistrplus::fitdist(abs(diff), "nbinom")$estimate
@@ -361,7 +361,7 @@ get_adjusted_deg_diff <- function(net, log.expr.val, ref.ratio.dist, scale.degre
 #'   \item{z}{The value of sum z statistic.}
 #' 
 #' @export
-p_combine <- function(p, method = "sumlog", shrink = Inf)
+p_combine <- function(p, method = "hmean", shrink = Inf)
 {
   p <- p[!is.na(p)]
   p[p > 1] <- 1
@@ -382,6 +382,20 @@ p_combine <- function(p, method = "sumlog", shrink = Inf)
     p <- stats::pnorm(z, lower.tail = FALSE)
     if (p < .Machine$double.xmin) p <- .Machine$double.xmin / z
     list(z = z, v = z, p = p)
+  }
+  else if (method == "hmean") {
+    v <- 1/mean(1/p)
+    if (requireNamespace("harmonicmeanp")) {
+      p <- harmonicmeanp::p.hmp(p, L = length(p), multilevel = FALSE)
+    }
+    else {
+      p <- v
+    }
+    list(v = v, p = p)
+  }
+  else if (method == "gmean") {
+    p <- v <- exp(mean(log(p)))
+    list(v = v, p = p)
   }
   else {
     stop("Unknown method in function p_combine: ", method)
