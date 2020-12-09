@@ -159,9 +159,17 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 # 
 .markrank.compute_net2 <- function(dataset, label, dis=NULL, d=Inf, trace=FALSE)
 {
+  if (requireNamespace("mpmi")) {
+    mut_info <- function(X, Y) mpmi::mminjk(X, Y, level=0L, na.rm=FALSE)
+  }
+  else {
+    message("Suggested package mpmi is not installed! Use correlation instead.")
+    mut_info <- stats::cor
+  }
+  
   l <- ncol(dataset)
   label <- as.matrix(as.numeric(label))
-  MI1 <- mpmi::mminjk(dataset, label, level=0L, na.rm=FALSE)
+  MI1 <- mut_info(dataset, label)
   MI2 <- Matrix(0, l, l, dimnames=list(colnames(dataset),colnames(dataset)), sparse=TRUE)
   
   
@@ -169,7 +177,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 	  for (i in 1:(l-1)) {
 		  if (trace == TRUE && i%%10 == 0) print(i)
 		  dataset_tmp <- (dataset[,(i+1):l, drop=FALSE] + dataset[,i])/sqrt(2)
-		  MI2[(i+1):l, i] <- mpmi::mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
+		  MI2[(i+1):l, i] <- mut_info(dataset_tmp, label)
 	  }			
   }else{
 	  for (i in 1:(l-1)) {
@@ -179,7 +187,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
 		  if (length(index) > 0){
 	      inds  <- ((i+1):l)[index]
 		    dataset_tmp <- (dataset[,inds, drop=FALSE] + dataset[,i])/sqrt(2)
-		    MI2[inds, i] <- mpmi::mminjk(dataset_tmp, label, level=0L, na.rm=FALSE)
+		    MI2[inds, i] <- mut_info(dataset_tmp, label)
 		  }
 	  }
   }
