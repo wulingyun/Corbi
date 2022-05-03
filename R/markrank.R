@@ -118,7 +118,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
     dis <- NULL
   }
   if (trace) print("Computing discriminative potential network ...")
-  if (class(Given_NET2) == "NULL"){
+  if (inherits(Given_NET2, "NULL")) {
   	system.time(NET2 <- .markrank.compute_net2(dataset, label, dis, d, trace=trace))
   }
   degs <- rowSums(NET2)
@@ -129,7 +129,7 @@ markrank <- function(dataset, label, adj_matrix, alpha=0.8, lambda=0.2, eps=1e-1
   }
   A <- lambda*A1 + (1-lambda)*A2
   
-  if (class(E_value) == "NULL"){
+  if (inherits(E_value, "NULL")) {
 	  PCC <- NULL														
       for (i in 1:n){
         PCC[i] <- stats::cor(dataset[,i], label, method = "pearson")

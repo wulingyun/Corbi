@@ -187,7 +187,7 @@ net_query <- function(query.net, target.net, node.sim, query.type=4, delta.d=1e-
 decode_heuristic <- function(crf)
 {
 	result <- try(CRF::decode.junction(crf), TRUE)
-	if (class(result) == "try-error")
+	if (inherits(result, "try-error"))
 	{
 		result <- CRF::decode.lbp(crf)
 	}
