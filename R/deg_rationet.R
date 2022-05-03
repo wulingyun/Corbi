@@ -310,11 +310,9 @@ get_adjusted_deg_diff <- function(net, log.expr.val, scale.degree = FALSE, p = 0
 #' @return This function will return a list with the following components:
 #'   \item{p}{The combined p-value.}
 #'   \item{v}{The value of statistic.}
-#'   \item{}{Use "sumlog" method:}
-#'   \item{chisq}{The value of chi-squared statistic.}
-#'   \item{df}{The degrees of freedom of chi-squared distribution.}
-#'   \item{}{Use "sumz" method:}
-#'   \item{z}{The value of sum z statistic.}
+#'   \item{chisq}{Use "sumlog" method: The value of chi-squared statistic.}
+#'   \item{df}{Use "sumlog" method: The degrees of freedom of chi-squared distribution.}
+#'   \item{z}{Use "sumz" method: The value of sum z statistic.}
 #' 
 #' @export
 p_combine <- function(p, method = "sumlog", shrink = Inf)
